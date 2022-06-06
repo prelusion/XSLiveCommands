@@ -1,39 +1,89 @@
 int currentCycle = 0;
+int UNUSED = -999999999;
 
 // Info about the registered command
 int registeredExecutionCycle = -1;
 int registeredCommandId = -1;
+int registeredParamsCount = -1;
 int registeredParamsArray = -1;
 
-void writeStartToFile() {
-    xsCreateFile(false);
-    xsWriteString("start");
-    xsCloseFile();
+void printArray(int arr = -1) {
+    if (arr == -1) {
+        xsChatData("[]");
+        return;
+    }
+    
+    int size = xsArrayGetSize(arr);
+    string result = "[";
+    for (i = 0; < size) {
+        result = result + xsArrayGetInt(arr, i);
+
+        if (i < size - 1) {
+            result = result + ", ";
+        }
+    }
+    result = result + "]";
+    xsChatData(result);
 }
 
-void writeCurrentCycleToFile() {
-    xsCreateFile(false);
-    xsWriteInt(currentCycle);
-    xsCloseFile();
+void sendResources(int wood = 0, int food = 0, int gold = 0, int stone = 0, int player = 0) {
+    string msg = "Give ";
+    if (player == UNUSED || player == -1) {
+        msg = msg + "all players: ";
+        
+        // Apply to all players (except GAIA)
+        player = -1;
+    } else {
+        msg = msg + "player " + player + ": ";
+    }
+
+    bool resourceSet = false;
+    if (wood != UNUSED && wood != 0) {
+        resourceSet = true;
+        msg = msg + wood + " wood, ";
+        xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, wood, player);
+    }
+    if (food != UNUSED && food != 0) {
+        resourceSet = true;
+        msg = msg + food + " food, ";
+        xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, food, player);
+    }
+    if (gold != UNUSED && gold != 0) {
+        resourceSet = true;
+        msg = msg + gold + " gold, ";
+        xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, gold, player);
+    }
+    if (stone != UNUSED && stone != 0) {
+        resourceSet = true;
+        msg = msg + stone + " stone, ";
+        xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, stone, player);
+    }
+    if (resourceSet) {
+        xsChatData(msg);
+    }
 }
 
 void executeCommand(
-        int commandId = -1, 
-        int param0 = -1, int param1 = -1, int param2 = -1, int param3 = -1, int param4 = -1, 
-        int param5 = -1, int param6 = -1, int param7 = -1, int param8 = -1, int param9 = -1
+        int commandId = -999999999, 
+        int param0 = -999999999, int param1 = -999999999, int param2 = -999999999, int param3 = -999999999, int param4 = -999999999, 
+        int param5 = -999999999, int param6 = -999999999, int param7 = -999999999, int param8 = -999999999, int param9 = -999999999
 ) {
     xsChatData("Executing command on cycle: " + currentCycle);
     switch (commandId) {
-        // Params: None
-        case 0: { 
+        case 0: {
+            // Params: None
             xsChatData("Hello World");
         }
-        // Params: 0: wood, 1: food, 2: gold, 3: stone
         case 1: {
-            xsChatData("Give " + param0 + " wood, " + param1 + " food, " + param2 + " gold, " + param3 + " stone");
+            // Params: 0: wood, 1: food, 2: gold, 3: stone, 4: player
+            sendResources(param0, param1, param2, param3, param4);
         }
         default: {
-            xsChatData("Unknown command [" + commandId + "] (" + param0 + ", " + param1 + ", " + param2 + ", " + param3 + ", " + param4 + ", " + param5 + ", " + param6 + ", " + param7 + ", " + param8 + ", " + param9 + ")");
+            if (commandId == UNUSED) {
+                xsChatData("Execute command called without commandId");
+            } else {
+                xsChatData("Unknown command [" + commandId + "] (" + param0 + ", " + param1 + ", " + param2 + ", " + param3 + ", " + param4 + ", " + param5 + ", " + param6 + ", " + param7 + ", " + param8 + ", " + param9 + ")");
+            }
         }
     }
 }
@@ -56,27 +106,8 @@ void executeCommandWrapper() {
 
 void emptyRegisteredParamsArray() {
     for (i = 0; < xsArrayGetSize(registeredParamsArray)) {
-        xsArraySetInt(registeredParamsArray, i, -1);
+        xsArraySetInt(registeredParamsArray, i, UNUSED);
     }
-}
-
-void printArray(int arr = -1) {
-    if (arr == -1) {
-        xsChatData("[]");
-        return;
-    }
-    
-    int size = xsArrayGetSize(arr);
-    string result = "[";
-    for (i = 0; < size) {
-        result = result + xsArrayGetInt(arr, i);
-
-        if (i < size - 1) {
-            result = result + ", ";
-        }
-    }
-    result = result + "]";
-    xsChatData(result);
 }
 
 // Run every 5 seconds to write current cycle to file
@@ -87,7 +118,7 @@ rule cycleUpdate
     maxInterval 5
 {
     xsChatData("Cycle: " + currentCycle);
-    writeCurrentCycleToFile();
+    xsEnableRule("writeCurrentCycleToFile");
 
     if (currentCycle == registeredExecutionCycle) {
         executeCommandWrapper();
@@ -101,7 +132,8 @@ rule cycleUpdate
 // File layout (all int32):
 // 1:       Execution Cycle Number
 // 2:       CommandId
-// 3-12:    10 Parameters
+// 3:       paramCount
+// 4-13:    10 Parameters
 rule readCommands
     active
     runImmediately
@@ -126,24 +158,32 @@ rule readCommands
 
     registeredExecutionCycle = executionCycle;
     registeredCommandId = xsReadInt();
+    registeredParamsCount = xsReadInt();
     emptyRegisteredParamsArray();
 
-    xsChatData("Registered command. Cycle: " + executionCycle + ", id: " + registeredCommandId);
+    xsChatData("Registered command. Cycle: " + executionCycle + ", id: " + registeredCommandId + ", pCount: " + registeredParamsCount);
 
     // Read params
-    for(i = 0; < 10) {
-        int value = xsReadInt();
-
-        if (value == -1) {
-            xsDisableSelf();
-            break;
-        }
-        xsArraySetInt(registeredParamsArray, i, value);
+    for(i = 0; < registeredParamsCount) {
+        xsArraySetInt(registeredParamsArray, i, xsReadInt());
     }
+    xsDisableSelf();
     xsCloseFile();
 }
 
+rule writeCurrentCycleToFile
+    active
+    runImmediately
+    highFrequency
+{
+    bool success = xsCreateFile(false);
+    if (success) {
+        xsWriteInt(currentCycle);
+        xsCloseFile();
+        xsDisableSelf();
+    }
+}
+
 void main() {
-    writeStartToFile();
     registeredParamsArray = xsArrayCreateInt(10, -1, "registeredParamsArray");
 }
