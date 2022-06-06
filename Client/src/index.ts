@@ -1,9 +1,8 @@
-import { io } from "socket.io-client"
+import {io} from "socket.io-client"
 import {CycleCounter} from "./cycle_counter";
 import {Event_handler} from "./event_handler";
 import {Event} from "./interfaces";
 import {initPaths, PATH_READ_FROM, PATH_WRITE_TO} from "./paths";
-import * as fs from "fs";
 import {readCycle, writeEvent} from "./io";
 
 async function main() {

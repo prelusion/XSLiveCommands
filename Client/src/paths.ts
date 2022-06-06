@@ -10,8 +10,8 @@ export let PATH_READ_FROM = "";
 export async function initPaths() {
     const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
     const listResult = await regedit.list([key])
-    let accountId = listResult[key]["values"]["ActiveUser"]["value"]
-    let steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
+    const accountId = listResult[key]["values"]["ActiveUser"]["value"]
+    const steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
 
     PATH_WRITE_TO = `${userProfile}\\${afterProfileFolder}\\${steamID}\\${afterSteamID}\\command.xsdat`
     PATH_READ_FROM = `${userProfile}\\${afterProfileFolder}\\${steamID}\\${afterSteamID}\\default0.xsdat`

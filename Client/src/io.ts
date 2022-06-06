@@ -1,10 +1,9 @@
-import {readFileSync, writeFile} from "fs";
+import fs, {readFileSync} from "fs";
 import {Event} from "./interfaces";
-import fs from "fs";
 
 export async function readCycle(path: string, cycle: number) {
     try {
-        const cycleFile = readFileSync(path, {encoding: "utf8"});
+        const cycleFile = readFileSync(path, {encoding: "binary"});
         cycle = new Buffer(cycleFile, 'binary').readInt32LE(0);
         return cycle;
     } catch (err) {
@@ -14,7 +13,7 @@ export async function readCycle(path: string, cycle: number) {
 
 export async function writeEvent(path: string, event: Event) {
     // Buffer gets the right amount of bytes allocated to it.
-    let buffer = Buffer.alloc(event.params.length * 4 + 8);
+    const buffer = Buffer.alloc(event.params.length * 4 + 8);
     buffer.writeInt32LE(event.executeCycleNumber, 0)
     buffer.writeInt32LE(event.commandId, 4)
     let offset = 8;
@@ -22,7 +21,7 @@ export async function writeEvent(path: string, event: Event) {
         buffer.writeInt32LE(param, offset)
         offset += 4;
     }
-    
+
     console.log(event.executeCycleNumber)
     await fs.writeFile(path, buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work")
