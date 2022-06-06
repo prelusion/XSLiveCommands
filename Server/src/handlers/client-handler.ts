@@ -3,7 +3,7 @@ import {setCurrentCycle} from "../index";
 const io = new Server(3000);
 
 //Todo rooms https://socket.io/docs/v3/rooms/
-let connectionAmount: number = 0;
+let connectionAmount = 0;
 
 export function startIOServer() {
     io.on('connection', (socket) => {

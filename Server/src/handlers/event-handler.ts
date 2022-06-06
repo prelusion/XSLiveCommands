@@ -1,20 +1,12 @@
 import {ClientEvent} from "../interfaces";
 
 export class EventHandler {
-    private _eventHistory: ClientEvent[];
+    private readonly _eventHistory: ClientEvent[];
     private _event: ClientEvent;
 
     constructor() {
         this._event = null;
         this._eventHistory = [];
-    }
-
-    get event(): ClientEvent {
-        return this._event;
-    }
-
-    get eventHistory(): ClientEvent[] {
-        return this._eventHistory;
     }
 
     get lastExecutionCycle(): number {
@@ -24,8 +16,16 @@ export class EventHandler {
         return this.eventHistory[this.eventHistory.length - 1].executeCycleNumber;
     }
 
+    get event(): ClientEvent {
+        return this._event;
+    }
+
     set event(event: ClientEvent) {
         this.eventHistory.push(event)
         this._event = event;
+    }
+
+    get eventHistory(): ClientEvent[] {
+        return this._eventHistory;
     }
 }
