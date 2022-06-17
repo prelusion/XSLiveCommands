@@ -1,5 +1,6 @@
 import fs, {readFileSync} from "fs";
 import {Event} from "./interfaces";
+import {CycleCounter} from "./cycle_counter";
 
 export async function readCycle(path: string, cycle: number) {
     try {
@@ -43,4 +44,14 @@ export async function writeEvent(path: string, event: Event) {
     await fs.writeFile(path, buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work")
     });
+}
+
+export async function deleteUsedFiles(pathToScenarioFile: string, pathToCommandFile: string) {
+    try {
+        //Removing the scenario & command file through given paths.
+        fs.unlinkSync(pathToScenarioFile);
+        fs.unlinkSync(pathToCommandFile);
+    } catch (err) {
+        // File doesn't exist. Ignored because of HUGE ASS ERROR and file doesn't have to exist.
+    }
 }

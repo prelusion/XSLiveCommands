@@ -9,3 +9,10 @@ export interface ClientEvent {
     params: number[];
     executeCycleNumber: number
 }
+
+export interface Room {
+    id: string;
+    host: string;
+    scenario: string;
+    connections: string[];
+}

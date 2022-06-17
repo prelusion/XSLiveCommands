@@ -1,42 +1,48 @@
-import {io} from "socket.io-client"
 import {CycleCounter} from "./cycle_counter";
 import {Event_handler} from "./event_handler";
 import {Event} from "./interfaces";
-import {initPaths, PATH_READ_FROM, PATH_WRITE_TO} from "./paths";
-import {readCycle, writeEvent} from "./io";
+import {Paths} from "./paths";
+import {readCycle, deleteUsedFiles, writeEvent} from "./io";
+import {createRoom, cycleUpdate, socket, startSocketClient} from "./socket";
+
+export const paths = new Paths();
+export const cycleCounter = new CycleCounter();
+export const eventHandler = new Event_handler();
+let LAST_EXECUTE_CYCLE = -1;
+let event: Event
+
+
+export async function resetState() {
+    await deleteUsedFiles(paths.PATH_READ_FROM, paths.PATH_WRITE_TO);
+    LAST_EXECUTE_CYCLE = -1;
+    cycleCounter.cycle = 0;
+    eventHandler.emptyQueue();
+}
 
 async function main() {
-    await initPaths();
+    startSocketClient();
+    await paths.initPaths();
+    await resetState();
+    createRoom("testScenario123");
+}
 
-    const socket = io("ws://localhost:3000")
-    const cycleCounter = new CycleCounter();
-    const eventHandler = new Event_handler();
+export function startCoreInterval(interval= 1000) {
+    return setInterval(async () => {
+        cycleCounter.cycle = await readCycle(paths.PATH_READ_FROM, cycleCounter.cycle)
 
-    let LAST_EXECUTE_CYCLE = -1;
-    let event: Event
-
-    socket.on("event", (event) => {
-        eventHandler.enqueue(event)
-    });
-
-    setInterval(async () => {
-        cycleCounter.cycle = await readCycle(PATH_READ_FROM, cycleCounter.cycle)
-
-        socket.emit("cycleUpdate", cycleCounter.cycle);
-
-        socket.emit("start", cycleCounter.cycle)
+        cycleUpdate(cycleCounter.cycle);
         console.log(cycleCounter.cycle)
-        if(LAST_EXECUTE_CYCLE < cycleCounter.cycle) {
-            if(!eventHandler.isEmpty()) {
+
+        if (LAST_EXECUTE_CYCLE < cycleCounter.cycle) {
+            if (!eventHandler.isEmpty()) {
                 event = eventHandler.dequeue();
 
                 LAST_EXECUTE_CYCLE = event.executeCycleNumber;
-                await writeEvent(PATH_WRITE_TO, event);
-                console.log("NEW EVENT HAS BEEN WRITTE")
+                await writeEvent(paths.PATH_WRITE_TO, event);
+                console.log("NEW EVENT HAS BEEN WRITTEN")
             }
         }
-    }, 1000);
-
+    }, interval);
 }
 
 main().then();

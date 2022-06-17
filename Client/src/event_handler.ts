@@ -21,4 +21,8 @@ export class Event_handler {
     enqueue(event: Event) {
         this._eventQueue.push(event);
     }
+
+    emptyQueue() {
+        this._eventQueue = [];
+    }
 }

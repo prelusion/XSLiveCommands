@@ -1,18 +1,44 @@
 import {promisified as regedit} from "regedit";
 import SteamID from "steamid";
 
-const userProfile = process.env.USERPROFILE;
-const afterProfileFolder = "Games\\Age of Empires 2 DE";
-const afterSteamID = "profile";
-export let PATH_WRITE_TO = "";
-export let PATH_READ_FROM = "";
+export class Paths {
+    private userProfile = process.env.USERPROFILE;
+    private afterProfileFolder = "Games\\Age of Empires 2 DE";
+    private steamProfile = "profile";
+    private steamID = "";
 
-export async function initPaths() {
-    const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
-    const listResult = await regedit.list([key])
-    const accountId = listResult[key]["values"]["ActiveUser"]["value"]
-    const steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
+    public PATH_WRITE_TO = "";
+    public PATH_READ_FROM = "";
 
-    PATH_WRITE_TO = `${userProfile}\\${afterProfileFolder}\\${steamID}\\${afterSteamID}\\command.xsdat`
-    PATH_READ_FROM = `${userProfile}\\${afterProfileFolder}\\${steamID}\\${afterSteamID}\\default0.xsdat`
+    private _commandFile = "command.xsdat";
+    private _scenarioFile = "localtest3.xsdat";
+
+    public async initPaths() {
+        const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
+        const listResult = await regedit.list([key])
+        const accountId = listResult[key]["values"]["ActiveUser"]["value"]
+        this.steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
+
+        this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.commandFile}`
+        this.PATH_READ_FROM = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
+    }
+
+
+    get commandFile(): string {
+        return this._commandFile;
+    }
+
+    set commandFile(value: string) {
+        this._commandFile = value;
+        this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.commandFile}`
+    }
+
+    get scenarioFile(): string {
+        return this._scenarioFile;
+    }
+
+    set scenarioFile(value: string) {
+        this._scenarioFile = value;
+        this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
+    }
 }
