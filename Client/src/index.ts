@@ -3,7 +3,7 @@ import {Event_handler} from "./event_handler";
 import {Event} from "./interfaces";
 import {Paths} from "./paths";
 import {readCycle, deleteUsedFiles, writeEvent} from "./io";
-import {createRoom, cycleUpdate, socket, startSocketClient} from "./socket";
+import {createRoom, cycleUpdate, startSocketClient} from "./socket";
 
 export const paths = new Paths();
 export const cycleCounter = new CycleCounter();
