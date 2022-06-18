@@ -35,8 +35,8 @@ let win;
  */
 const createWindow = async () => {
     win = new BrowserWindow({
-        width: 1480,
-        height: 850,
+        width: 600,
+        height: 300,
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,
@@ -86,10 +86,7 @@ app.on('window-all-closed', () => {
 // You can also put them in separate files and require them here.
 
 // Axios - Handling network requests
-require('./handlers/axios')
+require('./libs/axios')
 
-// Fs - Handling network requests
-require('./handlers/fs')
-
-// Clipboard - Handling clipboard requests
-require('./handlers/clipboard')
+// Regedit - Handling network requests
+require('./libs/regedit')
