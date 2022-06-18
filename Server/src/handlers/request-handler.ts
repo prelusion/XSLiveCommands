@@ -11,7 +11,6 @@ export function startExpressServer(httpServer, app, io) {
         const roomID: string = req.query.id;
         const room = RoomHandler.instance.getRoomByID(roomID);
 
-        console.log(room)
 
 
         eventHandler.event = event;

@@ -14,6 +14,7 @@ export function startIOServer(io) {
                 console.log("No room ID given")
                 return;
             }
+            console.log(roomId + " cycle: " + cycle)
 
             if (cycle === null || cycle === undefined) {
                 cycle = 0;

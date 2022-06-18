@@ -11,7 +11,7 @@ export class Paths {
     public PATH_READ_FROM = "";
 
     private _commandFile = "command.xsdat";
-    private _scenarioFile = "TESTTESTTTESTTEST.xsdat";
+    private _scenarioFile = "ThisIsANewRoom.xsdat";
 
     public async initPaths() {
         const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
