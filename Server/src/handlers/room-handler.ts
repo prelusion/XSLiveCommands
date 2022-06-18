@@ -17,12 +17,17 @@ export class RoomHandler {
     private _rooms: Room[] = [];
 
     public createRoom(id: string, host: string, scenario: string) {
-        this.rooms.push({id, host, scenario, connections: [host]})
+        const connections: string[] = [];
+        connections.push(host);
+        this.rooms.push({id, host, scenario, connections, current_cycle: 0, last_execution_cycle: -1})
     }
 
     public joinRoom(roomId: string, clientId: string) {
         const room = this.getRoomByID(roomId);
-        room.connections.push(clientId);
+
+        if (room !== undefined) {
+            room.connections.push(clientId);
+        }
     }
 
     public leaveRoom(roomId: string, clientId: string) {
@@ -36,7 +41,7 @@ export class RoomHandler {
         return this.getRoomByID(id)?.connections.length;
     }
 
-    public getRoomByID(id: string): Room {
+    public getRoomByID(id: string): Room | undefined {
         return this.rooms.find(room => room.id === id);
     }
 
