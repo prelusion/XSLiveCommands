@@ -17,11 +17,14 @@ export class RoomHandler {
     private _rooms: Room[] = [];
 
     public createRoom(id: string, host: string, scenario: string) {
-        this.rooms.push({id, host, scenario, connections: [host]})
+        const connections: string[] = [];
+        connections.push(host);
+        this.rooms.push({id, host, scenario, connections, current_cycle: 0, last_execution_cycle: -1})
     }
 
     public joinRoom(roomId: string, clientId: string) {
         const room = this.getRoomByID(roomId);
+        console.log(room);
         room.connections.push(clientId);
     }
 

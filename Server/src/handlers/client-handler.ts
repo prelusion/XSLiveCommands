@@ -1,4 +1,3 @@
-import {setCurrentCycle} from "../index";
 import {RoomHandler} from "./room-handler";
 
 export function startIOServer(io) {
@@ -10,9 +9,16 @@ export function startIOServer(io) {
         console.log("Client connected!");
         console.log(`Amount of connected clients are: ${connectionAmount}`);
 
-        socket.on('cycleUpdate', cycle => {
-            console.log(cycle)
-            setCurrentCycle(cycle);
+        socket.on('cycleUpdate', (roomId: string, cycle: number) => {
+            if (roomId === "") {
+                console.log("No room ID given")
+                return;
+            }
+
+            if (cycle === null || cycle === undefined) {
+                cycle = 0;
+            }
+            RoomHandler.instance.getRoomByID(roomId).current_cycle = cycle;
         });
 
         socket.on('disconnect', (id, callback) => {
@@ -37,11 +43,13 @@ export function startIOServer(io) {
         });
 
         socket.on('createRoom', (scenario, callback) => {
-            const id = Date.now();
+            const id = Date.now().toString();
 
             if(!io.sockets.adapter.rooms.get(id)) {
                 console.log("A room under the name " + scenario + " is created!");
             }
+
+
 
             socket.join(id);
             RoomHandler.instance.createRoom(id.toString(), socket.id, scenario);
@@ -49,10 +57,13 @@ export function startIOServer(io) {
         });
 
         socket.on('joinRoom', (id, callback) => {
-            if(!io.sockets.adapter.rooms.get(id)) {
-                console.log("There is no room with this id");
-                callback(null);
-            }
+            // if(!io.sockets.adapter.rooms.get(id)) {
+            //     console.log("There is no room with this id");
+            //     callback(null);
+            // }
+
+
+
 
             socket.join(id);
             RoomHandler.instance.joinRoom(id.toString(), socket.id)

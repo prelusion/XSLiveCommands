@@ -4,7 +4,7 @@ import {CycleCounter} from "./cycle_counter";
 
 export async function readCycle(path: string, cycle: number) {
     try {
-        const cycleFile = readFileSync(path, {encoding: null});
+        const cycleFile = readFileSync(path, { flag: 'wx', encoding: null});
         cycle = Buffer.from(cycleFile).readInt32LE();
         return cycle;
     } catch (err) {

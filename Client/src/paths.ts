@@ -11,7 +11,7 @@ export class Paths {
     public PATH_READ_FROM = "";
 
     private _commandFile = "command.xsdat";
-    private _scenarioFile = "localtest3.xsdat";
+    private _scenarioFile = "TESTTESTTTESTTEST.xsdat";
 
     public async initPaths() {
         const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
@@ -21,6 +21,7 @@ export class Paths {
 
         this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.commandFile}`
         this.PATH_READ_FROM = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
+        console.log(this.PATH_WRITE_TO)
     }
 
 
@@ -39,6 +40,6 @@ export class Paths {
 
     set scenarioFile(value: string) {
         this._scenarioFile = value;
-        this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
+        this.PATH_READ_FROM = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
     }
 }
