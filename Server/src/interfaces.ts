@@ -15,4 +15,6 @@ export interface Room {
     host: string;
     scenario: string;
     connections: string[];
+    last_execution_cycle: number;
+    current_cycle: number;
 }

@@ -21,7 +21,6 @@ export class EventHandler {
     }
 
     set event(event: ClientEvent) {
-        this.eventHistory.push(event)
         this._event = event;
     }
 
