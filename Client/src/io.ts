@@ -4,13 +4,12 @@ import {CycleCounter} from "./cycle_counter";
 
 export async function readCycle(path: string, cycle: number) {
     try {
-        console.log(path)
         const cycleFile = readFileSync(path, { flag: 'a+', encoding: null});
         cycle = Buffer.from(cycleFile).readInt32LE();
         console.log("cycle " + cycle)
         return cycle;
     } catch (err) {
-        console.log(err)
+        // console.log(err)
         // File doesn't exist. Ignored because of HUGE ASS ERROR and file doesn't have to exist.
     }
 }

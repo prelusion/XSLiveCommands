@@ -3,7 +3,7 @@ import {Event_handler} from "./event_handler";
 import {Event, Room} from "./interfaces";
 import {Paths} from "./paths";
 import {readCycle, deleteUsedFiles, writeEvent} from "./io";
-import {createRoom, cycleUpdate, startSocketClient} from "./socket";
+import {createRoom, cycleUpdate, disconnectRoom, joinRoom, startSocketClient} from "./socket";
 
 export const paths = new Paths();
 export const cycleCounter = new CycleCounter();
@@ -28,8 +28,7 @@ async function main() {
     startSocketClient();
     await paths.initPaths();
     await resetState();
-    createRoom("ThisIsANewRoom.xsdat");
-    // joinRoom("1655563090516");
+    createRoom("Lolol.xsdat");
 }
 
 export function startCoreInterval(interval= 1000) {
@@ -37,6 +36,8 @@ export function startCoreInterval(interval= 1000) {
         cycleCounter.cycle = await readCycle(paths.PATH_READ_FROM, cycleCounter.cycle)
 
         cycleUpdate(room.id, cycleCounter.cycle);
+        console.log("testtest")
+        await disconnectRoom("1655569788834");
         console.log(cycleCounter.cycle)
 
         if (LAST_EXECUTE_CYCLE < cycleCounter.cycle) {

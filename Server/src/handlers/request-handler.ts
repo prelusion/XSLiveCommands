@@ -11,8 +11,6 @@ export function startExpressServer(httpServer, app, io) {
         const roomID: string = req.query.id;
         const room = RoomHandler.instance.getRoomByID(roomID);
 
-
-
         eventHandler.event = event;
 
         //Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
@@ -22,8 +20,6 @@ export function startExpressServer(httpServer, app, io) {
 
         console.log("EVENT EMITTED")
         console.log(event)
-        console.log("Cycle number " + RoomHandler.instance.getRoomByID(roomID).last_execution_cycle)
-        console.dir(eventHandler.eventHistory);
         console.log("EVENT EMITTED \n\n")
 
 
