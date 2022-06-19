@@ -7,10 +7,16 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // !!! REMEMBER !!!
 // ALL THE CONTEXT BRIDGE CONSTRUCTIONS NEED TO BE DEFINED IN: '/src/main.ts'
-contextBridge.exposeInMainWorld("regedit", {
+contextBridge.exposeInMainWorld('regedit', {
     getSteamId: () => ipcRenderer.invoke('regedit:getSteamId'),
 });
 
-contextBridge.exposeInMainWorld("fileControls", {
+contextBridge.exposeInMainWorld('fileControls', {
     select: (steamId) => ipcRenderer.invoke('fileControls:select', steamId),
 });
+
+contextBridge.exposeInMainWorld('fs', {
+    deleteXsDataFiles: (steamId, scenario) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, scenario),
+    readCycle: (steamId, scenario) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
+    writeEvent: (steamId, scenario, event) => ipcRenderer.invoke('fs:readCycle', steamId, scenario, event),
+})

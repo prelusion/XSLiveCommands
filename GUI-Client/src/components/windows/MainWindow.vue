@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="">
-            SteamID: '{{ $store.state.steamId }}'
+            SteamID: '{{ steamId }}'
         </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
@@ -10,6 +10,7 @@
 <script lang="ts">
 import {defineComponent} from "vue";
 import Buttons from "@/components/Buttons.vue";
+import {GameHandler} from "@/classes/game-handler";
 
 export default defineComponent({
     name: "MainRoom",
@@ -32,7 +33,11 @@ export default defineComponent({
     mounted() {
         // Execute on creation
     },
-    computed: {},
+    computed: {
+        steamId(): string {
+            return GameHandler.instance.steamId;
+        }
+    },
     methods: {},
     watch: {}
 })

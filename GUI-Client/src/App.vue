@@ -13,6 +13,7 @@ import MainWindow from "@/components/windows/MainWindow.vue";
 import CreateWindow from "@/components/windows/CreateWindow.vue";
 import JoinWindow from "@/components/windows/JoinWindow.vue";
 import LoadingWindow from "@/components/windows/LoadingWindow.vue";
+import CreatedWindow from "@/components/windows/CreatedWindow.vue";
 
 export default defineComponent({
     name: "App",
@@ -20,6 +21,7 @@ export default defineComponent({
         LoadingWindow,
         MainWindow,
         CreateWindow,
+        CreatedWindow,
         JoinWindow,
     },
     // data() {

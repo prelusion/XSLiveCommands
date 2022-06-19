@@ -93,3 +93,6 @@ require('./libs/regedit')
 
 // Regedit - Handling network requests
 require('./libs/file-selection')
+
+// Regedit - Handling network requests
+require('./libs/fs')

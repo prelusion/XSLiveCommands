@@ -5,6 +5,8 @@
 <script lang="ts">
 import {defineComponent} from "vue";
 import {io} from "socket.io-client";
+import {GameHandler} from "@/classes/game-handler";
+import {SocketHandler} from "@/classes/socket-handler";
 
 export default defineComponent({
     name: "LoadingWindow",
@@ -20,19 +22,15 @@ export default defineComponent({
     },
     mounted() {
         window.regedit.getSteamId().then(steamId => {
-            this.$store.commit('setSteamId', steamId);
+            GameHandler.instance.steamId = steamId;
             this.retrievedSteamId = true;
         });
 
         const socket = io("ws://localhost:80");
         socket.on('connect', () => {
-            this.$store.commit('setSocket', socket);
+            SocketHandler.instance.socket = socket;
             this.connectedToServer = true;
         })
-
-        this.timeout = setTimeout(() => {
-            this.error = ['Unable to load steam ID', 'Log into Steam and start AoE2:DE to use this program'];
-        }, 5000);
     },
     computed: {
         text() {

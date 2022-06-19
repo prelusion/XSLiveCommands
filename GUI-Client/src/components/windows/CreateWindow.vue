@@ -1,19 +1,26 @@
 <template>
-    <div>
-        <button @click="openFilePrompt">Select scenario file</button>
-        <div id="file">
-            Selected file:
-            <span>{{ filename ? filename : 'No file selected' }}</span>
-        </div>
-        <div id="error" v-html="text.join('<br>')"></div>
+    <div v-if="creationInProgress" id="loading">
+        Creating room...
     </div>
-    <Buttons :buttonConfig="buttonConfig"></Buttons>
+    <div v-else>
+        <div>
+            <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
+            <div id="file">
+                Selected file:
+                <span>{{ filename ? filename : 'No file selected' }}</span>
+            </div>
+            <div id="error" v-html="text.join('<br>')"></div>
+        </div>
+        <Buttons :buttonConfig="buttonConfig"></Buttons>
+    </div>
 </template>
 
 <script lang="ts">
 import {defineComponent} from "vue";
 import Buttons from "@/components/Buttons.vue";
-import {Room} from "@/interfaces/rooms";
+import {Room} from "@/interfaces/general";
+import {GameHandler} from "@/classes/game-handler";
+import {SocketHandler} from "@/classes/socket-handler";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -22,63 +29,88 @@ export default defineComponent({
     data() {
         return {
             text: [] as Array<string>,
+            filepath: "",
+            creationInProgress: false,
+            selectInProgress: false,
             buttonConfig: [
                 {
                     window: 'MainWindow',
                     text: 'Cancel',
-                    callback: () => this.$store.commit('clearFilePath'),
+                    callback: () => this.resetWindow(),
                 },
                 {
                     text: 'Create room',
                     callback: () => {
                         this.createRoom();
                     },
-                    disabled: () => !this.$store.state.create.filepath,
+                    disabled: () => !this.filepath,
                 },
             ] as Array<ButtonConfig>,
         }
     },
     mounted() {
-        // Executed when loaded
+        this.resetWindow();
     },
     computed: {
+        /**
+         * Get the file name from the path
+         * From: `C:/.../.../file.aoe2scenario`. To: `file.aoe2scenario`
+         */
         filename(): string {
-            return this.$store.state.create.filepath.split('\\').splice(-1)[0];
+            return this.filepath.split('\\').splice(-1)[0];
+        },
+
+        /**
+         * Get the plain file name without extension from the path
+         * From: `C:/.../.../file.aoe2scenario`. To: `file`
+         */
+        plainFilename(): string {
+            return this.filename.split('.')[0];
         }
     },
     methods: {
+        resetWindow() {
+            this.filepath = '';
+            this.creationInProgress = false;
+            this.selectInProgress = false;
+        },
         openFilePrompt() {
+            this.selectInProgress = true;
+
             window.fileControls
-                .select(this.$store.state.steamId)
+                .select(GameHandler.instance.steamId)
                 .then((value: { filepath: string; reason: string }) => {
+                    this.selectInProgress = false;
+
                     if (value.filepath) {
-                        this.$store.commit('setFilePath', value.filepath);
+                        this.filepath = value.filepath;
                     } else if (value.reason !== 'cancelled') {
-                        this.text = [
-                            "Unknown Error", "An unknown error has occurred."
-                        ]
+                        this.text = ["Unknown Error", "An unknown error has occurred."]
                     }
                 })
         },
         createRoom() {
-            console.log("Creating room... Emitting...")
-            this.$store.state.socket?.emit('createRoom', this.filename, async (room: Room) => {
-                console.log("Done!")
-                // Gets a Room object back, make sure to save the scenario name in the paths....
-                this.$store.commit("setRoom", room);
+            this.creationInProgress = true;
 
-                if (room.scenario !== "") {
-                    // todo: implement
-                    // await resetState();
-                    // interval = startCoreInterval();
-                    console.log("The number of connections in your room are " + room.connections.length)
-                    // paths.scenarioFile = room.scenario;
-                }
-            });
+            // Todo: move to SocketHandler.createRoom();
+            SocketHandler.instance.socket?.emit('createRoom', this.plainFilename,
+                async (room: Room) => {
+                    SocketHandler.instance.room = room;
+
+                    if (room.scenario) {
+                        await GameHandler.instance.resetState(room.scenario);
+                        GameHandler.instance.startCoreLoop(room.scenario);
+
+                        console.log("The number of connections in your room are " + room.connections.length)
+                    }
+
+                    this.resetWindow();
+                    this.$store.commit('changeWindow', 'CreatedWindow');
+                });
         }
     },
     watch: {}
-})
+});
 
 </script>
 
@@ -94,5 +126,10 @@ button {
 #error {
     color: red;
     padding: 10px;
+}
+
+#loading {
+    width: 100%;
+    text-align: center;
 }
 </style>
