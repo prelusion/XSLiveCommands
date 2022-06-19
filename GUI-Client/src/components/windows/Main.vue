@@ -20,11 +20,11 @@ export default defineComponent({
         return {
             buttonConfig: [
                 {
-                    window: 'JoinWindow',
+                    window: 'Join',
                     text: 'Join a room',
                 },
                 {
-                    window: 'CreateWindow',
+                    window: 'Create',
                     text: 'Create a room',
                 },
             ] as Array<ButtonConfig>,

@@ -9,7 +9,7 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 
 export default defineComponent({
-    name: "LoadingWindow",
+    name: "Loading",
     components: {},
     props: {},
     data() {
@@ -48,7 +48,7 @@ export default defineComponent({
     methods: {
         checkIfLoadingComplete() {
             if (this.connectedToServer && this.retrievedSteamId) {
-                setTimeout(() => this.$store.commit('changeWindow', 'MainWindow'), 200);
+                setTimeout(() => this.$store.commit('changeWindow', 'Main'), 200);
             }
         }
     },

@@ -34,7 +34,7 @@ export default defineComponent({
             selectInProgress: false,
             buttonConfig: [
                 {
-                    window: 'MainWindow',
+                    window: 'Main',
                     text: 'Cancel',
                     callback: () => this.resetWindow(),
                 },
@@ -105,7 +105,7 @@ export default defineComponent({
                     }
 
                     this.resetWindow();
-                    this.$store.commit('changeWindow', 'CreatedWindow');
+                    this.$store.commit('changeWindow', 'Created');
                 });
         }
     },

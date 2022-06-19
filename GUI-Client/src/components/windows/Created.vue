@@ -26,14 +26,14 @@ import {GameHandler} from "@/classes/game-handler";
 import {assert} from "@/util/general";
 
 export default defineComponent({
-    name: "CreatedWindow",
+    name: "Created",
     components: {Buttons},
     props: {},
     data() {
         return {
             buttonConfig: [
                 {
-                    window: 'MainWindow',
+                    window: 'Main',
                     text: 'Disconnect',
                     callback: () => {
                         assert(SocketHandler.instance.room);

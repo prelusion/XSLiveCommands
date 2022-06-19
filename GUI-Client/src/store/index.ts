@@ -3,7 +3,7 @@ import {State} from "@vue/runtime-core";
 
 export default createStore({
     state: {
-        window: "LoadingWindow",
+        window: "Loading",
     } as State,
 
     getters: {},
