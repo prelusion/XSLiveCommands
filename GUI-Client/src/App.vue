@@ -9,11 +9,11 @@
 <script lang="ts">
 
 import {defineComponent} from "vue";
-import MainWindow from "@/components/windows/MainWindow.vue";
-import CreateWindow from "@/components/windows/CreateWindow.vue";
-import JoinWindow from "@/components/windows/JoinWindow.vue";
-import LoadingWindow from "@/components/windows/LoadingWindow.vue";
-import CreatedWindow from "@/components/windows/CreatedWindow.vue";
+import MainWindow from "@/components/windows/Main.vue";
+import CreateWindow from "@/components/windows/Create.vue";
+import JoinWindow from "@/components/windows/Join.vue";
+import LoadingWindow from "@/components/windows/Loading.vue";
+import CreatedWindow from "@/components/windows/Created.vue";
 
 export default defineComponent({
     name: "App",
