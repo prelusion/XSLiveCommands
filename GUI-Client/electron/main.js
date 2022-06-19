@@ -90,3 +90,6 @@ require('./libs/axios')
 
 // Regedit - Handling network requests
 require('./libs/regedit')
+
+// Regedit - Handling network requests
+require('./libs/file-selection')

@@ -23,12 +23,12 @@ module.exports = {
     },
     css: {
         loaderOptions: {
-            sass: {
-                prependData: `
-                @import "@/assets/styles/_variables.scss";
-                @import "@/assets/styles/_classes.scss";
-                `
-            }
+            // sass: {
+            //     prependData: `
+            //     @import "@/assets/styles/_variables.scss";
+            //     @import "@/assets/styles/_classes.scss";
+            //     `
+            // }
         }
     },
     pluginOptions: {

@@ -13,7 +13,10 @@ module.exports = {
   },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+
+    // Doesn't allow for custom event rule names like: 'button-clicked' or 'enlarge-text' (from vue website)
+    'vue/valid-v-on': 'off',
   },
   overrides: [
     {

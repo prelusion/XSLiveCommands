@@ -14,5 +14,8 @@ declare global {
         regedit: {
             getSteamId(): Promise<string>;
         };
+        fileControls: {
+            select(steamId: string): Promise<{ filepath: string; reason: string }>;
+        };
     }
 }

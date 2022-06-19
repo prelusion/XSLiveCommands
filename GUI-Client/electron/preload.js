@@ -10,3 +10,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld("regedit", {
     getSteamId: () => ipcRenderer.invoke('regedit:getSteamId'),
 });
+
+contextBridge.exposeInMainWorld("fileControls", {
+    select: (steamId) => ipcRenderer.invoke('fileControls:select', steamId),
+});

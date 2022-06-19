@@ -1,19 +1,20 @@
 // vuex-shim.d.ts
 
 import {Store} from 'vuex'
-import {GameModeContent, GameModeMenuItem} from "@/interfaces/game-mode";
-import {Profile} from "@/interfaces/profile";
+import {Socket} from "socket.io-client";
+import {Room} from "@/interfaces/rooms";
 
 declare module '@vue/runtime-core' {
     // Declare your own store states.
     interface State {
-        gameModeInfo: {
-            started: boolean;
-            selectedMode: GameModeMenuItem;
-            content: GameModeContent;
+        socket: Socket | null;
+        room: Room | null;
+
+        window: string;
+        steamId: string;
+        create: {
+            filepath: string;
         };
-        defaultGamemode: GameModeContent;
-        user: Profile;
     }
 
     interface ComponentCustomProperties {
