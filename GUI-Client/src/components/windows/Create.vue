@@ -16,11 +16,12 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
-import Buttons from "@/components/Buttons.vue";
-import {Room} from "@/interfaces/general";
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
+import Buttons from "@/components/Buttons.vue";
+import {SteamIdResponse} from "electron/libs/dialog";
+import {Room} from "@/interfaces/general";
+import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -34,19 +35,19 @@ export default defineComponent({
             selectInProgress: false,
             buttonConfig: [
                 {
-                    window: 'Main',
-                    text: 'Cancel',
+                    window: "Main",
+                    text: "Cancel",
                     callback: () => this.resetWindow(),
                 },
                 {
-                    text: 'Create room',
+                    text: "Create room",
                     callback: () => {
                         this.createRoom();
                     },
                     disabled: () => !this.filepath,
                 },
             ] as Array<ButtonConfig>,
-        }
+        };
     },
     mounted() {
         this.resetWindow();
@@ -57,7 +58,7 @@ export default defineComponent({
          * From: `C:/.../.../file.aoe2scenario`. To: `file.aoe2scenario`
          */
         filename(): string {
-            return this.filepath.split('\\').splice(-1)[0];
+            return this.filepath.split("\\").splice(-1)[0];
         },
 
         /**
@@ -65,35 +66,35 @@ export default defineComponent({
          * From: `C:/.../.../file.aoe2scenario`. To: `file`
          */
         plainFilename(): string {
-            return this.filename.split('.')[0];
-        }
+            return this.filename.split(".")[0];
+        },
     },
     methods: {
         resetWindow() {
-            this.filepath = '';
+            this.filepath = "";
             this.creationInProgress = false;
             this.selectInProgress = false;
         },
         openFilePrompt() {
             this.selectInProgress = true;
 
-            window.fileControls
+            window.dialog
                 .select(GameHandler.instance.steamId)
-                .then((value: { filepath: string; reason: string }) => {
+                .then((value: SteamIdResponse) => {
                     this.selectInProgress = false;
 
                     if (value.filepath) {
                         this.filepath = value.filepath;
-                    } else if (value.reason !== 'cancelled') {
-                        this.text = ["Unknown Error", "An unknown error has occurred."]
+                    } else if (value.reason !== "cancelled") {
+                        this.text = ["Unknown Error", "An unknown error has occurred."];
                     }
-                })
+                });
         },
         createRoom() {
             this.creationInProgress = true;
 
             // Todo: move to SocketHandler.createRoom();
-            SocketHandler.instance.socket?.emit('createRoom', this.plainFilename,
+            SocketHandler.instance.socket?.emit("createRoom", this.plainFilename,
                 async (room: Room) => {
                     SocketHandler.instance.room = room;
 
@@ -101,15 +102,16 @@ export default defineComponent({
                         await GameHandler.instance.resetState(room.scenario);
                         GameHandler.instance.startCoreLoop(room.scenario);
 
-                        console.log("The number of connections in your room are " + room.connections.length)
+                        console.log("The number of connections in your room are " + room.connections.length);
                     }
 
                     this.resetWindow();
-                    this.$store.commit('changeWindow', 'Created');
-                });
-        }
+                    this.$store.commit("changeWindow", "Created");
+                },
+            );
+        },
     },
-    watch: {}
+    watch: {},
 });
 
 </script>

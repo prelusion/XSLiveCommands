@@ -1,27 +1,30 @@
-'use strict'
+"use strict";
 
-import {createApp} from 'vue';
-import App from './App.vue';
+import {select} from "@/../electron/libs/dialog";
+import {deleteXsDataFiles, readCycle, writeEvent} from "@/../electron/libs/fs";
+import {getSteamId} from "@/../electron/libs/regedit";
 import store from "@/store";
-import {CommandEvent} from "@/interfaces/general";
+import {createApp} from "vue";
+import App from "./App.vue";
+
 
 createApp(App)
     .use(store)
-    .mount('#app');
+    .mount("#app");
 
 // Register all exposed variables here (from '/electron/preload.js')
 declare global {
     interface Window {
         regedit: {
-            getSteamId(): Promise<string>;
+            getSteamId: typeof getSteamId;
         };
-        fileControls: {
-            select(steamId: string): Promise<{ filepath: string; reason: string }>;
+        dialog: {
+            select: typeof select;
         };
         fs: {
-            deleteXsDataFiles(steamId: string, scenario: string): Promise<boolean>;
-            readCycle(steamId: string, scenario: string): Promise<number | undefined>;
-            writeEvent(steamId: string, scenario: string, event: CommandEvent): Promise<boolean>;
+            deleteXsDataFiles: typeof deleteXsDataFiles;
+            readCycle: typeof readCycle;
+            writeEvent: typeof writeEvent;
         };
     }
 }
