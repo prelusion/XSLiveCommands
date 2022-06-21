@@ -19,7 +19,6 @@ export default defineComponent({
             connectedToServer: false,
             retrievedSteamId: false,
             error: [] as Array<string>,
-            x: null,
         }
     },
     mounted() {
