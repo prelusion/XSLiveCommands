@@ -23,7 +23,7 @@ export function startIOServer(io: Server) {
             RoomHandler.instance.getRoomByID(roomId).current_cycle = cycle;
         });
 
-        socket.on('disconnecting', (reason) => {
+        socket.on('disconnecting', () => {
             connectionAmount--;
             console.log("Client disconnected");
             console.log("id", Array.from(socket.rooms)[1])
@@ -42,20 +42,45 @@ export function startIOServer(io: Server) {
             socket.join(id);
             console.log("create", socket.rooms);
             RoomHandler.instance.createRoom(id.toString(), socket.id, scenario);
-            callback(RoomHandler.instance.getRoomByID(id.toString()));
+            if (callback) {
+                return callback(RoomHandler.instance.getRoomByID(id.toString()));
+            }
         });
 
         socket.on('joinRoom', (id, callback) => {
             console.log("testtest")
             if(RoomHandler.instance.getRoomByID(id) === undefined) {
                 console.log("There is no room with this id");
-                return callback(null);
+                if (callback) {
+                    return callback(null);
+                }
             }
 
             socket.join(id);
             console.log("join", socket.rooms);
             RoomHandler.instance.joinRoom(id.toString(), socket.id)
-            callback(RoomHandler.instance.getRoomByID(id.toString()));
+
+            if (callback) {
+                return callback(RoomHandler.instance.getRoomByID(id.toString()));
+            }
+        });
+
+        socket.on('leaveRoom', (callback: (() => void) | null) => {
+            // Rooms automatically get deleted if everyone has left, so no special teardown needed
+            const roomId = Array.from(socket.rooms)[1];
+            if (roomId === undefined)
+                return callback();
+
+            const rh = RoomHandler.instance;
+
+            console.log("User left room...");
+
+            socket.leave(roomId);
+            rh.leaveRoom(roomId, socket.id);
+
+            if (callback) {
+                return callback();
+            }
         });
     });
 }

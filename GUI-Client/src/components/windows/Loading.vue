@@ -7,6 +7,7 @@ import {defineComponent} from "vue";
 import {io} from "socket.io-client";
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
+const { setTimeout } = window;
 
 export default defineComponent({
     name: "Loading",
@@ -18,6 +19,7 @@ export default defineComponent({
             connectedToServer: false,
             retrievedSteamId: false,
             error: [] as Array<string>,
+            x: null,
         }
     },
     mounted() {

@@ -31,7 +31,7 @@ export class RoomHandler {
     }
 
     public leaveRoom(roomId: string, clientId: string) {
-        const room = this.getRoomByID(roomId)
+        const room = this.getRoomByID(roomId);
         if (room) {
             room.connections = room.connections.filter((connId) => {
                 return connId !== clientId;

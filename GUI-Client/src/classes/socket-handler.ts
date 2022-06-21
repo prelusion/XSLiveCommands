@@ -1,6 +1,7 @@
 import {Socket} from "socket.io-client";
-import {assert} from "@/util/general";
+import {assert, ensure} from "@/util/general";
 import {Room} from "@/interfaces/general";
+import {GameHandler} from "@/classes/game-handler";
 
 export class SocketHandler {
     private constructor() {
@@ -27,11 +28,41 @@ export class SocketHandler {
 
     public sendCycle(cycle: number) {
         assert(this.socket);
-        assert(this._room);
+        assert(this.room);
 
         if (cycle !== undefined && cycle >= 0) {
-            this.socket.emit("cycleUpdate", this._room.id, cycle);
+            this.socket.emit("cycleUpdate", this.room.id, cycle);
         }
+    }
+
+    public async leaveRoom() {
+        assert(this.socket);
+        if (this.room === null) {
+            return
+        }
+
+        this.socket.emit("leaveRoom", () => {
+            GameHandler.instance.resetState(ensure(this.room).scenario);
+        });
+    }
+
+    public createRoom(filename: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            assert(this.socket);
+
+            this.socket.emit("createRoom", filename, async (room: Room) => {
+                this.room = room;
+
+                if (room.scenario) {
+                    await GameHandler.instance.resetState(room.scenario);
+                    GameHandler.instance.startCoreLoop(room.scenario);
+
+                    resolve();
+                } else {
+                    reject('Invalid room');
+                }
+            });
+        })
     }
 
     get socket(): Socket | null {

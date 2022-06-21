@@ -29,10 +29,10 @@ export default defineComponent({
     },
     computed: {},
     methods: {
-        clickedButton(index: number) {
+        async clickedButton(index: number) {
             const config = this.buttonConfig[index];
             if (config.callback) {
-                config.callback();
+                await config.callback();
             }
             if (config.window) {
                 this.$store.commit('changeWindow', config.window);

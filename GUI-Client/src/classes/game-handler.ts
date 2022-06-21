@@ -3,6 +3,7 @@ import {QueueHandler} from "@/classes/queue-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import {CommandEvent} from "@/interfaces/general";
 import {ensure} from "@/util/general";
+const { setInterval, clearInterval } = window;
 
 export class GameHandler {
     private constructor() {
@@ -11,7 +12,7 @@ export class GameHandler {
 
     private static _instance: GameHandler | null = null;
 
-    private coreInterval: any = -1;
+    private coreInterval = -1;
     private cycle = -1;  // Todo: Is this variable even necessary?
     private lastCommandCycle = -1;
     private _steamId = '';
@@ -24,7 +25,6 @@ export class GameHandler {
     }
 
     public async resetState(scenario: string): Promise<void> {
-        console.log(this.steamId, scenario);
         await window.fs.deleteXsDataFiles(this.steamId, scenario);
         this.lastCommandCycle = -1;
         this.cycle = -1;
@@ -51,7 +51,7 @@ export class GameHandler {
     }
 
     public stopCoreLoop() {
-        if (this.coreInterval !== -1) {
+        if (this.coreInterval !== null) {
             clearInterval(this.coreInterval);
         }
     }

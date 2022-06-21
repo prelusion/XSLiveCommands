@@ -3,15 +3,15 @@
         <table>
             <tr>
                 <td>Room ID:</td>
-                <td>{{ SocketHandler.room?.id }}</td>
+                <td>{{ ensure(SocketHandler.room).id }}</td>
             </tr>
             <tr>
                 <td>Scenario:</td>
-                <td>{{ SocketHandler.room?.scenario }}</td>
+                <td>{{ ensure(SocketHandler.room).scenario }}</td>
             </tr>
             <tr>
                 <td>Connected:</td>
-                <td>{{ SocketHandler.room?.connections.length }}</td>
+                <td>{{ ensure(SocketHandler.room).connections.length }}</td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -23,7 +23,7 @@ import {defineComponent} from "vue";
 import Buttons from "@/components/Buttons.vue";
 import {SocketHandler} from "@/classes/socket-handler";
 import {GameHandler} from "@/classes/game-handler";
-import {assert} from "@/util/general";
+import {assert, ensure} from "@/util/general";
 
 export default defineComponent({
     name: "Created",
@@ -35,11 +35,11 @@ export default defineComponent({
                 {
                     window: 'Main',
                     text: 'Disconnect',
-                    callback: () => {
+                    callback: async () => {
                         assert(SocketHandler.instance.room);
 
-                        GameHandler.instance.resetState(SocketHandler.instance.room.scenario);
-                        // Todo: Server side needs a leaveRooms functionality
+                        await SocketHandler.instance.leaveRoom();
+                        await GameHandler.instance.resetState(SocketHandler.instance.room.scenario);
                     },
                 },
             ] as Array<ButtonConfig>,
@@ -53,7 +53,9 @@ export default defineComponent({
             return SocketHandler.instance;
         }
     },
-    methods: {},
+    methods: {
+        ensure,
+    },
     watch: {}
 })
 

@@ -20,7 +20,6 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {SteamIdResponse} from "electron/libs/dialog";
-import {Room} from "@/interfaces/general";
 import {defineComponent} from "vue";
 
 export default defineComponent({
@@ -93,22 +92,11 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            // Todo: move to SocketHandler.createRoom();
-            SocketHandler.instance.socket?.emit("createRoom", this.plainFilename,
-                async (room: Room) => {
-                    SocketHandler.instance.room = room;
-
-                    if (room.scenario) {
-                        await GameHandler.instance.resetState(room.scenario);
-                        GameHandler.instance.startCoreLoop(room.scenario);
-
-                        console.log("The number of connections in your room are " + room.connections.length);
-                    }
-
+            SocketHandler.instance.createRoom(this.plainFilename)
+                .then(() => {
                     this.resetWindow();
                     this.$store.commit("changeWindow", "Created");
-                },
-            );
+                })
         },
     },
     watch: {},
