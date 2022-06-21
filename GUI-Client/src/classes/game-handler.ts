@@ -11,7 +11,7 @@ export class GameHandler {
 
     private static _instance: GameHandler | null = null;
 
-    private coreInterval = -1;
+    private coreInterval: any = -1;
     private cycle = -1;  // Todo: Is this variable even necessary?
     private lastCommandCycle = -1;
     private _steamId = '';

@@ -2,6 +2,7 @@ const argv = process.argv;
 const isBuildCall = argv[2] === "electron:build"
 
 module.exports = {
+    outputDir: "./dist/src",
     // Needs to be '' so that the built html file doesn't output asset filenames with a forward slash.
     publicPath: '',
     configureWebpack: {

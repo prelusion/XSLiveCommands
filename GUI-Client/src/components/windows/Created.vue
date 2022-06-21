@@ -3,15 +3,15 @@
         <table>
             <tr>
                 <td>Room ID:</td>
-                <td>{{ SocketHandler.room.id }}</td>
+                <td>{{ SocketHandler.room?.id }}</td>
             </tr>
             <tr>
                 <td>Scenario:</td>
-                <td>{{ SocketHandler.room.scenario }}</td>
+                <td>{{ SocketHandler.room?.scenario }}</td>
             </tr>
             <tr>
                 <td>Connected:</td>
-                <td>{{ SocketHandler.room.connections.length }}</td>
+                <td>{{ SocketHandler.room?.connections.length }}</td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
