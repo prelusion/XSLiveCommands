@@ -35,15 +35,42 @@ export class SocketHandler {
         }
     }
 
-    public async leaveRoom() {
-        assert(this.socket);
-        if (this.room === null) {
-            return
-        }
+    public joinRoom(roomId: string): Promise<void> {
+        return new Promise((resolve, reject): void => {
+            assert(this.socket);
 
-        this.socket.emit("leaveRoom", () => {
-            GameHandler.instance.resetState(ensure(this.room).scenario);
+            this.socket.emit("joinRoom", roomId, async (room: Room | null) => {
+                if (room === null) {
+                    return setTimeout(() => {
+                        reject(`Unable to join room: '${roomId}'`)
+                    }, 200)
+                }
+
+                if (room.scenario) {
+                    this.room = room;
+                    await GameHandler.instance.resetState(room.scenario);
+                    GameHandler.instance.startCoreLoop(room.scenario);
+
+                    resolve();
+                } else {
+                    reject(`An unknown error occurred. Please try again.`);
+                }
+            });
         });
+    }
+
+    public leaveRoom(): Promise<void> {
+        return new Promise((resolve): void => {
+            assert(this.socket);
+            if (this.room === null) {
+                return resolve();
+            }
+
+            const scenario = ensure(this.room).scenario;
+            this.socket.emit("leaveRoom", async () => {
+                GameHandler.instance.resetState(scenario).then(resolve);
+            });
+        })
     }
 
     public createRoom(filename: string): Promise<void> {
@@ -62,7 +89,7 @@ export class SocketHandler {
                     reject('Invalid room');
                 }
             });
-        })
+        });
     }
 
     get socket(): Socket | null {

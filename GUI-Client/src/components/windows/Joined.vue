@@ -1,14 +1,15 @@
 <template>
-    <div v-if="joiningInProgress" id="loading">
-        Joining room...
-    </div>
-    <div v-else>
-        <label>
-            Enter the room ID you want to join: <br/>
-            <input v-model="roomId">
-        </label><br/>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
-
+    <div>
+        <table>
+            <tr>
+                <td>Room ID:</td>
+                <td>{{ ensure(SocketHandler.room).id }}</td>
+            </tr>
+            <tr>
+                <td>Scenario:</td>
+                <td>{{ ensure(SocketHandler.room).scenario }}</td>
+            </tr>
+        </table>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
 </template>
@@ -17,6 +18,8 @@
 import {defineComponent} from "vue";
 import Buttons from "@/components/Buttons.vue";
 import {SocketHandler} from "@/classes/socket-handler";
+import {assert, ensure} from "@/util/general";
+import {GameHandler} from "@/classes/game-handler";
 
 export default defineComponent({
     name: "join",
@@ -29,14 +32,13 @@ export default defineComponent({
             errorMsg: "",
             buttonConfig: [
                 {
-                    window: "Main",
-                    text: "Cancel",
-                    callback: () => this.resetWindow(),
-                },
-                {
-                    text: "Join room",
-                    callback: () => {
-                        this.joinRoom();
+                    window: 'Main',
+                    text: 'Leave room',
+                    callback: async () => {
+                        assert(SocketHandler.instance.room);
+
+                        await SocketHandler.instance.leaveRoom();
+                        await GameHandler.instance.resetState(SocketHandler.instance.room.scenario);
                     },
                 },
             ] as Array<ButtonConfig>,
@@ -45,8 +47,13 @@ export default defineComponent({
     mounted() {
         // Execute on creation
     },
-    computed: {},
+    computed: {
+        SocketHandler() {
+            return SocketHandler.instance;
+        }
+    },
     methods: {
+        ensure,
         resetWindow() {
             this.roomId = "";
             this.joiningInProgress = false;
@@ -56,12 +63,10 @@ export default defineComponent({
             this.joiningInProgress = true;
             SocketHandler.instance.joinRoom(this.roomId)
                 .then(() => {
-                    console.log('then')
                     this.resetWindow();
                     this.$store.commit("changeWindow", "Joined");
                 })
                 .catch((reason) => {
-                    console.log('catch')
                     this.joiningInProgress = false;
                     this.errorMsg = reason;
                 })
@@ -77,10 +82,12 @@ export default defineComponent({
     width: 100%;
     text-align: center;
 }
+
 #error-msg {
     margin-top: 3px;
     color: red;
 }
+
 input {
     padding: 4px;
 }

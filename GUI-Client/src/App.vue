@@ -12,6 +12,7 @@ import {defineComponent} from "vue";
 import Main from "@/components/windows/Main.vue";
 import Create from "@/components/windows/Create.vue";
 import Join from "@/components/windows/Join.vue";
+import Joined from "@/components/windows/Joined.vue";
 import Loading from "@/components/windows/Loading.vue";
 import Created from "@/components/windows/Created.vue";
 
@@ -23,6 +24,7 @@ export default defineComponent({
         Create,
         Created,
         Join,
+        Joined,
     },
     // data() {
     // },
@@ -43,6 +45,7 @@ $height: 240px;
 body {
     min-height: $height;
     margin: 0;
+    font-family: Calibri,serif;
 }
 
 #main {

@@ -48,7 +48,7 @@ export function startIOServer(io: Server) {
         });
 
         socket.on('joinRoom', (id, callback) => {
-            console.log("testtest")
+            console.log(`Join request with id: '${id}'`)
             if(RoomHandler.instance.getRoomByID(id) === undefined) {
                 console.log("There is no room with this id");
                 if (callback) {
