@@ -4,6 +4,9 @@
             <tr>
                 <td>Room ID:</td>
                 <td>{{ ensure(SocketHandler.room).id }}</td>
+                <td>
+                    <button @click="copyRoomId()">Copy</button>
+                </td>
             </tr>
             <tr>
                 <td>Scenario:</td>
@@ -60,6 +63,9 @@ export default defineComponent({
     },
     methods: {
         ensure,
+        copyRoomId() {
+            window.clipboard.write(ensure(SocketHandler.instance.room).id)
+        }
     },
     watch: {}
 })

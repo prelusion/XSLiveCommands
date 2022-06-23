@@ -36,13 +36,13 @@ export function startIOServer(io: Server) {
 
         socket.on('createRoom', (scenario, callback) => {
             const roomId = Date.now().toString();
-            console.log(typeof roomId)
 
             if(!io.sockets.adapter.rooms.get(roomId)) {
                 console.log("A room under the name " + scenario + " is created!");
             }
 
             socket.join(roomId);
+
             console.log("create", socket.rooms);
             const room = RoomHandler.instance.createRoom(roomId, socket.id, scenario);
             if (callback) {

@@ -1,4 +1,5 @@
 import {Room} from "../interfaces";
+import {createRoom} from "../scripts/rooms";
 
 export class RoomHandler {
     private static _instance = null;
@@ -17,10 +18,9 @@ export class RoomHandler {
     private _rooms: Room[] = [];
 
     public createRoom(id: string, host: string, scenario: string): Room {
-        const connections: string[] = [];
-        connections.push(host);
+        const connections: string[] = [host];
 
-        const room: Room = {id, host, scenario, connections, current_cycle: 0, last_execution_cycle: -1}
+        const room: Room = createRoom(id, host, scenario, connections);
         this.rooms.push(room);
 
         return room;
@@ -40,7 +40,15 @@ export class RoomHandler {
             room.connections = room.connections.filter((connId) => {
                 return connId !== clientId;
             });
+
+            if (room.connections.length === 0) {
+                this.removeRoom(roomId);
+            }
         }
+    }
+
+    public removeRoom(roomId: string) {
+        return this.rooms = this.rooms.filter(room => room.id !== roomId);
     }
 
     public getNumberOfConnections(id: string): number {
@@ -53,5 +61,9 @@ export class RoomHandler {
 
     get rooms(): Room[] {
         return this._rooms;
+    }
+
+    set rooms(value: Room[]) {
+        this._rooms = value;
     }
 }

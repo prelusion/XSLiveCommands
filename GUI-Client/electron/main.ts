@@ -86,11 +86,14 @@ app.on("window-all-closed", () => {
 // Below you can include the rest of your app's specific main process code.
 // You can also put them in separate files and require them here.
 
-// Regedit - Handling network requests
+// Regedit - Handling registry requests
 require("./libs/regedit");
 
-// Regedit - Handling network requests
+// Regedit - Handling electron dialog
 require("./libs/dialog");
 
-// Regedit - Handling network requests
+// Regedit - Handling file system calls
 require("./libs/fs");
+
+// Clipboard - Handling clipboard actions
+require("./libs/clipboard");

@@ -20,3 +20,7 @@ contextBridge.exposeInMainWorld('fs', {
     readCycle: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
     writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:readCycle', steamId, scenario, event),
 })
+
+contextBridge.exposeInMainWorld('clipboard', {
+    write: (text: string) => ipcRenderer.invoke('clipboard:write', text),
+});

@@ -8,3 +8,11 @@ export function toRoomMessage(room: Room): RoomMessage {
         numberOfConnections: room.connections.length,
     }
 }
+
+export function createRoom(id: string, host: string, scenario: string, connections: Array<string>): Room {
+    return {
+        id, host, scenario, connections,
+        last_execution_cycle: -1,
+        current_cycle: -1,
+    }
+}

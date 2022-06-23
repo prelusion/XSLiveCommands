@@ -6,6 +6,7 @@ import {getSteamId} from "@/../electron/libs/regedit";
 import store from "@/store";
 import {createApp} from "vue";
 import App from "./App.vue";
+import {write} from "../electron/libs/clipboard";
 
 
 createApp(App)
@@ -25,6 +26,9 @@ declare global {
             deleteXsDataFiles: typeof deleteXsDataFiles;
             readCycle: typeof readCycle;
             writeEvent: typeof writeEvent;
+        };
+        clipboard: {
+            write: typeof write;
         };
     }
 }
