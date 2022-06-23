@@ -30,11 +30,22 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
+function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer
+    return [...new Uint8Array(buffer)]
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
-    const dataFilePath = profileFolderPath(steamId) + "command.xsdat";
+    const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
+
+    console.log("WRITE EVENT")
+    console.log(steamId, scenario)
 
     if (!event.params)
         event.params = [];
+
+    console.log(event)
 
     // File layout (all int32):
     // 1:       Execution Cycle Number
@@ -60,7 +71,9 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
         offset += intSize;
     }
 
-    fs.writeFile(dataFilePath, buffer, (err) => {
+    console.log(buf2hex(buffer));
+
+    fs.writeFile(commandFilePath, buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work");
     });
 }

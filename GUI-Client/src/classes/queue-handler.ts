@@ -31,4 +31,8 @@ export class QueueHandler {
     public clear(): void {
         this.queue.length = 0;
     }
+
+    public length(): number {
+        return this.queue.length;
+    }
 }

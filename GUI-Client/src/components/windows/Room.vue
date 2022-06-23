@@ -27,6 +27,8 @@ import Buttons from "@/components/Buttons.vue";
 import {SocketHandler} from "@/classes/socket-handler";
 import {GameHandler} from "@/classes/game-handler";
 import {assert, ensure} from "@/util/general";
+import {CommandEvent} from "@/interfaces/general";
+import {QueueHandler} from "@/classes/queue-handler";
 
 export default defineComponent({
     name: "Room",
@@ -51,9 +53,15 @@ export default defineComponent({
     },
     mounted() {
         this.numberOfConnectedClients = ensure(SocketHandler.instance.room).numberOfConnections;
+        const socket = ensure(SocketHandler.instance.socket);
 
-        ensure(SocketHandler.instance.socket).on('room-connection-update', (n: number) => {
+        socket.on('room-connection-update', (n: number) => {
             this.numberOfConnectedClients = n;
+        })
+
+        socket.on('event', (commandEvent: CommandEvent) => {
+            console.log("Event registered!")
+            QueueHandler.instance.enqueue(commandEvent);
         })
     },
     computed: {

@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld('dialog', {
 contextBridge.exposeInMainWorld('fs', {
     deleteXsDataFiles: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, scenario),
     readCycle: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
-    writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:readCycle', steamId, scenario, event),
+    writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, scenario, event),
 })
 
 contextBridge.exposeInMainWorld('clipboard', {

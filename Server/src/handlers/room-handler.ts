@@ -80,7 +80,11 @@ export class RoomHandler {
     }
 
     public setRoomCurrentCycle(roomId: string, cycle: number) {
-        this.getRoomByID(roomId).current_cycle = cycle;
+        const room = this.getRoomByID(roomId);
+        if (typeof cycle !== "number" || room === undefined || cycle <= room.current_cycle)
+            return;
+
+        room.current_cycle = cycle;
     }
 
     get rooms(): Room[] {

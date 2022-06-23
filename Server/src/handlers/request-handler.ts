@@ -6,10 +6,20 @@ import {
 import {RoomHandler} from "./room-handler";
 
 export function startExpressServer(httpServer, app, io) {
+
+    /**
+     * Listens for /event requests.
+     * The expected format
+     */
     app.post('/event', async (req, res) => {
         const event: ClientEvent = req.body;
         const roomID: string = req.query.id;
         const room = RoomHandler.instance.getRoomByID(roomID);
+
+        if (room === undefined)
+            return res.sendStatus(404);
+
+        console.log(`Event registered for room: ${room.id}`);
 
         eventHandler.event = event;
 
@@ -25,7 +35,6 @@ export function startExpressServer(httpServer, app, io) {
         io.to(roomID).emit("event", event);
         res.sendStatus(200)
     });
-
 
     //Starts the express server
     httpServer.listen(app.get("port"), () => {

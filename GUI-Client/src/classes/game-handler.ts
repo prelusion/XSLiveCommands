@@ -29,6 +29,7 @@ export class GameHandler {
         this.lastCommandCycle = -1;
         this.cycle = -1;
         QueueHandler.instance.clear();
+        this.stopCoreLoop();
     }
 
     public startCoreLoop(scenario: string) {
@@ -37,6 +38,10 @@ export class GameHandler {
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
+                console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`)
+                console.log(`cycle: ${cycle}`)
+                console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`)
+
                 // If the last registered command execution cycle has passed and there are more commands
                 // Send the next command to XS
                 if (this.lastCommandCycle < cycle && !QueueHandler.instance.isEmpty()) {
@@ -44,6 +49,7 @@ export class GameHandler {
 
                     this.lastCommandCycle = event.executeCycleNumber;
                     await window.fs.writeEvent(this.steamId, scenario, event);
+                    console.log(`writing finished...`)
                 }
             }
         }, 1000);
