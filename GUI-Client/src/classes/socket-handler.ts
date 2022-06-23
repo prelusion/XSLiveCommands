@@ -28,10 +28,9 @@ export class SocketHandler {
 
     public sendCycle(cycle: number) {
         assert(this.socket);
-        assert(this.room);
 
         if (cycle !== undefined && cycle >= 0) {
-            this.socket.emit("cycleUpdate", this.room.id, cycle);
+            this.socket.emit("cycleUpdate", cycle);
         }
     }
 

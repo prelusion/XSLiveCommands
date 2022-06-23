@@ -33,7 +33,6 @@ export class GameHandler {
 
     public startCoreLoop(scenario: string) {
         this.coreInterval = setInterval(async () => {
-
             const cycle = await window.fs.readCycle(this.steamId, scenario);
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
@@ -47,7 +46,7 @@ export class GameHandler {
                     await window.fs.writeEvent(this.steamId, scenario, event);
                 }
             }
-        })
+        }, 1000);
     }
 
     public stopCoreLoop() {

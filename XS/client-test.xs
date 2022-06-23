@@ -63,11 +63,11 @@ void sendResources(int wood = 0, int food = 0, int gold = 0, int stone = 0, int 
     }
 }
 
-int arg(int paramN) {
+int arg(int paramN = 0) {
     return (xsArrayGetInt(registeredParamsArray, paramN));
 }
 
-void executeCommand(int commandId = -999999999) {
+mutable void executeCommand(int commandId = -999999999) {
     xsChatData("Executing command on cycle: " + currentCycle);
     switch (commandId) {
         case 0: {
@@ -169,6 +169,12 @@ rule writeCurrentCycleToFile
     }
 }
 
+mutable void onStart() {
+    // For users to overwrite if they want to execute something on main()
+}
+
 void main() {
     registeredParamsArray = xsArrayCreateInt(10, -1, "registeredParamsArray");
+
+    onStart();
 }
