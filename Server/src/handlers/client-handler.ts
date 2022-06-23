@@ -1,71 +1,58 @@
 import {RoomHandler} from "./room-handler";
-import {Server} from "socket.io";
-import {Room, RoomMessage} from "../interfaces";
+import {Server, Socket} from "socket.io";
+import {RoomMessage} from "../interfaces";
 import {toRoomMessage} from "../scripts/rooms";
 
-export function startIOServer(io: Server) {
-    //Todo rooms https://socket.io/docs/v3/rooms/
-    let connectionAmount = 0;
+function roomIdFromSocket(socket: Socket): string {
+    return Array.from(socket.rooms)[1];
+}
 
-    io.on('connection', (socket) => {
+export function startIOServer(io: Server) {
+    let connectionAmount = 0;
+    RoomHandler.instance.registerIo(io);
+
+    io.on('connection', (socket: Socket) => {
         connectionAmount++;
         console.log("Client connected!");
         console.log(`Amount of connected clients are: ${connectionAmount}`);
 
-        socket.on('cycleUpdate', (roomId: string, cycle: number) => {
-            if (roomId === "") {
-                console.log("No room ID given")
-                return;
-            }
+        socket.on('cycleUpdate', (cycle: number) => {
+            const roomId = roomIdFromSocket(socket);
+
             console.log(roomId + " cycle: " + cycle)
 
             if (cycle === null || cycle === undefined) {
                 cycle = 0;
             }
-            RoomHandler.instance.getRoomByID(roomId).current_cycle = cycle;
+            RoomHandler.instance.setRoomCurrentCycle(roomId, cycle);
         });
 
         socket.on('disconnecting', () => {
             connectionAmount--;
-            console.log("Client disconnected");
-            console.log("id", Array.from(socket.rooms)[1])
+
+            console.log("Client disconnecting!");
             console.log(`Amount of connected clients are: ${connectionAmount}`);
 
-            RoomHandler.instance.leaveRoom(Array.from(socket.rooms)[1], socket.id);
+            RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
         socket.on('createRoom', (scenario, callback) => {
             const roomId = Date.now().toString();
 
-            if(!io.sockets.adapter.rooms.get(roomId)) {
-                console.log("A room under the name " + scenario + " is created!");
-            }
+            const room = RoomHandler.instance.createRoom(roomId, socket, scenario);
 
-            socket.join(roomId);
-
-            console.log("create", socket.rooms);
-            const room = RoomHandler.instance.createRoom(roomId, socket.id, scenario);
             if (callback) {
                 return callback(toRoomMessage(room));
             }
         });
 
         socket.on('joinRoom', (roomId: string, callback: (room: RoomMessage | null) => void) => {
-            console.log(typeof roomId)
-            console.log(`Join request with id: '${roomId}'`)
             const room = RoomHandler.instance.getRoomByID(roomId);
             if(room === undefined) {
-                console.log("There is no room with this roomId");
-                if (callback)
-                    callback(null);
-                return;
+                return callback ? callback(null) : null;
             }
 
-            console.log(room)
-            socket.join(roomId);
-            console.log("join", socket.rooms);
-            RoomHandler.instance.joinRoom(roomId, socket.id);
-            io.to(roomId).emit("room-connection-update", room.connections.length);
+            RoomHandler.instance.joinRoom(roomId, socket);
 
             if (callback) {
                 return callback(toRoomMessage(room));
@@ -73,21 +60,11 @@ export function startIOServer(io: Server) {
         });
 
         socket.on('leaveRoom', (callback: (() => void) | null) => {
-            // Rooms automatically get deleted if everyone has left, so no special teardown needed
-            const roomId = Array.from(socket.rooms)[1];
+            const roomId = roomIdFromSocket(socket);
             if (roomId === undefined)
                 return callback();
 
-            const rh = RoomHandler.instance;
-            const room = rh.getRoomByID(roomId);
-
-            console.log("User left room...");
-
-            socket.leave(roomId);
-            rh.leaveRoom(roomId, socket.id);
-
-            io.to(roomId).emit("room-connection-update", room.connections.length);
-            console.log("room-connection-update", roomId, room.connections.length);
+            RoomHandler.instance.leaveRoom(roomId, socket);
 
             if (callback) {
                 return callback();
