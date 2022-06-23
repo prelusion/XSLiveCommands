@@ -1,4 +1,4 @@
-import {Socket} from "socket.io-client";
+import {io, Socket} from "socket.io-client";
 import {assert, ensure} from "@/util/general";
 import {Room} from "@/interfaces/general";
 import {GameHandler} from "@/classes/game-handler";
@@ -90,6 +90,10 @@ export class SocketHandler {
                 }
             });
         });
+    }
+
+    public registerEventListeners(): void {
+        assert(this.socket)
     }
 
     get socket(): Socket | null {

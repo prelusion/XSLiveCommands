@@ -1,8 +1,6 @@
 <template>
     <div id="main">
-        <KeepAlive>
-            <component :is="$store.state.window"></component>
-        </KeepAlive>
+        <component :is="$store.state.window"></component>
     </div>
 </template>
 
@@ -12,9 +10,8 @@ import {defineComponent} from "vue";
 import Main from "@/components/windows/Main.vue";
 import Create from "@/components/windows/Create.vue";
 import Join from "@/components/windows/Join.vue";
-import Joined from "@/components/windows/Joined.vue";
 import Loading from "@/components/windows/Loading.vue";
-import Created from "@/components/windows/Created.vue";
+import Room from "@/components/windows/Room.vue";
 
 export default defineComponent({
     name: "App",
@@ -22,9 +19,8 @@ export default defineComponent({
         Loading,
         Main,
         Create,
-        Created,
+        Room,
         Join,
-        Joined,
     },
     // data() {
     // },

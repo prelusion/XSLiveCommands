@@ -36,7 +36,6 @@ export default defineComponent({
                 {
                     window: "Main",
                     text: "Cancel",
-                    callback: () => this.resetWindow(),
                 },
                 {
                     text: "Create room",
@@ -49,7 +48,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        this.resetWindow();
+        // Runs when shown
     },
     computed: {
         /**
@@ -69,11 +68,6 @@ export default defineComponent({
         },
     },
     methods: {
-        resetWindow() {
-            this.filepath = "";
-            this.creationInProgress = false;
-            this.selectInProgress = false;
-        },
         openFilePrompt() {
             this.selectInProgress = true;
 
@@ -94,8 +88,7 @@ export default defineComponent({
 
             SocketHandler.instance.createRoom(this.plainFilename)
                 .then(() => {
-                    this.resetWindow();
-                    this.$store.commit("changeWindow", "Created");
+                    this.$store.commit("changeWindow", "Room");
                 })
         },
     },

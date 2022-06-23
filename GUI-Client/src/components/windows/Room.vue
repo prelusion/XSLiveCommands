@@ -10,8 +10,8 @@
                 <td>{{ ensure(SocketHandler.room).scenario }}</td>
             </tr>
             <tr>
-                <td>Connected:</td>
-                <td>{{ ensure(SocketHandler.room).connections.length }}</td>
+                <td>Number of connected players:</td>
+                <td> {{ numberOfConnectedClients }} </td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -26,11 +26,12 @@ import {GameHandler} from "@/classes/game-handler";
 import {assert, ensure} from "@/util/general";
 
 export default defineComponent({
-    name: "Created",
+    name: "Room",
     components: {Buttons},
     props: {},
     data() {
         return {
+            numberOfConnectedClients: 0,
             buttonConfig: [
                 {
                     window: 'Main',
@@ -46,7 +47,11 @@ export default defineComponent({
         }
     },
     mounted() {
-        // Execute on creation
+        this.numberOfConnectedClients = ensure(SocketHandler.instance.room).numberOfConnections;
+
+        ensure(SocketHandler.instance.socket).on('room-connection-update', (n: number) => {
+            this.numberOfConnectedClients = n;
+        })
     },
     computed: {
         SocketHandler() {
@@ -62,5 +67,15 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+table {
+    tr {
+        td:first-child {
+            text-align: right;
+        }
 
+        td:nth-child(2) {
+            padding-left: 10px;
+        }
+    }
+}
 </style>

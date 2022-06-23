@@ -10,11 +10,18 @@ export interface ClientEvent {
     executeCycleNumber: number
 }
 
-export interface Room {
+interface CoreRoom {
     id: string;
     host: string;
     scenario: string;
+}
+
+export interface Room extends CoreRoom{
     connections: string[];
     last_execution_cycle: number;
     current_cycle: number;
+}
+
+export interface RoomMessage extends CoreRoom{
+    numberOfConnections: number;
 }

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="">
-            SteamID: '{{ steamId }}'
+            SteamID: {{ steamId }}
         </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>

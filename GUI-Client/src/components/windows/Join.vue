@@ -24,14 +24,13 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            roomId: "asd",
+            roomId: "",
             joiningInProgress: false,
             errorMsg: "",
             buttonConfig: [
                 {
                     window: "Main",
                     text: "Cancel",
-                    callback: () => this.resetWindow(),
                 },
                 {
                     text: "Join room",
@@ -43,25 +42,19 @@ export default defineComponent({
         }
     },
     mounted() {
+        console.log("Mounted")
+
         // Execute on creation
     },
     computed: {},
     methods: {
-        resetWindow() {
-            this.roomId = "";
-            this.joiningInProgress = false;
-            this.errorMsg = "";
-        },
         joinRoom() {
             this.joiningInProgress = true;
             SocketHandler.instance.joinRoom(this.roomId)
                 .then(() => {
-                    console.log('then')
-                    this.resetWindow();
-                    this.$store.commit("changeWindow", "Joined");
+                    this.$store.commit("changeWindow", "Room");
                 })
                 .catch((reason) => {
-                    console.log('catch')
                     this.joiningInProgress = false;
                     this.errorMsg = reason;
                 })

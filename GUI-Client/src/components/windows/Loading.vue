@@ -30,6 +30,7 @@ export default defineComponent({
         const socket = io("ws://localhost:80");
         socket.on('connect', () => {
             SocketHandler.instance.socket = socket;
+            // SocketHandler.instance.registerEventListeners();
             this.connectedToServer = true;
         })
     },

@@ -3,7 +3,7 @@ export interface Room {
     id: string;
     host: string;
     scenario: string;
-    connections: string[];
+    numberOfConnections: number;
 }
 
 export interface CommandEvent {

@@ -1,5 +1,7 @@
 import {RoomHandler} from "./room-handler";
 import {Server} from "socket.io";
+import {Room, RoomMessage} from "../interfaces";
+import {toRoomMessage} from "../scripts/rooms";
 
 export function startIOServer(io: Server) {
     //Todo rooms https://socket.io/docs/v3/rooms/
@@ -33,35 +35,40 @@ export function startIOServer(io: Server) {
         });
 
         socket.on('createRoom', (scenario, callback) => {
-            const id = Date.now().toString();
+            const roomId = Date.now().toString();
+            console.log(typeof roomId)
 
-            if(!io.sockets.adapter.rooms.get(id)) {
+            if(!io.sockets.adapter.rooms.get(roomId)) {
                 console.log("A room under the name " + scenario + " is created!");
             }
 
-            socket.join(id);
+            socket.join(roomId);
             console.log("create", socket.rooms);
-            RoomHandler.instance.createRoom(id.toString(), socket.id, scenario);
+            const room = RoomHandler.instance.createRoom(roomId, socket.id, scenario);
             if (callback) {
-                return callback(RoomHandler.instance.getRoomByID(id.toString()));
+                return callback(toRoomMessage(room));
             }
         });
 
-        socket.on('joinRoom', (id, callback) => {
-            console.log(`Join request with id: '${id}'`)
-            if(RoomHandler.instance.getRoomByID(id) === undefined) {
-                console.log("There is no room with this id");
-                if (callback) {
-                    return callback(null);
-                }
+        socket.on('joinRoom', (roomId: string, callback: (room: RoomMessage | null) => void) => {
+            console.log(typeof roomId)
+            console.log(`Join request with id: '${roomId}'`)
+            const room = RoomHandler.instance.getRoomByID(roomId);
+            if(room === undefined) {
+                console.log("There is no room with this roomId");
+                if (callback)
+                    callback(null);
+                return;
             }
 
-            socket.join(id);
+            console.log(room)
+            socket.join(roomId);
             console.log("join", socket.rooms);
-            RoomHandler.instance.joinRoom(id.toString(), socket.id)
+            RoomHandler.instance.joinRoom(roomId, socket.id);
+            io.to(roomId).emit("room-connection-update", room.connections.length);
 
             if (callback) {
-                return callback(RoomHandler.instance.getRoomByID(id.toString()));
+                return callback(toRoomMessage(room));
             }
         });
 
@@ -72,11 +79,15 @@ export function startIOServer(io: Server) {
                 return callback();
 
             const rh = RoomHandler.instance;
+            const room = rh.getRoomByID(roomId);
 
             console.log("User left room...");
 
             socket.leave(roomId);
             rh.leaveRoom(roomId, socket.id);
+
+            io.to(roomId).emit("room-connection-update", room.connections.length);
+            console.log("room-connection-update", roomId, room.connections.length);
 
             if (callback) {
                 return callback();

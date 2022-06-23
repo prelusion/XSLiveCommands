@@ -22,7 +22,6 @@ export function startExpressServer(httpServer, app, io) {
         console.log(event)
         console.log("EVENT EMITTED \n\n")
 
-
         io.to(roomID).emit("event", event);
         res.sendStatus(200)
     });
