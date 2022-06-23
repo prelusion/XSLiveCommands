@@ -10,7 +10,7 @@ export const eventHandler = new EventHandler();
 export const EXECUTE_CYCLE_OFFSET = 5;
 
 function main() {
-    const port = 80;
+    const port = process.env.PORT || 80;
     const app = express();
     app.set("port", port).use(express.json())
 
