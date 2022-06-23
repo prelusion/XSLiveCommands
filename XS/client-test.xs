@@ -63,11 +63,11 @@ void sendResources(int wood = 0, int food = 0, int gold = 0, int stone = 0, int 
     }
 }
 
-void executeCommand(
-        int commandId = -999999999, 
-        int param0 = -999999999, int param1 = -999999999, int param2 = -999999999, int param3 = -999999999, int param4 = -999999999, 
-        int param5 = -999999999, int param6 = -999999999, int param7 = -999999999, int param8 = -999999999, int param9 = -999999999
-) {
+int arg(int paramN = 0) {
+    return (xsArrayGetInt(registeredParamsArray, paramN));
+}
+
+mutable void executeCommand(int commandId = -999999999) {
     xsChatData("Executing command on cycle: " + currentCycle);
     switch (commandId) {
         case 0: {
@@ -76,32 +76,16 @@ void executeCommand(
         }
         case 1: {
             // Params: 0: wood, 1: food, 2: gold, 3: stone, 4: player
-            sendResources(param0, param1, param2, param3, param4);
+            sendResources(arg(0), arg(1), arg(2), arg(3), arg(4));
         }
         default: {
             if (commandId == UNUSED) {
                 xsChatData("Execute command called without commandId");
             } else {
-                xsChatData("Unknown command [" + commandId + "] (" + param0 + ", " + param1 + ", " + param2 + ", " + param3 + ", " + param4 + ", " + param5 + ", " + param6 + ", " + param7 + ", " + param8 + ", " + param9 + ")");
+                xsChatData("Unknown command [" + commandId + "] (" + arg(0) + ", " + arg(1) + ", " + arg(2) + ", " + arg(3) + ", " + arg(4) + ", " + arg(5) + ", " + arg(6) + ", " + arg(7) + ", " + arg(8) + ", " + arg(9) + ")");
             }
         }
     }
-}
-
-void executeCommandWrapper() {
-    executeCommand(
-        registeredCommandId, 
-        xsArrayGetInt(registeredParamsArray, 0), 
-        xsArrayGetInt(registeredParamsArray, 1), 
-        xsArrayGetInt(registeredParamsArray, 2), 
-        xsArrayGetInt(registeredParamsArray, 3), 
-        xsArrayGetInt(registeredParamsArray, 4), 
-        xsArrayGetInt(registeredParamsArray, 5), 
-        xsArrayGetInt(registeredParamsArray, 6), 
-        xsArrayGetInt(registeredParamsArray, 7), 
-        xsArrayGetInt(registeredParamsArray, 8), 
-        xsArrayGetInt(registeredParamsArray, 9)
-    );
 }
 
 void emptyRegisteredParamsArray() {
@@ -121,7 +105,8 @@ rule cycleUpdate
     xsEnableRule("writeCurrentCycleToFile");
 
     if (currentCycle == registeredExecutionCycle) {
-        executeCommandWrapper();
+        // executeCommandWrapper();
+        executeCommand(registeredCommandId);
         xsEnableRule("readCommands");
     }
 
@@ -184,6 +169,12 @@ rule writeCurrentCycleToFile
     }
 }
 
+mutable void onStart() {
+    // For users to overwrite if they want to execute something on main()
+}
+
 void main() {
     registeredParamsArray = xsArrayCreateInt(10, -1, "registeredParamsArray");
+
+    onStart();
 }

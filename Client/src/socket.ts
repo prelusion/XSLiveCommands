@@ -13,7 +13,7 @@ export function startSocketClient() {
     });
 
     socket.on("connect", () => {
-     ///
+        //
     });
 
     socket.on("disconnect", () => {
