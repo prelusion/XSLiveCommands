@@ -1,12 +1,14 @@
-export interface CommandStruct {
-    name: string;
+export interface Command {
     id: number;
     params: string[];
 }
 
 export interface CommandData {
-    id: number;
+    roomId: string,
+    commandId: number;
     params: {
         [name: string]: number
     };
 }
+
+export type Commands = Record<string, Command>;

@@ -1,7 +1,7 @@
-import {CommandStruct} from "../../src/interfaces/command";
-import {CommandEvent} from "../../src/interfaces/general";
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
+import {Commands} from "../../src/interfaces/command";
+import {CommandEvent} from "../../src/interfaces/general";
 
 const userProfile = process.env.USERPROFILE;
 
@@ -31,29 +31,34 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
-export function readCommands(path: string): Array<CommandStruct> | undefined {
-    if(fs.existsSync(path))
-        return JSON.parse(readFileSync(path).toString()) as Array<CommandStruct>;
+export function readCommands(path: string): Commands | undefined {
+    if (!fs.existsSync(path))
+        return undefined;
 
-    return undefined;
+    const commandsArray = JSON.parse(readFileSync(path).toString());
+
+    return commandsArray.reduce((commands: Commands, command: {name: string, id: number, params: string[]}) => {
+        commands[command.name] = {id: command.id, params: command.params};
+        return commands;
+    }, {});
 }
 
 function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer
     return [...new Uint8Array(buffer)]
-        .map(x => x.toString(16).padStart(2, '0'))
-        .join('');
+        .map(x => x.toString(16).padStart(2, "0"))
+        .join("");
 }
 
 export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
 
-    console.log("WRITE EVENT")
-    console.log(steamId, scenario)
+    console.log("WRITE EVENT");
+    console.log(steamId, scenario);
 
     if (!event.params)
         event.params = [];
 
-    console.log(event)
+    console.log(event);
 
     // File layout (all int32):
     // 1:       Execution Cycle Number

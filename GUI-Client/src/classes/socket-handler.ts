@@ -1,5 +1,5 @@
 import {GameHandler} from "@/classes/game-handler";
-import {CommandStruct} from "@/interfaces/command";
+import {Commands} from "@/interfaces/command";
 import {Room} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
@@ -97,7 +97,7 @@ export class SocketHandler {
         });
     }
 
-    public createRoom(filename: string, commands: Array<CommandStruct>, password = ""): Promise<void> {
+    public createRoom(filename: string, commands: Commands, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 

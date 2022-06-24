@@ -34,7 +34,7 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {CommandStruct} from "@/interfaces/command";
+import {Commands} from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
@@ -47,7 +47,7 @@ export default defineComponent({
         return {
             text: [] as Array<string>,
             filepath: "",
-            commands: [] as Array<CommandStruct> | undefined,
+            commands: {} as Commands | undefined,
             password: "",
             showPassword: false,
             creationInProgress: false,
@@ -114,7 +114,7 @@ export default defineComponent({
                         this.text = [];
                         if (!this.commands) {
                             this.filepath = "";
-                            this.commands = [];
+                            this.commands = {};
                             this.text = [
                                 "Commands File Not Found",
                                 "A JSON file with the same name as the scenario containing information about the commands must be present",
