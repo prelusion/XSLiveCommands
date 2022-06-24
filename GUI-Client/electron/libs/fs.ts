@@ -1,3 +1,4 @@
+import {CommandStruct} from "../../src/interfaces/command";
 import {CommandEvent} from "../../src/interfaces/general";
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
@@ -27,6 +28,13 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     } catch (err) {
         // File doesn't exist. Ignored because of HUGE ERROR and file doesn't have to exist.
     }
+    return undefined;
+}
+
+export function readCommands(path: string): Array<CommandStruct> | undefined {
+    if(fs.existsSync(path))
+        return JSON.parse(readFileSync(path).toString()) as Array<CommandStruct>;
+
     return undefined;
 }
 
@@ -88,6 +96,10 @@ ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) =>
 
 ipcMain.handle("fs:readCycle", (_, steamId: string, scenario: string) => {
     return readCycle(steamId, scenario);
+});
+
+ipcMain.handle("fs:readCommands", (_, path: string) => {
+    return readCommands(path);
 });
 
 ipcMain.handle("fs:writeEvent", (_, steamId: string, scenario: string, event: CommandEvent) => {

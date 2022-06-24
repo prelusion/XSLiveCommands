@@ -1,9 +1,9 @@
-
 import {QueueHandler} from "@/classes/queue-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import {CommandEvent} from "@/interfaces/general";
 import {ensure} from "@/util/general";
-const { setInterval, clearInterval } = window;
+
+const {setInterval, clearInterval} = window;
 
 export class GameHandler {
     private constructor() {
@@ -15,7 +15,7 @@ export class GameHandler {
     private coreInterval = -1;
     private cycle = -1;  // Todo: Is this variable even necessary?
     private lastCommandCycle = -1;
-    private _steamId = '';
+    private _steamId = "";
 
     static get instance(): GameHandler {
         if (this._instance === null) {
@@ -38,9 +38,10 @@ export class GameHandler {
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
-                console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`)
-                console.log(`cycle: ${cycle}`)
-                console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`)
+                console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
+                console.log(`cycle: ${cycle}`);
+                console.log(
+                    `QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
 
                 // If the last registered command execution cycle has passed and there are more commands
                 // Send the next command to XS
@@ -49,7 +50,7 @@ export class GameHandler {
 
                     this.lastCommandCycle = event.executeCycleNumber;
                     await window.fs.writeEvent(this.steamId, scenario, event);
-                    console.log(`writing finished...`)
+                    console.log(`writing finished...`);
                 }
             }
         }, 1000);

@@ -15,15 +15,16 @@ interface CoreRoom {
     id: string;
     host: string;
     scenario: string;
+    commands: unknown;
 }
 
-export interface Room extends CoreRoom{
+export interface Room extends CoreRoom {
     connections: string[];
     password: string | null;
     last_execution_cycle: number;
     current_cycle: number;
 }
 
-export interface RoomMessage extends CoreRoom{
+export interface RoomMessage extends CoreRoom {
     numberOfConnections: number;
 }

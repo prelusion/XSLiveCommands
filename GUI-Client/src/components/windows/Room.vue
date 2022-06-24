@@ -14,7 +14,7 @@
             </tr>
             <tr>
                 <td>Number of connected players:</td>
-                <td> {{ numberOfConnectedClients }} </td>
+                <td> {{ numberOfConnectedClients }}</td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -22,13 +22,13 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
-import Buttons from "@/components/Buttons.vue";
-import {SocketHandler} from "@/classes/socket-handler";
 import {GameHandler} from "@/classes/game-handler";
-import {assert, ensure} from "@/util/general";
-import {CommandEvent} from "@/interfaces/general";
 import {QueueHandler} from "@/classes/queue-handler";
+import {SocketHandler} from "@/classes/socket-handler";
+import Buttons from "@/components/Buttons.vue";
+import {CommandEvent} from "@/interfaces/general";
+import {assert, ensure} from "@/util/general";
+import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "Room",
@@ -39,8 +39,8 @@ export default defineComponent({
             numberOfConnectedClients: 0,
             buttonConfig: [
                 {
-                    window: 'Main',
-                    text: 'Disconnect',
+                    window: "Main",
+                    text: "Disconnect",
                     callback: async () => {
                         assert(SocketHandler.instance.room);
 
@@ -49,34 +49,34 @@ export default defineComponent({
                     },
                 },
             ] as Array<ButtonConfig>,
-        }
+        };
     },
     mounted() {
         this.numberOfConnectedClients = ensure(SocketHandler.instance.room).numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
-        socket.on('room-connection-update', (n: number) => {
+        socket.on("room-connection-update", (n: number) => {
             this.numberOfConnectedClients = n;
-        })
+        });
 
-        socket.on('event', (commandEvent: CommandEvent) => {
-            console.log("Event registered!")
+        socket.on("event", (commandEvent: CommandEvent) => {
+            console.log("Event registered!");
             QueueHandler.instance.enqueue(commandEvent);
-        })
+        });
     },
     computed: {
         SocketHandler() {
             return SocketHandler.instance;
-        }
+        },
     },
     methods: {
         ensure,
         copyRoomId() {
-            window.clipboard.write(ensure(SocketHandler.instance.room).id)
-        }
+            window.clipboard.write(ensure(SocketHandler.instance.room).id);
+        },
     },
-    watch: {}
-})
+    watch: {},
+});
 
 </script>
 

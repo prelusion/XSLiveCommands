@@ -21,8 +21,8 @@ export default defineComponent({
         buttonConfig: {
             type: Array as PropType<Array<ButtonConfig>>,
             default: () => [],
-            required: true
-        }
+            required: true,
+        },
     },
     mounted() {
         // Runs
@@ -35,12 +35,12 @@ export default defineComponent({
                 await config.callback();
             }
             if (config.window) {
-                this.$store.commit('changeWindow', config.window);
+                this.$store.commit("changeWindow", config.window);
             }
-        }
+        },
     },
-    watch: {}
-})
+    watch: {},
+});
 
 </script>
 

@@ -1,6 +1,6 @@
+import {Server, Socket} from "socket.io";
 import {Room} from "../interfaces";
 import {createRoom} from "../scripts/rooms";
-import {Server, Socket} from "socket.io";
 
 export class RoomHandler {
     private static _instance = null;
@@ -23,12 +23,12 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, scenario: string, password: string | null): Room {
+    public createRoom(roomId: string, socket: Socket, scenario: string, commands: unknown, password: string | null): Room {
         socket.join(roomId);
 
         const socketId = socket.id;
 
-        const room: Room = createRoom(roomId, socketId, scenario, password, [socketId]);
+        const room: Room = createRoom(roomId, socketId, scenario, commands, password, [socketId]);
         this.rooms.push(room);
 
         return room;

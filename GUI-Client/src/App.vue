@@ -6,12 +6,14 @@
 
 <script lang="ts">
 
-import {defineComponent} from "vue";
-import Main from "@/components/windows/Main.vue";
+import CommandCentre from "@/components/windows/CommandCentre.vue";
 import Create from "@/components/windows/Create.vue";
-import Join from "@/components/windows/Join.vue";
+import JoinPlayer from "@/components/windows/JoinPlayer.vue";
+import JoinTyrant from "@/components/windows/JoinTyrant.vue";
 import Loading from "@/components/windows/Loading.vue";
+import Main from "@/components/windows/Main.vue";
 import Room from "@/components/windows/Room.vue";
+import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "App",
@@ -20,18 +22,18 @@ export default defineComponent({
         Main,
         Create,
         Room,
-        Join,
+        JoinPlayer,
+        JoinTyrant,
+        CommandCentre,
     },
     // data() {
     // },
     mounted() {
         // ads
     },
-    methods: {
-    },
-    computed: {
-    },
-})
+    methods: {},
+    computed: {},
+});
 
 </script>
 
@@ -42,7 +44,7 @@ $padding: 20px;
 body {
     min-height: $height;
     margin: 0;
-    font-family: Calibri,serif;
+    font-family: Calibri, serif;
 }
 
 #main {

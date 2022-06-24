@@ -3,11 +3,12 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
-import {io} from "socket.io-client";
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
-const { setTimeout } = window;
+import {io} from "socket.io-client";
+import {defineComponent} from "vue";
+
+const {setTimeout} = window;
 
 export default defineComponent({
     name: "Loading",
@@ -19,7 +20,7 @@ export default defineComponent({
             connectedToServer: false,
             retrievedSteamId: false,
             error: [] as Array<string>,
-        }
+        };
     },
     mounted() {
         window.regedit.getSteamId().then(steamId => {
@@ -28,41 +29,41 @@ export default defineComponent({
         });
 
         const socket = io("ws://localhost:80");
-        socket.on('connect', () => {
+        socket.on("connect", () => {
             SocketHandler.instance.socket = socket;
             // SocketHandler.instance.registerEventListeners();
             this.connectedToServer = true;
-        })
+        });
     },
     computed: {
         text() {
             let lines = [
-                (!this.retrievedSteamId ? 'Loading Steam ID...' : 'Steam ID loaded successfully.'),
-                (!this.connectedToServer ? 'Connecting to server...' : 'Connected to server successfully.')
-            ]
+                (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully."),
+                (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully."),
+            ];
 
             if (this.error.length > 0)
-                lines = lines.concat([''], this.error)
+                lines = lines.concat([""], this.error);
 
-            return lines.join('<br>');
-        }
+            return lines.join("<br>");
+        },
     },
     methods: {
         checkIfLoadingComplete() {
             if (this.connectedToServer && this.retrievedSteamId) {
-                setTimeout(() => this.$store.commit('changeWindow', 'Main'), 200);
+                setTimeout(() => this.$store.commit("changeWindow", "Main"), 200);
             }
-        }
+        },
     },
     watch: {
         connectedToServer() {
-            this.checkIfLoadingComplete()
+            this.checkIfLoadingComplete();
         },
         retrievedSteamId() {
-            this.checkIfLoadingComplete()
-        }
-    }
-})
+            this.checkIfLoadingComplete();
+        },
+    },
+});
 
 </script>
 

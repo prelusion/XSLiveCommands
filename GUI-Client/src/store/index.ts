@@ -1,5 +1,5 @@
-import {createStore} from 'vuex'
 import {State} from "@vue/runtime-core";
+import {createStore} from "vuex";
 
 export default createStore({
     state: {
@@ -10,8 +10,8 @@ export default createStore({
     mutations: {
         changeWindow(state, window: string) {
             state.window = window;
-        }
+        },
     },
     actions: {},
     modules: {},
-})
+});

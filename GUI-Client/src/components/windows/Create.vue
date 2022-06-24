@@ -7,7 +7,7 @@
             <div>
                 <div id="file">
                     Selected file:
-                    <span>{{ filename ? filename : 'No file selected' }}</span>
+                    <span>{{ filename || 'No file selected' }}</span>
                 </div>
                 <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
                 <span id="error" v-html="text.join('<br>')"></span>
@@ -22,7 +22,7 @@
                         <input v-model="showPassword" type="checkbox"> Show password
                     </label>
                     <br/>
-                    <span class="small-text">This is <b>NOT</b> for people joining. Password is for the Tyrant joining.</span>
+                    <span class="small-text">This is <b>NOT</b> for players joining. Password is for the Tyrant joining.</span>
                 </label>
             </div>
         </div>
@@ -34,6 +34,8 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
+import {CommandStruct} from "@/interfaces/command";
+import {ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
 
@@ -45,6 +47,7 @@ export default defineComponent({
         return {
             text: [] as Array<string>,
             filepath: "",
+            commands: [] as Array<CommandStruct> | undefined,
             password: "",
             showPassword: false,
             creationInProgress: false,
@@ -55,7 +58,7 @@ export default defineComponent({
                     text: "Cancel",
                 },
                 {
-                    text: "Create room",
+                    text: "Create",
                     callback: () => {
                         this.createRoom();
                     },
@@ -69,7 +72,7 @@ export default defineComponent({
     },
     computed: {
         passwordType(): string {
-            return this.showPassword ? 'text' : 'password';
+            return this.showPassword ? "text" : "password";
         },
 
         /**
@@ -87,6 +90,14 @@ export default defineComponent({
         plainFilename(): string {
             return this.filename.split(".")[0];
         },
+
+        /**
+         * Get the directory of the file
+         * From: `C:/.../.../file.aoe2scenario`. To: `file`
+         */
+        commandsPath(): string {
+            return this.filepath.split(".")[0] + ".json";
+        },
     },
     methods: {
         openFilePrompt() {
@@ -94,11 +105,21 @@ export default defineComponent({
 
             window.dialog
                 .select(GameHandler.instance.steamId)
-                .then((value: SteamIdResponse) => {
+                .then(async (value: SteamIdResponse) => {
                     this.selectInProgress = false;
 
                     if (value.filepath) {
                         this.filepath = value.filepath;
+                        this.commands = await window.fs.readCommands(this.commandsPath);
+                        this.text = [];
+                        if (!this.commands) {
+                            this.filepath = "";
+                            this.commands = [];
+                            this.text = [
+                                "Commands File Not Found",
+                                "A JSON file with the same name as the scenario containing information about the commands must be present",
+                            ];
+                        }
                     } else if (value.reason !== "cancelled") {
                         this.text = ["Unknown Error", "An unknown error has occurred."];
                     }
@@ -107,13 +128,13 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            SocketHandler.instance.createRoom(this.plainFilename, this.password)
+            SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })
                 .catch(() => {
                     this.creationInProgress = false;
-                })
+                });
         },
     },
     watch: {},
