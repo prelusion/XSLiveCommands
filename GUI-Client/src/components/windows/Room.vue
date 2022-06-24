@@ -61,6 +61,7 @@ export default defineComponent({
 
         socket.on("event", (commandEvent: CommandEvent) => {
             console.log("Event registered!");
+            console.log(commandEvent);
             QueueHandler.instance.enqueue(commandEvent);
         });
     },

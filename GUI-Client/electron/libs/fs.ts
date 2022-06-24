@@ -31,16 +31,12 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
-export function readCommands(path: string): {commands?: Commands; reason?: string} {
-    console.log('check if file exists')
+export async function readCommands(path: string): Promise<{commands?: Commands; reason?: string}> {
     if (!fs.existsSync(path))
         return {reason: 'no-json'};
-    console.log('it exists')
 
     try {
-        console.log('read json...')
         const commandsArray: Array<JsonCommand> = JSON.parse(readFileSync(path).toString());
-        console.log('done!')
 
         const commands = commandsArray.reduce((
             commands: Commands,
@@ -49,7 +45,6 @@ export function readCommands(path: string): {commands?: Commands; reason?: strin
             commands[command.name] = {id: command.id, params: command.params};
             return commands;
         }, {});
-        console.log('reduced!!')
 
         return {commands};
     } catch {
@@ -66,13 +61,8 @@ function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer
 export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
 
-    console.log("WRITE EVENT");
-    console.log(steamId, scenario);
-
     if (!event.params)
         event.params = [];
-
-    console.log(event);
 
     // File layout (all int32):
     // 1:       Execution Cycle Number
@@ -97,8 +87,6 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
         buffer.writeInt32LE(param, offset);
         offset += intSize;
     }
-
-    console.log(buf2hex(buffer));
 
     fs.writeFile(commandFilePath, buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work");

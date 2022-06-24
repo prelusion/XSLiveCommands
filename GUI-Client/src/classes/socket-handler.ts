@@ -1,5 +1,5 @@
 import {GameHandler} from "@/classes/game-handler";
-import {Commands} from "@/interfaces/command";
+import {Command, Commands} from "@/interfaces/command";
 import {Room} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
@@ -77,6 +77,12 @@ export class SocketHandler {
                     }
                 });
         });
+    }
+
+    public sendCommand(command: Command): void {
+        assert(this.socket);
+
+        this.socket.emit("registerCommand", command);
     }
 
     public leaveRoom(): Promise<void> {

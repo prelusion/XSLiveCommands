@@ -9,7 +9,7 @@
 
         Specify Arguments: <br>
         <div v-bind:key="index" v-for="(param, index) in commandParams">
-            <input type="number" v-model="inputParams[index]"> <label>{{ param }}</label>
+            <label><input type="number" v-model="inputParams[index]"> {{ param }} </label>
         </div>
         <div v-if="error" id="loading">
             <span id="error" v-html="text.join('<br>')"></span>
@@ -28,6 +28,8 @@ import Buttons from "@/components/Buttons.vue";
 import {Commands} from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {defineComponent} from "vue";
+import {CommandEvent} from "@/interfaces/general";
+import {QueueHandler} from "@/classes/queue-handler";
 
 export default defineComponent({
     name: "CommandCentre",
@@ -40,7 +42,6 @@ export default defineComponent({
             inputParams: [] as Array<number>,
             selectedCommand: "",
             text: [] as Array<string>,
-            commands: {} as Commands,
 
             buttonConfig: [
                 {
@@ -62,12 +63,24 @@ export default defineComponent({
     },
     mounted() {
         this.commands = ensure(SocketHandler.instance.room).commands;
+
+        const socket = ensure(SocketHandler.instance.socket);
+        // Todo: Maybe add (id/scenario/number of connections etc.) to display?
+        // socket.on("room-connection-update", (n: number) => {
+        //     this.numberOfConnectedClients = n;
+        // });
+
+        socket.on("event", (commandEvent: CommandEvent) => {
+            console.log("Event registered!");
+            console.log(commandEvent);
+            QueueHandler.instance.enqueue(commandEvent);
+        });
     },
     computed: {
         commandId(): number | undefined {
             return this.commands[this.selectedCommand]?.id;
         },
-        commandParams(): string[] {
+        commandParams(): number[] {
             return this.commands[this.selectedCommand]?.params ?? [];
         },
     },
@@ -80,6 +93,7 @@ export default defineComponent({
             }
             valid: {
                 for (let i = 0; i < this.commandParams.length; ++i) {
+                    // Todo: Doesn't support '0'. Even though it should (sending only stone as resources, requires 0 of all other 3)
                     if (!this.inputParams[i]) {
                         this.error = true;
                         this.text = ["Please enter numbers for all the arguments before sending the command!"];
@@ -88,8 +102,11 @@ export default defineComponent({
                 }
                 this.error = false;
                 this.text = ["Command Sent!"];
-                // Todo: implement this
-                console.log("send dummy req", "commandId:", this.commandId, "params:", this.inputParams);
+
+                SocketHandler.instance.sendCommand({
+                    id: this.commandId,
+                    params: this.inputParams,
+                });
             }
         },
     },

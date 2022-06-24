@@ -110,9 +110,7 @@ export default defineComponent({
                     this.selectInProgress = false;
 
                     if (value.filepath) {
-                        console.log(`value.filepath: ${value.filepath}`)
-                        const result = window.fs.readCommands(this.getCommandFilepath(value.filepath));
-                        console.log(`result: ${result}`)
+                        const result = await window.fs.readCommands(this.getCommandFilepath(value.filepath));
 
                         if (result.commands) {
                             this.filepath = value.filepath;
@@ -127,6 +125,7 @@ export default defineComponent({
                             } else if (result.reason === 'invalid-json') {
                                 this.errors = [
                                     "Invalid Commands File",
+                                    "The JSON Commands file corresponding with the scenario is invalid.",
                                 ];
                             }
                         }
