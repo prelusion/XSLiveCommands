@@ -7,7 +7,6 @@ import {startExpressServer} from "./handlers/request-handler";
 import {startIOServer} from "./handlers/client-handler";
 import {EventHandler} from "./handlers/event-handler";
 
-import {config} from "dotenv";
 // Load .env file
 config();
 

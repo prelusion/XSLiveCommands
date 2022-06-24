@@ -1,5 +1,5 @@
 import {Server, Socket} from "socket.io";
-import {Room} from "../interfaces";
+import {Command, Commands, Room} from "../interfaces";
 import {createRoom} from "../scripts/rooms";
 
 export class RoomHandler {
@@ -23,7 +23,7 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, scenario: string, commands: unknown, password: string | null): Room {
+    public createRoom(roomId: string, socket: Socket, scenario: string, commands: Commands, password: string | null): Room {
         socket.join(roomId);
 
         const socketId = socket.id;

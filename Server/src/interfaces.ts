@@ -8,14 +8,14 @@ export interface ServerEvent {
 export interface ClientEvent {
     commandId: number;
     params: number[];
-    executeCycleNumber: number
+    executeCycleNumber: number;
 }
 
 interface CoreRoom {
     id: string;
     host: string;
     scenario: string;
-    commands: unknown;
+    commands: Commands;
 }
 
 export interface Room extends CoreRoom {
@@ -28,3 +28,10 @@ export interface Room extends CoreRoom {
 export interface RoomMessage extends CoreRoom {
     numberOfConnections: number;
 }
+
+export interface Command {
+    id: number;
+    params: string[];
+}
+
+export type Commands = Record<string, Command>;

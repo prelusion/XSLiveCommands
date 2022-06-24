@@ -1,4 +1,4 @@
-import {Room, RoomMessage} from "../interfaces";
+import {Command, Commands, Room, RoomMessage} from "../interfaces";
 
 export function toRoomMessage(room: Room): RoomMessage {
     return {
@@ -10,10 +10,25 @@ export function toRoomMessage(room: Room): RoomMessage {
     };
 }
 
-export function createRoom(id: string, host: string, scenario: string, commands: unknown, password: string, connections: Array<string>): Room {
+export function createRoom(
+    id: string,
+    host: string,
+    scenario: string,
+    commands: Commands,
+    password: string,
+    connections: Array<string>,
+): Room {
     return {
         id, host, scenario, connections, password, commands,
         last_execution_cycle: -1,
         current_cycle: -1,
+    };
+}
+
+export interface CommandData {
+    roomId: string,
+    commandId: number;
+    params: {
+        [name: string]: number
     };
 }

@@ -1,5 +1,5 @@
 import {Server, Socket} from "socket.io";
-import {RoomMessage} from "../interfaces";
+import {Command, Commands, RoomMessage} from "../interfaces";
 import {toRoomMessage} from "../scripts/rooms";
 import {RoomHandler} from "./room-handler";
 
@@ -36,7 +36,7 @@ export function startIOServer(io: Server) {
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
-        socket.on("createRoom", (scenario: string, commands: unknown, password: string | null = null, callback) => {
+        socket.on("createRoom", (scenario: string, commands: Commands, password: string | null = null, callback) => {
             const roomId = Date.now().toString();
             const room = RoomHandler.instance.createRoom(roomId, socket, scenario, commands, password);
 
