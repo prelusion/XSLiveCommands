@@ -39,23 +39,21 @@ export class SocketHandler {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
-            this.socket.emit("joinRoomAsPlayer", roomId, async (room: Room | null) => {
-                if (room === null) {
-                    return setTimeout(() => {
-                        reject(`Unable to join room: '${roomId}'`);
-                    }, 200);
-                }
+            this.socket.emit("joinRoomAsPlayer", roomId,
+                async (room: Room | null) => {
+                    if (room === null)
+                        return setTimeout(() => reject(`Unable to join room: '${roomId}'`), 200);
 
-                if (room.scenario) {
-                    this.room = room;
-                    await GameHandler.instance.resetState(room.scenario);
-                    GameHandler.instance.startCoreLoop(room.scenario);
+                    if (room.scenario) {
+                        this.room = room;
+                        await GameHandler.instance.resetState(room.scenario);
+                        GameHandler.instance.startCoreLoop(room.scenario);
 
-                    resolve();
-                } else {
-                    reject(`An unknown error occurred. Please try again.`);
-                }
-            });
+                        resolve();
+                    } else {
+                        reject(`An unknown error occurred. Please try again.`);
+                    }
+                });
         });
     }
 
@@ -63,23 +61,21 @@ export class SocketHandler {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
-            this.socket.emit("joinRoomAsTyrant", roomId, password, async (room: Room | null, error: string | null) => {
-                if (room === null) {
-                    return setTimeout(() => {
-                        reject(error);
-                    }, 200);
-                }
+            this.socket.emit("joinRoomAsTyrant", roomId, password,
+                async (room: Room | null, error: string | null) => {
+                    if (room === null)
+                        return setTimeout(() => reject(error), 200);
 
-                if (room.scenario) {
-                    this.room = room;
-                    await GameHandler.instance.resetState(room.scenario);
-                    GameHandler.instance.startCoreLoop(room.scenario);
+                    if (room.scenario) {
+                        this.room = room;
+                        await GameHandler.instance.resetState(room.scenario);
+                        GameHandler.instance.startCoreLoop(room.scenario);
 
-                    resolve();
-                } else {
-                    reject(`An unknown error occurred. Please try again.`);
-                }
-            });
+                        resolve();
+                    } else {
+                        reject(`An unknown error occurred. Please try again.`);
+                    }
+                });
         });
     }
 

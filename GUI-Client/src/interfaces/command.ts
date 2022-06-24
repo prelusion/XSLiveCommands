@@ -1,13 +1,19 @@
+export interface JsonCommand {
+    name: string;
+    id: number;
+    params: number[];
+}
+
 export interface Command {
     id: number;
-    params: string[];
+    params: number[];
 }
 
 export interface CommandData {
-    roomId: string,
+    roomId: string;
     commandId: number;
     params: {
-        [name: string]: number
+        [name: string]: number;
     };
 }
 

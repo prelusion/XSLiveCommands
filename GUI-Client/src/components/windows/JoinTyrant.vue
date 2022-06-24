@@ -3,15 +3,23 @@
         Joining room...
     </div>
     <div v-else>
-        <label>
-            Enter the room ID you want to join: <br/>
-            <input v-model="roomId"> <br/>
-            Enter the password: <br/>
-            <input v-model="roomPassword" v-bind:type="passwordType">
+        <div>
+            <label>
+                Enter the room ID you want to join: <br/>
+                <input v-model="roomId">
+            </label>
+        </div>
 
-            <label><input type="checkbox" v-model="showPassword"> Show password</label>
+        <div id="password-field">
+            <label>
+                Enter the password: <br/>
+                <input v-model="roomPassword" v-bind:type="passwordType">
+            </label>
+            <label id="show-password">
+                <input type="checkbox" v-model="showPassword"> Show password
+            </label>
+        </div>
 
-        </label><br/>
         <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
 
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -83,8 +91,16 @@ export default defineComponent({
 }
 
 #error-msg {
-    margin-top: 3px;
+    margin-top: 10px;
     color: red;
+}
+
+#password-field {
+    margin-top: 5px;
+
+    #show-password {
+        user-select: none;
+    }
 }
 
 input {

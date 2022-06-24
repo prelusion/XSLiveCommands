@@ -11,6 +11,8 @@ export interface ClientEvent {
     executeCycleNumber: number;
 }
 
+export type Commands = Record<string, Command>;
+
 interface CoreRoom {
     id: string;
     host: string;
@@ -20,6 +22,7 @@ interface CoreRoom {
 
 export interface Room extends CoreRoom {
     connections: string[];
+    tyrants: string[];
     password: string | null;
     last_execution_cycle: number;
     current_cycle: number;
@@ -31,7 +34,5 @@ export interface RoomMessage extends CoreRoom {
 
 export interface Command {
     id: number;
-    params: string[];
+    params: number[];
 }
-
-export type Commands = Record<string, Command>;

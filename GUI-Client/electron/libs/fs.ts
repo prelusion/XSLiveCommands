@@ -1,6 +1,6 @@
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
-import {Commands} from "../../src/interfaces/command";
+import {Commands, JsonCommand} from "../../src/interfaces/command";
 import {CommandEvent} from "../../src/interfaces/general";
 
 const userProfile = process.env.USERPROFILE;
@@ -31,16 +31,30 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
-export function readCommands(path: string): Commands | undefined {
+export function readCommands(path: string): {commands?: Commands; reason?: string} {
+    console.log('check if file exists')
     if (!fs.existsSync(path))
-        return undefined;
+        return {reason: 'no-json'};
+    console.log('it exists')
 
-    const commandsArray = JSON.parse(readFileSync(path).toString());
+    try {
+        console.log('read json...')
+        const commandsArray: Array<JsonCommand> = JSON.parse(readFileSync(path).toString());
+        console.log('done!')
 
-    return commandsArray.reduce((commands: Commands, command: {name: string, id: number, params: string[]}) => {
-        commands[command.name] = {id: command.id, params: command.params};
-        return commands;
-    }, {});
+        const commands = commandsArray.reduce((
+            commands: Commands,
+            command: {name: string; id: number; params: number[]}
+        ) => {
+            commands[command.name] = {id: command.id, params: command.params};
+            return commands;
+        }, {});
+        console.log('reduced!!')
+
+        return {commands};
+    } catch {
+        return {reason: 'invalid-json'};
+    }
 }
 
 function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer

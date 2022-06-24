@@ -42,8 +42,6 @@ export default defineComponent({
         };
     },
     mounted() {
-        console.log("Mounted");
-
         // Execute on creation
     },
     computed: {},

@@ -19,7 +19,13 @@ export function createRoom(
     connections: Array<string>,
 ): Room {
     return {
-        id, host, scenario, connections, password, commands,
+        id: id,
+        host: host,
+        scenario: scenario,
+        connections: connections,
+        tyrants: [],
+        password: password,
+        commands: commands,
         last_execution_cycle: -1,
         current_cycle: -1,
     };

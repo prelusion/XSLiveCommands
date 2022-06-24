@@ -40,6 +40,8 @@ export default defineComponent({
             inputParams: [] as Array<number>,
             selectedCommand: "",
             text: [] as Array<string>,
+            commands: {} as Commands,
+
             buttonConfig: [
                 {
                     window: "Main",

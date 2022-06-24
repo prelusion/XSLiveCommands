@@ -1,6 +1,7 @@
 import {Server, Socket} from "socket.io";
-import {Command, Commands, Room} from "../interfaces";
+import {ClientEvent, Command, Commands, Room} from "../interfaces";
 import {createRoom} from "../scripts/rooms";
+import {EXECUTE_CYCLE_OFFSET} from "../index";
 
 export class RoomHandler {
     private static _instance = null;
@@ -34,13 +35,17 @@ export class RoomHandler {
         return room;
     }
 
-    public joinRoom(roomId: string, socket: Socket) {
+    public joinRoom(roomId: string, socket: Socket, asTyrant = false) {
         socket.join(roomId);
 
         const room = this.getRoomByID(roomId);
 
         if (room !== undefined) {
             room.connections.push(socket.id);
+
+            if (asTyrant)
+                room.tyrants.push(socket.id);
+
             this.sendRoomConnectionCountUpdate(roomId, room.connections.length);
         }
     }
@@ -64,6 +69,23 @@ export class RoomHandler {
 
     public sendRoomConnectionCountUpdate(roomId: string, n: number) {
         this.io.to(roomId).emit("room-connection-update", n);
+    }
+
+    public sendRoomNewCommand(roomId: string, command: Command): void {
+        // const event: ServerEvent = req.body;
+        // const roomID: string = req.query.id;
+        const room = RoomHandler.instance.getRoomByID(roomId);
+
+        if (room === undefined)
+            return;
+
+        const clientEvent: ClientEvent = toClientEvent(command);
+
+        //Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
+        clientEvent.executeCycleNumber = Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
+        room.last_execution_cycle = clientEvent.executeCycleNumber;
+
+        this.io.to(roomId).emit("event", clientEvent);
     }
 
     public removeRoom(roomId: string) {
@@ -93,4 +115,12 @@ export class RoomHandler {
     set rooms(value: Room[]) {
         this._rooms = value;
     }
+}
+
+function toClientEvent(command: Command): ClientEvent {
+    return {
+        commandId: command.id,
+        params: command.params,
+        executeCycleNumber: 0,
+    };
 }

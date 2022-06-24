@@ -4,13 +4,13 @@
     </div>
     <div v-else>
         <div>
-            <div>
-                <div id="file">
+            <div id="file-selection">
+                <div>
                     Selected file:
                     <span>{{ filename || 'No file selected' }}</span>
                 </div>
                 <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
-                <span id="error" v-html="text.join('<br>')"></span>
+                <span id="error" v-html="errors.join('<br>')"></span>
             </div>
 
             <div id="password">
@@ -45,13 +45,16 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            text: [] as Array<string>,
+            errors: [] as Array<string>,
+
             filepath: "",
-            commands: {} as Commands | undefined,
             password: "",
+            commands: {} as Commands | undefined,
+
             showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
+
             buttonConfig: [
                 {
                     window: "Main",
@@ -77,7 +80,7 @@ export default defineComponent({
 
         /**
          * Get the file name from the path
-         * From: `C:/.../.../file.aoe2scenario`. To: `file.aoe2scenario`
+         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>.aoe2scenario`
          */
         filename(): string {
             return this.filepath.split("\\").splice(-1)[0];
@@ -85,21 +88,19 @@ export default defineComponent({
 
         /**
          * Get the plain file name without extension from the path
-         * From: `C:/.../.../file.aoe2scenario`. To: `file`
+         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>`
          */
         plainFilename(): string {
             return this.filename.split(".")[0];
         },
-
-        /**
-         * Get the directory of the file
-         * From: `C:/.../.../file.aoe2scenario`. To: `file`
-         */
-        commandsPath(): string {
-            return this.filepath.split(".")[0] + ".json";
-        },
     },
     methods: {
+        getCommandFilepath(filepath: string) {
+            const folders = filepath.split("\\");
+            const file = folders.splice(-1)[0];
+            const folderPath = folders.join('\\');
+            return folderPath + '\\' + file.split(".")[0] + ".json";
+        },
         openFilePrompt() {
             this.selectInProgress = true;
 
@@ -109,19 +110,28 @@ export default defineComponent({
                     this.selectInProgress = false;
 
                     if (value.filepath) {
-                        this.filepath = value.filepath;
-                        this.commands = await window.fs.readCommands(this.commandsPath);
-                        this.text = [];
-                        if (!this.commands) {
-                            this.filepath = "";
-                            this.commands = {};
-                            this.text = [
-                                "Commands File Not Found",
-                                "A JSON file with the same name as the scenario containing information about the commands must be present",
-                            ];
+                        console.log(`value.filepath: ${value.filepath}`)
+                        const result = window.fs.readCommands(this.getCommandFilepath(value.filepath));
+                        console.log(`result: ${result}`)
+
+                        if (result.commands) {
+                            this.filepath = value.filepath;
+                            this.commands = result.commands;
+                            this.errors = [];
+                        } else {
+                            if (result.reason === 'no-json') {
+                                this.errors = [
+                                    "Commands File Not Found",
+                                    "A JSON file with the same name as the scenario containing information about the commands must be present",
+                                ];
+                            } else if (result.reason === 'invalid-json') {
+                                this.errors = [
+                                    "Invalid Commands File",
+                                ];
+                            }
                         }
                     } else if (value.reason !== "cancelled") {
-                        this.text = ["Unknown Error", "An unknown error has occurred."];
+                        this.errors = ["Unknown Error", "An unknown error has occurred."];
                     }
                 });
         },
@@ -143,25 +153,29 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-button {
-    padding: 5px;
-}
 
-input {
-    padding: 4px;
-}
+#file-selection {
+    button {
+        padding: 5px;
+    }
 
-#file {
-    padding: 0;
-}
-
-#error {
-    color: red;
-    padding: 10px;
+    #error {
+        color: red;
+        padding: 10px;
+    }
 }
 
 #password {
     margin-top: 5px;
+
+    input {
+        padding: 4px;
+    }
+
+    .small-text {
+        font-size: 13px;
+        color: gray;
+    }
 }
 
 #loading {
@@ -169,8 +183,4 @@ input {
     text-align: center;
 }
 
-.small-text {
-    font-size: 13px;
-    color: gray;
-}
 </style>

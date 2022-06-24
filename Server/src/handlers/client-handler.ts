@@ -7,7 +7,9 @@ function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
 }
 
-export function startIOServer(io: Server) {
+type joinCallback = (room: RoomMessage | null, error: string | null) => void;
+
+export function startIoServer(io: Server) {
     let connectionAmount = 0;
     RoomHandler.instance.registerIo(io);
 
@@ -40,37 +42,35 @@ export function startIOServer(io: Server) {
             const roomId = Date.now().toString();
             const room = RoomHandler.instance.createRoom(roomId, socket, scenario, commands, password);
 
-            console.log(room);
-
             if (callback) {
                 return callback(toRoomMessage(room));
             }
         });
 
-        socket.on("joinRoomAsPlayer", (roomId: string, callback: (room: RoomMessage | null) => void) => {
+        socket.on("joinRoomAsPlayer", (roomId: string, callback: joinCallback) => {
             const room = RoomHandler.instance.getRoomByID(roomId);
             if (room === undefined) {
-                return callback ? callback(null) : null;
+                return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
             }
 
             RoomHandler.instance.joinRoom(roomId, socket);
 
             if (callback) {
-                return callback(toRoomMessage(room));
+                return callback(toRoomMessage(room),null);
             }
         });
 
         socket.on(
             "joinRoomAsTyrant",
-            (roomId: string, password: string, callback: (room: RoomMessage | null, error: string | null) => void) => {
+            (roomId: string, password: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
-                    return callback ? callback(null, `Could not find room with id ${roomId}`) : null;
+                    return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
                 }
                 if (room.password !== password) {
                     return callback ? callback(null, `Wrong password`) : null;
                 }
-                RoomHandler.instance.joinRoom(roomId, socket);
+                RoomHandler.instance.joinRoom(roomId, socket, true);
 
                 if (callback) {
                     return callback(toRoomMessage(room), null);
@@ -89,5 +89,17 @@ export function startIOServer(io: Server) {
                 return callback();
             }
         });
+
+        socket.on("registerCommand", (command: Command) => {
+            const roomId = roomIdFromSocket(socket);
+            if (roomId === undefined)
+                return;
+
+            const room = RoomHandler.instance.getRoomByID(roomId);
+            if (!room.tyrants.includes(socket.id))
+                return;
+
+            RoomHandler.instance.sendRoomNewCommand(roomId, command);
+        })
     });
 }
