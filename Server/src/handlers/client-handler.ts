@@ -36,10 +36,11 @@ export function startIOServer(io: Server) {
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
-        socket.on('createRoom', (scenario, callback) => {
+        socket.on('createRoom', (scenario: string, password: string | null = null, callback) => {
             const roomId = Date.now().toString();
+            const room = RoomHandler.instance.createRoom(roomId, socket, scenario, password);
 
-            const room = RoomHandler.instance.createRoom(roomId, socket, scenario);
+            console.log(room)
 
             if (callback) {
                 return callback(toRoomMessage(room));

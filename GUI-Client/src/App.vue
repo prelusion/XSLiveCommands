@@ -37,6 +37,7 @@ export default defineComponent({
 
 <style lang="scss">
 $height: 240px;
+$padding: 20px;
 
 body {
     min-height: $height;
@@ -48,7 +49,7 @@ body {
     position: relative;
     min-height: $height;
     height: 100vh;
-    padding: 40px;
+    padding: $padding;
 }
 
 * {

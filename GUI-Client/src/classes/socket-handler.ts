@@ -72,11 +72,11 @@ export class SocketHandler {
         })
     }
 
-    public createRoom(filename: string): Promise<void> {
+    public createRoom(filename: string, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
-            this.socket.emit("createRoom", filename, async (room: Room) => {
+            this.socket.emit("createRoom", filename, password, async (room: Room) => {
                 this.room = room;
 
                 if (room.scenario) {

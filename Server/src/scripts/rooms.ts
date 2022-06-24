@@ -9,9 +9,9 @@ export function toRoomMessage(room: Room): RoomMessage {
     }
 }
 
-export function createRoom(id: string, host: string, scenario: string, connections: Array<string>): Room {
+export function createRoom(id: string, host: string, scenario: string, password: string, connections: Array<string>): Room {
     return {
-        id, host, scenario, connections,
+        id, host, scenario, connections, password,
         last_execution_cycle: -1,
         current_cycle: -1,
     }

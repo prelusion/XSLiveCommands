@@ -26,7 +26,7 @@ export default defineComponent({
                 {
                     window: 'Create',
                     text: 'Create a room',
-                },
+                }
             ] as Array<ButtonConfig>,
         }
     },

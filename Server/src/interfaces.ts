@@ -1,6 +1,7 @@
 export interface ServerEvent {
     commandId: number;
     params: number[];
+    password: string,
     // inGameTime?: number
 }
 
@@ -18,6 +19,7 @@ interface CoreRoom {
 
 export interface Room extends CoreRoom{
     connections: string[];
+    password: string | null;
     last_execution_cycle: number;
     current_cycle: number;
 }

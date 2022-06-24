@@ -23,13 +23,12 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, scenario: string): Room {
+    public createRoom(roomId: string, socket: Socket, scenario: string, password: string | null): Room {
         socket.join(roomId);
 
         const socketId = socket.id;
-        const connections: string[] = [socketId];
 
-        const room: Room = createRoom(roomId, socketId, scenario, connections);
+        const room: Room = createRoom(roomId, socketId, scenario, password, [socketId]);
         this.rooms.push(room);
 
         return room;

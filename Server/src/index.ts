@@ -9,7 +9,6 @@ import {EventHandler} from "./handlers/event-handler";
 import {config} from "dotenv";
 // Load .env file
 config();
-console.log(process.env)
 
 export const eventHandler = new EventHandler();
 
@@ -17,7 +16,6 @@ export const EXECUTE_CYCLE_OFFSET = 5;
 
 function main() {
     const port = process.env.PORT || 80;
-    console.log(port)
     const app = express();
     app.set("port", port).use(express.json())
 
