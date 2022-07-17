@@ -3,6 +3,7 @@ import {Command, Commands} from "@/interfaces/command";
 import {Room} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
+import {QueueHandler} from "@/classes/queue-handler";
 
 export class SocketHandler {
     private constructor() {
@@ -44,9 +45,17 @@ export class SocketHandler {
                     if (room === null)
                         return setTimeout(() => reject(`Unable to join room: '${roomId}'`), 200);
 
+                    console.log(room.events)
+
                     if (room.scenario) {
                         this.room = room;
                         await GameHandler.instance.resetState(room.scenario);
+
+                        // Set queue to whatever was received when joining the room
+                        if (room.events.length > 0) {
+                            QueueHandler.instance.overwrite(room.events);
+                        }
+
                         GameHandler.instance.startCoreLoop(room.scenario);
 
                         resolve();

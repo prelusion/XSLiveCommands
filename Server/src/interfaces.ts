@@ -18,6 +18,7 @@ interface CoreRoom {
     host: string;
     scenario: string;
     commands: Commands;
+    events: ClientEvent[];
 }
 
 export interface Room extends CoreRoom {

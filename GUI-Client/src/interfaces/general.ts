@@ -6,6 +6,7 @@ export interface Room {
     scenario: string;
     numberOfConnections: number;
     commands: Commands;
+    events: CommandEvent[];
 }
 
 export interface CommandEvent {

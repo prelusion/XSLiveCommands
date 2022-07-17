@@ -60,9 +60,7 @@ export function startIoServer(io: Server) {
             }
         });
 
-        socket.on(
-            "joinRoomAsTyrant",
-            (roomId: string, password: string, callback: joinCallback) => {
+        socket.on("joinRoomAsTyrant", (roomId: string, password: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
                     return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;

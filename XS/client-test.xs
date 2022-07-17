@@ -152,6 +152,7 @@ rule readCommands
     for(i = 0; < registeredParamsCount) {
         xsArraySetInt(registeredParamsArray, i, xsReadInt());
     }
+    printArray(registeredParamsArray);
     xsDisableSelf();
     xsCloseFile();
 }

@@ -64,6 +64,8 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
     if (!event.params)
         event.params = [];
 
+    console.log(event.executeCycleNumber, event.commandId, event.params.length)
+
     // File layout (all int32):
     // 1:       Execution Cycle Number
     // 2:       CommandId
@@ -87,6 +89,8 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
         buffer.writeInt32LE(param, offset);
         offset += intSize;
     }
+
+    console.log(buf2hex(buffer));
 
     fs.writeFile(commandFilePath, buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work");

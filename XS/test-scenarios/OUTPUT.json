@@ -1,0 +1,11 @@
+[{
+    "name": "Send resources",
+    "id": 1,
+    "params": [
+        "wood",
+        "food",
+        "gold",
+        "stone",
+        "player"
+    ]
+}]

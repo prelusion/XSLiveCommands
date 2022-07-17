@@ -72,8 +72,6 @@ export class RoomHandler {
     }
 
     public sendRoomNewCommand(roomId: string, command: Command): void {
-        // const event: ServerEvent = req.body;
-        // const roomID: string = req.query.id;
         const room = RoomHandler.instance.getRoomByID(roomId);
 
         if (room === undefined)
@@ -81,11 +79,12 @@ export class RoomHandler {
 
         const clientEvent: ClientEvent = toClientEvent(command);
 
-        //Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
-        clientEvent.executeCycleNumber = Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
-        room.last_execution_cycle = clientEvent.executeCycleNumber;
+        // Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
+        room.last_execution_cycle = clientEvent.executeCycleNumber =
+            Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
 
         this.io.to(roomId).emit("event", clientEvent);
+        room.events.push(clientEvent);
     }
 
     public removeRoom(roomId: string) {
@@ -93,7 +92,12 @@ export class RoomHandler {
     }
 
     public getNumberOfConnections(roomId: string): number {
-        return this.getRoomByID(roomId)?.connections.length;
+        const room = this.getRoomByID(roomId);
+
+        if (!room) {
+            return -1;
+        }
+        return room.connections.length;
     }
 
     public getRoomByID(roomId: string): Room | undefined {

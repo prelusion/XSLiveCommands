@@ -38,15 +38,18 @@ export class GameHandler {
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
+                console.log("\n\n")
                 console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
                 console.log(`cycle: ${cycle}`);
-                console.log(
-                    `QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
+                console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
 
                 // If the last registered command execution cycle has passed and there are more commands
                 // Send the next command to XS
                 if (this.lastCommandCycle < cycle && !QueueHandler.instance.isEmpty()) {
                     const event: CommandEvent = ensure(QueueHandler.instance.dequeue());
+
+                    console.log("Writing event: ")
+                    console.log(event)
 
                     this.lastCommandCycle = event.executeCycleNumber;
                     await window.fs.writeEvent(this.steamId, scenario, event);
