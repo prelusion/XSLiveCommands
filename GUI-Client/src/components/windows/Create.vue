@@ -139,7 +139,10 @@ export default defineComponent({
 
             SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
                 .then(() => {
-                    this.$store.commit("changeWindow", "Room");
+                    this.$store.commit("changeWindow", {
+                        window: 'Room',
+                        data: {'asHost': true}
+                    });
                 })
                 .catch(() => {
                     this.creationInProgress = false;

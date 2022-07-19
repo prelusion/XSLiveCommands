@@ -37,6 +37,12 @@ export default defineComponent({
     data() {
         return {
             numberOfConnectedClients: 0,
+            asHost: false,
+            tyrantMode: {
+                enabled: false,
+                progress: 0,
+                word: ['t', 'y', 'r', 'a', 'n', 't']
+            },
             buttonConfig: [
                 {
                     window: "Main",
@@ -55,15 +61,24 @@ export default defineComponent({
         this.numberOfConnectedClients = ensure(SocketHandler.instance.room).numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
-        socket.on("room-connection-update", (n: number) => {
-            this.numberOfConnectedClients = n;
-        });
+        const data = this.$store.state.data as { 'asHost': boolean };
+        this.asHost = data['asHost'] ?? false;
 
-        socket.on("event", (commandEvent: CommandEvent) => {
-            console.log("Event registered!");
-            console.log(commandEvent);
-            QueueHandler.instance.enqueue(commandEvent);
-        });
+        socket.on("room-connection-update", this.roomConnectionUpdate);
+        socket.on("event", this.eventRegistered);
+
+        if (this.asHost) {
+            document.addEventListener('keydown', this.enableTyrantModeControls);
+        }
+    },
+    unmounted() {
+        const socket = ensure(SocketHandler.instance.socket);
+
+        socket.off("room-connection-update", this.roomConnectionUpdate);
+        socket.off("event", this.eventRegistered);
+        if (this.asHost) {
+            document.removeEventListener('keydown', this.enableTyrantModeControls);
+        }
     },
     computed: {
         SocketHandler() {
@@ -75,6 +90,46 @@ export default defineComponent({
         copyRoomId() {
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
         },
+        roomConnectionUpdate(n: number) {
+            this.numberOfConnectedClients = n;
+        },
+        eventRegistered(commandEvent: CommandEvent) {
+            console.log("Event registered!");
+            console.log(commandEvent);
+            QueueHandler.instance.enqueue(commandEvent);
+        },
+        enableTyrantModeControls(keyEvent: KeyboardEvent) {
+            if (['Shift', 'Control', 'Alt'].includes(keyEvent.key))
+                return;
+
+            console.log(keyEvent)
+
+            if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
+                this.tyrantMode.enabled = true;
+                console.log("Enabled")
+                return;
+            }
+            if (!this.tyrantMode.enabled) {
+                return;
+            }
+
+            if (
+                keyEvent.key === this.tyrantMode.word[this.tyrantMode.progress]
+                && !keyEvent.altKey
+                && !keyEvent.ctrlKey
+                && !keyEvent.shiftKey
+                && !keyEvent.metaKey
+            ) {
+                this.tyrantMode.progress++;
+
+                if (this.tyrantMode.progress === this.tyrantMode.word.length) {
+                    this.$store.commit('changeWindow', 'CommandCentre');
+                }
+                return;
+            }
+            this.tyrantMode.enabled = false;
+            this.tyrantMode.progress = 0;
+        }
     },
     watch: {},
 });

@@ -94,7 +94,8 @@ export function startIoServer(io: Server) {
                 return;
 
             const room = RoomHandler.instance.getRoomByID(roomId);
-            if (!room.tyrants.includes(socket.id))
+            // If socket is not in the tyrants list and socket is not the host, don't allow command
+            if (!(room.tyrants.includes(socket.id) || room.host === socket.id))
                 return;
 
             RoomHandler.instance.sendRoomNewCommand(roomId, command);

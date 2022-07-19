@@ -4,12 +4,19 @@ import {createStore} from "vuex";
 export default createStore({
     state: {
         window: "Loading",
+        data: null,
     } as State,
 
     getters: {},
     mutations: {
-        changeWindow(state, window: string) {
-            state.window = window;
+        changeWindow(state: State, payload: string | {window: string; data: unknown}) {
+            if (typeof payload === 'string') {
+                state.window = payload;
+                state.data = null;
+            } else {
+                state.window = payload.window;
+                state.data = payload.data;
+            }
         },
     },
     actions: {},

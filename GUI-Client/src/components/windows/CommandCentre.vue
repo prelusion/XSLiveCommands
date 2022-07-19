@@ -70,11 +70,12 @@ export default defineComponent({
         //     this.numberOfConnectedClients = n;
         // });
 
-        socket.on("event", (commandEvent: CommandEvent) => {
-            console.log("Event registered!");
-            console.log(commandEvent);
-            QueueHandler.instance.enqueue(commandEvent);
-        });
+        socket.on("event", this.eventRegistered);
+    },
+    unmounted() {
+        const socket = ensure(SocketHandler.instance.socket);
+        // socket.off("room-connection-update", this.roomConnectionUpdate);
+        socket.off("event", this.eventRegistered);
     },
     computed: {
         commandId(): number | undefined {
@@ -85,6 +86,14 @@ export default defineComponent({
         },
     },
     methods: {
+        // roomConnectionUpdate(n: number) {
+        //     this.numberOfConnectedClients = n;
+        // },
+        eventRegistered(commandEvent: CommandEvent) {
+            console.log("Event registered!");
+            console.log(commandEvent);
+            QueueHandler.instance.enqueue(commandEvent);
+        },
         sendCommand(): void {
             if(this.commandId === undefined) {
                 this.error = true;
