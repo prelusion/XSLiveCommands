@@ -89,10 +89,10 @@ app.on("window-all-closed", () => {
 // Regedit - Handling registry requests
 require("./libs/regedit");
 
-// Regedit - Handling electron dialog
+// dialog - Handling electron dialog
 require("./libs/dialog");
 
-// Regedit - Handling file system calls
+// fs - Handling file system calls
 require("./libs/fs");
 
 // Clipboard - Handling clipboard actions

@@ -4,12 +4,27 @@
     </div>
     <div v-else>
         <div>
-            <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
-            <div id="file">
-                Selected file:
-                <span>{{ filename ? filename : 'No file selected' }}</span>
+            <div id="file-selection">
+                <div>
+                    Selected file:
+                    <span>{{ filename || 'No file selected' }}</span>
+                </div>
+                <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
+                <span id="error" v-html="errors.join('<br>')"></span>
             </div>
-            <div id="error" v-html="text.join('<br>')"></div>
+
+            <div id="password">
+                <label>
+                    Set a password for Tyrant: <br/>
+                    <input v-model="password" v-bind:type="passwordType">
+
+                    <label>
+                        <input v-model="showPassword" type="checkbox"> Show password
+                    </label>
+                    <br/>
+                    <span class="small-text">This is <b>NOT</b> for players joining. Password is for the Tyrant joining.</span>
+                </label>
+            </div>
         </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
@@ -19,6 +34,8 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
+import {Commands} from "@/interfaces/command";
+import {ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
 
@@ -28,17 +45,23 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            text: [] as Array<string>,
+            errors: [] as Array<string>,
+
             filepath: "",
+            password: "",
+            commands: {} as Commands | undefined,
+
+            showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
+
             buttonConfig: [
                 {
                     window: "Main",
                     text: "Cancel",
                 },
                 {
-                    text: "Create room",
+                    text: "Create",
                     callback: () => {
                         this.createRoom();
                     },
@@ -48,12 +71,16 @@ export default defineComponent({
         };
     },
     mounted() {
-        // Runs when shown
+        // -
     },
     computed: {
+        passwordType(): string {
+            return this.showPassword ? "text" : "password";
+        },
+
         /**
          * Get the file name from the path
-         * From: `C:/.../.../file.aoe2scenario`. To: `file.aoe2scenario`
+         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>.aoe2scenario`
          */
         filename(): string {
             return this.filepath.split("\\").splice(-1)[0];
@@ -61,35 +88,65 @@ export default defineComponent({
 
         /**
          * Get the plain file name without extension from the path
-         * From: `C:/.../.../file.aoe2scenario`. To: `file`
+         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>`
          */
         plainFilename(): string {
             return this.filename.split(".")[0];
         },
     },
     methods: {
+        getCommandFilepath(filepath: string) {
+            const folders = filepath.split("\\");
+            const file = folders.splice(-1)[0];
+            const folderPath = folders.join('\\');
+            return folderPath + '\\' + file.split(".")[0] + ".json";
+        },
         openFilePrompt() {
             this.selectInProgress = true;
 
             window.dialog
                 .select(GameHandler.instance.steamId)
-                .then((value: SteamIdResponse) => {
+                .then(async (value: SteamIdResponse) => {
                     this.selectInProgress = false;
 
                     if (value.filepath) {
-                        this.filepath = value.filepath;
+                        const result = await window.fs.readCommands(this.getCommandFilepath(value.filepath));
+
+                        if (result.commands) {
+                            this.filepath = value.filepath;
+                            this.commands = result.commands;
+                            this.errors = [];
+                        } else {
+                            if (result.reason === 'no-json') {
+                                this.errors = [
+                                    "Commands File Not Found",
+                                    "A JSON file with the same name as the scenario containing information about the commands must be present",
+                                ];
+                            } else if (result.reason === 'invalid-json') {
+                                this.errors = [
+                                    "Invalid Commands File",
+                                    "The JSON Commands file corresponding with the scenario is invalid.",
+                                ];
+                            }
+                        }
                     } else if (value.reason !== "cancelled") {
-                        this.text = ["Unknown Error", "An unknown error has occurred."];
+                        this.errors = ["Unknown Error", "An unknown error has occurred."];
                     }
                 });
         },
         createRoom() {
             this.creationInProgress = true;
 
-            SocketHandler.instance.createRoom(this.plainFilename)
+            SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
                 .then(() => {
-                    this.$store.commit("changeWindow", "Room");
+                    this.$store.commit("changeWindow", {
+                        window: 'Room',
+                        data: {'asHost': true}
+                    });
                 })
+                .catch(() => {
+                    this.creationInProgress = false;
+                });
         },
     },
     watch: {},
@@ -98,21 +155,34 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-button {
-    padding: 10px;
+
+#file-selection {
+    button {
+        padding: 5px;
+    }
+
+    #error {
+        color: red;
+        padding: 10px;
+    }
 }
 
-#file {
-    padding: 10px 0;
-}
+#password {
+    margin-top: 5px;
 
-#error {
-    color: red;
-    padding: 10px;
+    input {
+        padding: 4px;
+    }
+
+    .small-text {
+        font-size: 13px;
+        color: gray;
+    }
 }
 
 #loading {
     width: 100%;
     text-align: center;
 }
+
 </style>

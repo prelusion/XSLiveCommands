@@ -1,31 +1,22 @@
-import express from "express";
+import {config} from "dotenv";
+import {createServer} from "http";
 import {Server} from "socket.io";
 
-import {startExpressServer} from "./handlers/request-handler";
-import {startIOServer} from "./handlers/client-handler";
-import {createServer} from "http";
-import {EventHandler} from "./handlers/event-handler";
+import {startIoServer} from "./handlers/client-handler";
 
-import {config} from "dotenv";
 // Load .env file
 config();
-console.log(process.env)
 
-export const eventHandler = new EventHandler();
-
-export const EXECUTE_CYCLE_OFFSET = 5;
+export const EXECUTE_CYCLE_OFFSET = parseInt(process.env.EXECUTE_CYCLE_OFFSET) || 3;
 
 function main() {
-    const port = process.env.PORT || 80;
-    console.log(port)
-    const app = express();
-    app.set("port", port).use(express.json())
+    const port = (process.env.PORT || 80) as number;
 
-    const httpServer = createServer(app);
-    const io = new Server(httpServer);
+    const httpServer = createServer();
+    const io = new Server(httpServer, {});
+    io.listen(port);
 
-    startExpressServer(httpServer, app, io);
-    startIOServer(io);
+    startIoServer(io);
 }
 
 main();

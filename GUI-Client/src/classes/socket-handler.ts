@@ -1,7 +1,9 @@
-import {io, Socket} from "socket.io-client";
-import {assert, ensure} from "@/util/general";
-import {Room} from "@/interfaces/general";
 import {GameHandler} from "@/classes/game-handler";
+import {Command, Commands} from "@/interfaces/command";
+import {Room} from "@/interfaces/general";
+import {assert, ensure} from "@/util/general";
+import {Socket} from "socket.io-client";
+import {QueueHandler} from "@/classes/queue-handler";
 
 export class SocketHandler {
     private constructor() {
@@ -34,28 +36,62 @@ export class SocketHandler {
         }
     }
 
-    public joinRoom(roomId: string): Promise<void> {
+    public joinRoomAsPlayer(roomId: string): Promise<void> {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
-            this.socket.emit("joinRoom", roomId, async (room: Room | null) => {
-                if (room === null) {
-                    return setTimeout(() => {
-                        reject(`Unable to join room: '${roomId}'`)
-                    }, 200)
-                }
+            this.socket.emit("joinRoomAsPlayer", roomId,
+                async (room: Room | null) => {
+                    if (room === null)
+                        return setTimeout(() => reject(`Unable to join room: '${roomId}'`), 200);
 
-                if (room.scenario) {
-                    this.room = room;
-                    await GameHandler.instance.resetState(room.scenario);
-                    GameHandler.instance.startCoreLoop(room.scenario);
+                    console.log(room.events)
 
-                    resolve();
-                } else {
-                    reject(`An unknown error occurred. Please try again.`);
-                }
-            });
+                    if (room.scenario) {
+                        this.room = room;
+                        await GameHandler.instance.resetState(room.scenario);
+
+                        // Set queue to whatever was received when joining the room
+                        if (room.events.length > 0) {
+                            QueueHandler.instance.overwrite(room.events);
+                        }
+
+                        GameHandler.instance.startCoreLoop(room.scenario);
+
+                        resolve();
+                    } else {
+                        reject(`An unknown error occurred. Please try again.`);
+                    }
+                });
         });
+    }
+
+    public joinRoomAsTyrant(roomId: string, password: string): Promise<void> {
+        return new Promise((resolve, reject): void => {
+            assert(this.socket);
+
+            this.socket.emit("joinRoomAsTyrant", roomId, password,
+                async (room: Room | null, error: string | null) => {
+                    if (room === null)
+                        return setTimeout(() => reject(error), 200);
+
+                    if (room.scenario) {
+                        this.room = room;
+                        await GameHandler.instance.resetState(room.scenario);
+                        GameHandler.instance.startCoreLoop(room.scenario);
+
+                        resolve();
+                    } else {
+                        reject(`An unknown error occurred. Please try again.`);
+                    }
+                });
+        });
+    }
+
+    public sendCommand(command: Command): void {
+        assert(this.socket);
+
+        this.socket.emit("registerCommand", command);
     }
 
     public leaveRoom(): Promise<void> {
@@ -69,30 +105,30 @@ export class SocketHandler {
             this.socket.emit("leaveRoom", async () => {
                 GameHandler.instance.resetState(scenario).then(resolve);
             });
-        })
+        });
     }
 
-    public createRoom(filename: string): Promise<void> {
+    public createRoom(filename: string, commands: Commands, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
-            this.socket.emit("createRoom", filename, async (room: Room) => {
+            this.socket.emit("createRoom", filename, commands, password, async (room: Room) => {
                 this.room = room;
 
-                if (room.scenario) {
+                if (room.scenario && room.commands) {
                     await GameHandler.instance.resetState(room.scenario);
                     GameHandler.instance.startCoreLoop(room.scenario);
 
                     resolve();
                 } else {
-                    reject('Invalid room');
+                    reject("Invalid room");
                 }
             });
         });
     }
 
     public registerEventListeners(): void {
-        assert(this.socket)
+        assert(this.socket);
     }
 
     get socket(): Socket | null {

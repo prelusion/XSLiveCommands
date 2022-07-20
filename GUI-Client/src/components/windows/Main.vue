@@ -8,9 +8,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
-import Buttons from "@/components/Buttons.vue";
 import {GameHandler} from "@/classes/game-handler";
+import Buttons from "@/components/Buttons.vue";
+import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "MainRoom",
@@ -20,30 +20,33 @@ export default defineComponent({
         return {
             buttonConfig: [
                 {
-                    window: 'Join',
-                    text: 'Join a room',
+                    window: "Create",
+                    text: "Create a Room",
                 },
                 {
-                    window: 'Create',
-                    text: 'Create a room',
+                    window: "JoinPlayer",
+                    text: "Join as Player",
+                },
+                {
+                    window: "JoinTyrant",
+                    text: "Join as Tyrant",
                 },
             ] as Array<ButtonConfig>,
-        }
+        };
     },
     mounted() {
-        // Execute on creation
+        // this.$store.commit("changeWindow", "Create");
     },
     computed: {
         steamId(): string {
             return GameHandler.instance.steamId;
-        }
+        },
     },
     methods: {},
-    watch: {}
-})
+    watch: {},
+});
 
 </script>
 
 <style scoped lang="scss">
-
 </style>

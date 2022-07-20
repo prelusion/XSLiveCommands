@@ -7,7 +7,7 @@ export class QueueHandler {
 
     private static _instance: QueueHandler | null = null;
 
-    private queue: Array<CommandEvent> = [];
+    private _queue: Array<CommandEvent> = [];
 
     static get instance(): QueueHandler {
         if (this._instance === null) {
@@ -17,22 +17,26 @@ export class QueueHandler {
     }
 
     public isEmpty(): boolean {
-        return this.queue.length === 0;
+        return this._queue.length === 0;
     }
 
     public enqueue(event: CommandEvent): void {
-        this.queue.push(event);
+        this._queue.push(event);
     }
 
     public dequeue(): CommandEvent | undefined {
-        return this.queue.shift();
+        return this._queue.shift();
     }
 
     public clear(): void {
-        this.queue.length = 0;
+        this._queue.length = 0;
     }
 
     public length(): number {
-        return this.queue.length;
+        return this._queue.length;
+    }
+
+    public overwrite(queue: Array<CommandEvent>): void {
+        this._queue = queue;
     }
 }

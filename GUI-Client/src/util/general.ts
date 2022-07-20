@@ -6,7 +6,7 @@
  *
  * @author Karol Majewski @ https://stackoverflow.com/a/54738437/7230293
  */
-export function ensure<T>(argument: T | undefined | null, message = 'This value was promised to be there.'): T {
+export function ensure<T>(argument: T | undefined | null, message = "This value was promised to be there."): T {
     if (argument === undefined || argument === null) {
         throw new TypeError(message);
     }
@@ -24,6 +24,6 @@ export function ensure<T>(argument: T | undefined | null, message = 'This value 
  */
 export function assert(value: unknown): asserts value {
     if (value === undefined || value === null) {
-        throw new TypeError('value must be defined');
+        throw new TypeError("value must be defined");
     }
 }

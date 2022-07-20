@@ -17,7 +17,13 @@ export async function select(steamId: string): Promise<SteamIdResponse> {
 
     try {
         const response = await dialog.showOpenDialog({
-            properties: ["openFile", "dontAddToRecent"],
+            properties: [
+                "openFile",
+                "dontAddToRecent"
+            ],
+            filters: [
+                { name: 'Scenario Files', extensions: ['aoe2scenario'] }
+            ],
             defaultPath: scenarioFolder,
         });
 

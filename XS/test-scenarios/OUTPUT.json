@@ -1,0 +1,15 @@
+[{
+    "name": "Send resources",
+    "id": 1,
+    "params": [
+        "wood",
+        "food",
+        "gold",
+        "stone",
+        {
+            "name": "player",
+            "default": -1,
+            "required": true
+        }
+    ]
+}]

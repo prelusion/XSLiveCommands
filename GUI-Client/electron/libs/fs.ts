@@ -1,6 +1,7 @@
-import {CommandEvent} from "../../src/interfaces/general";
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
+import {Commands, JsonCommand} from "../../src/interfaces/command";
+import {CommandEvent} from "../../src/interfaces/general";
 
 const userProfile = process.env.USERPROFILE;
 
@@ -30,22 +31,40 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
+export async function readCommands(path: string): Promise<{commands?: Commands; reason?: string}> {
+    if (!fs.existsSync(path))
+        return {reason: 'no-json'};
+
+    try {
+        const commandsArray: Array<JsonCommand> = JSON.parse(readFileSync(path).toString());
+
+        const commands = commandsArray.reduce((
+            commands: Commands,
+            command: {name: string; id: number; params: number[]}
+        ) => {
+            commands[command.name] = {id: command.id, params: command.params};
+            return commands;
+        }, {});
+
+        return {commands};
+    } catch {
+        return {reason: 'invalid-json'};
+    }
+}
+
 function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer
     return [...new Uint8Array(buffer)]
-        .map(x => x.toString(16).padStart(2, '0'))
-        .join('');
+        .map(x => x.toString(16).padStart(2, "0"))
+        .join("");
 }
 
 export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
 
-    console.log("WRITE EVENT")
-    console.log(steamId, scenario)
-
     if (!event.params)
         event.params = [];
 
-    console.log(event)
+    console.log(event.executeCycleNumber, event.commandId, event.params.length)
 
     // File layout (all int32):
     // 1:       Execution Cycle Number
@@ -88,6 +107,10 @@ ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) =>
 
 ipcMain.handle("fs:readCycle", (_, steamId: string, scenario: string) => {
     return readCycle(steamId, scenario);
+});
+
+ipcMain.handle("fs:readCommands", (_, path: string) => {
+    return readCommands(path);
 });
 
 ipcMain.handle("fs:writeEvent", (_, steamId: string, scenario: string, event: CommandEvent) => {
