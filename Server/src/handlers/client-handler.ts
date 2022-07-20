@@ -15,13 +15,10 @@ export function startIoServer(io: Server) {
 
     io.on("connection", (socket: Socket) => {
         connectionAmount++;
-        console.log("Client connected!");
-        console.log(`Amount of connected clients are: ${connectionAmount}`);
+        console.log(`[Server] >> Client connected.    Active connections: ${connectionAmount}`);
 
         socket.on("cycleUpdate", (cycle: number) => {
             const roomId = roomIdFromSocket(socket);
-
-            console.log(roomId + " cycle: " + cycle);
 
             if (cycle === null || cycle === undefined) {
                 cycle = 0;
@@ -32,9 +29,7 @@ export function startIoServer(io: Server) {
         socket.on("disconnecting", () => {
             connectionAmount--;
 
-            console.log("Client disconnecting!");
-            console.log(`Amount of connected clients are: ${connectionAmount}`);
-
+            console.log(`[Server] >> Client disconnected. Active connections: ${connectionAmount}`);
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 

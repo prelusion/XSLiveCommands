@@ -25,6 +25,7 @@ export class RoomHandler {
     }
 
     public createRoom(roomId: string, socket: Socket, scenario: string, commands: Commands, password: string | null): Room {
+        console.log(`[Room ${roomId}] >> Created`);
         socket.join(roomId);
 
         const socketId = socket.id;
@@ -46,6 +47,8 @@ export class RoomHandler {
             if (asTyrant)
                 room.tyrants.push(socket.id);
 
+            console.log(`[Room ${roomId}] >> Socket joined room (current: ${room.connections.length})`);
+
             this.sendRoomConnectionCountUpdate(roomId, room.connections.length);
         }
     }
@@ -58,6 +61,8 @@ export class RoomHandler {
             room.connections = room.connections.filter((connId) => {
                 return connId !== socket.id;
             });
+
+            console.log(`[Room ${roomId}] >> Socket left room (current: ${room.connections.length})`);
 
             if (room.connections.length === 0) {
                 this.removeRoom(roomId);
@@ -83,11 +88,14 @@ export class RoomHandler {
         room.last_execution_cycle = clientEvent.executeCycleNumber =
             Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
 
+        console.log(`[Room ${roomId}] Command registered: ID ${clientEvent.commandId} executed at: ${clientEvent.executeCycleNumber}`);
+
         this.io.to(roomId).emit("event", clientEvent);
         room.events.push(clientEvent);
     }
 
     public removeRoom(roomId: string) {
+        console.log(`[Room ${roomId}] >> Deleted due to no active connections`);
         return this.rooms = this.rooms.filter(room => room.id !== roomId);
     }
 
@@ -108,6 +116,8 @@ export class RoomHandler {
         const room = this.getRoomByID(roomId);
         if (typeof cycle !== "number" || room === undefined || cycle <= room.current_cycle)
             return;
+
+        console.log(`[Room ${roomId}] cycle update: ${cycle} ${cycle <= room.current_cycle ? '[Ignored]' : ''}`);
 
         room.current_cycle = cycle;
     }
