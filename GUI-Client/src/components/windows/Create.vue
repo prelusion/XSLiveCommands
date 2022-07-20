@@ -71,7 +71,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        // Runs when shown
+        // -
     },
     computed: {
         passwordType(): string {

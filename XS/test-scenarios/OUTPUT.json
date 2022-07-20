@@ -6,6 +6,10 @@
         "food",
         "gold",
         "stone",
-        "player"
+        {
+            "name": "player",
+            "default": -1,
+            "required": true
+        }
     ]
 }]

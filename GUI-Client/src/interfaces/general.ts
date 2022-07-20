@@ -6,11 +6,11 @@ export interface Room {
     scenario: string;
     numberOfConnections: number;
     commands: Commands;
-    events: CommandEvent[];
+    events: Array<CommandEvent>;
 }
 
 export interface CommandEvent {
     commandId: number;
-    params: number[];
+    params: Array<number>;
     executeCycleNumber: number;
 }

@@ -1,20 +1,26 @@
 export interface JsonCommand {
     name: string;
     id: number;
-    params: number[];
+    params: Array<number>;
+}
+
+export type CommandTemplateParamConfigObject = {
+    name: string;
+    default?: number;
+    required?: boolean;
+};
+
+export type CommandTemplateParamConfig = string | CommandTemplateParamConfigObject;
+
+export interface CommandTemplate {
+    id: number;
+    params: Array<CommandTemplateParamConfig>;
 }
 
 export interface Command {
     id: number;
-    params: number[];
+    params: Array<number>;
 }
 
-export interface CommandData {
-    roomId: string;
-    commandId: number;
-    params: {
-        [name: string]: number;
-    };
-}
 
-export type Commands = Record<string, Command>;
+export type Commands = Record<string, CommandTemplate>;

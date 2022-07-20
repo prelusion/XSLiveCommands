@@ -13,7 +13,6 @@ export class GameHandler {
     private static _instance: GameHandler | null = null;
 
     private coreInterval = -1;
-    private cycle = -1;  // Todo: Is this variable even necessary?
     private lastCommandCycle = -1;
     private _steamId = "";
 
@@ -27,7 +26,6 @@ export class GameHandler {
     public async resetState(scenario: string): Promise<void> {
         await window.fs.deleteXsDataFiles(this.steamId, scenario);
         this.lastCommandCycle = -1;
-        this.cycle = -1;
         QueueHandler.instance.clear();
         this.stopCoreLoop();
     }

@@ -102,8 +102,6 @@ export default defineComponent({
             if (['Shift', 'Control', 'Alt'].includes(keyEvent.key))
                 return;
 
-            console.log(keyEvent)
-
             if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
                 this.tyrantMode.enabled = true;
                 this.tyrantMode.progress = 0;

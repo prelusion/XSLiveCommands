@@ -35,7 +35,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        // this.$store.commit("changeWindow", "JoinTyrant");
+        // this.$store.commit("changeWindow", "Create");
     },
     computed: {
         steamId(): string {
