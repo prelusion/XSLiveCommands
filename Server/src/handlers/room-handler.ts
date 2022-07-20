@@ -114,10 +114,13 @@ export class RoomHandler {
 
     public setRoomCurrentCycle(roomId: string, cycle: number) {
         const room = this.getRoomByID(roomId);
-        if (typeof cycle !== "number" || room === undefined || cycle <= room.current_cycle)
+        if (typeof cycle !== "number" || room === undefined)
             return;
 
         console.log(`[Room ${roomId}] cycle update: ${cycle} ${cycle <= room.current_cycle ? '[Ignored]' : ''}`);
+
+        if (cycle <= room.current_cycle)
+            return;
 
         room.current_cycle = cycle;
     }
