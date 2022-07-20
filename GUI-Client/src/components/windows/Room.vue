@@ -62,7 +62,7 @@ export default defineComponent({
         const socket = ensure(SocketHandler.instance.socket);
 
         const data = this.$store.state.data as { 'asHost': boolean };
-        this.asHost = data['asHost'] ?? false;
+        this.asHost = data?.asHost ?? false;
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
@@ -106,7 +106,8 @@ export default defineComponent({
 
             if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
                 this.tyrantMode.enabled = true;
-                console.log("Enabled")
+                this.tyrantMode.progress = 0;
+                console.log("Enabled");
                 return;
             }
             if (!this.tyrantMode.enabled) {
