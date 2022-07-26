@@ -26,6 +26,10 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.setRoomCurrentCycle(roomId, cycle);
         });
 
+        socket.on("verifyRoomExists", (roomId: string, callback: (boolean) => void) => {
+            return callback(!!RoomHandler.instance.getRoomByID(roomId));
+        });
+
         socket.on("disconnecting", () => {
             connectionAmount--;
 

@@ -7,6 +7,7 @@ declare module "@vue/runtime-core" {
     interface State {
         data: unknown;
         window: string;
+        connectionOk: boolean;
     }
 
     interface ComponentCustomProperties {

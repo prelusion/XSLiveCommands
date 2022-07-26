@@ -253,7 +253,7 @@ export default defineComponent({
     #info {
         border-bottom: 1px solid #b6b6b6;
         padding-bottom: 10px;
-        
+
         table {
             tr {
                 td:first-child {

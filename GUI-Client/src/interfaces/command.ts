@@ -1,8 +1,4 @@
-export interface JsonCommand {
-    name: string;
-    id: number;
-    params: Array<number>;
-}
+// ------------------< Json >------------------ \\
 
 export type CommandTemplateParamConfigObject = {
     name: string;
@@ -11,6 +7,16 @@ export type CommandTemplateParamConfigObject = {
 };
 
 export type CommandTemplateParamConfig = string | CommandTemplateParamConfigObject;
+
+export interface JsonCommand {
+    name: string;
+    id: number;
+    params: Array<CommandTemplateParamConfig>;
+}
+
+export type JsonCommandFile = Array<JsonCommand>;
+
+// ------------------< Received Commands >------------------ \\
 
 export interface CommandTemplate {
     id: number;

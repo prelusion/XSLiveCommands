@@ -30,9 +30,29 @@ export default defineComponent({
 
         const socket = io("ws://localhost:80");
         socket.on("connect", () => {
+            this.$store.state.connectionOk = true;
             SocketHandler.instance.socket = socket;
-            // SocketHandler.instance.registerEventListeners();
+
+            if (SocketHandler.instance.room) {
+                socket.emit('verifyRoomExists', SocketHandler.instance.room.id, (exists: boolean) => {
+                    if (!exists) {
+                        SocketHandler.instance.leaveRoom();
+
+                        this.$store.commit("changeWindow", {
+                            window: "Main",
+                            data: {
+                                'message': 'The server does not recognize the room anymore. Please recreate it.'
+                            }
+                        });
+                    }
+                });
+            }
+
             this.connectedToServer = true;
+        });
+
+        socket.on("disconnect", () => {
+            this.$store.state.connectionOk = false;
         });
     },
     computed: {

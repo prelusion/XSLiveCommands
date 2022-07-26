@@ -1,6 +1,6 @@
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
-import {Commands, JsonCommand} from "../../src/interfaces/command";
+import {Commands, JsonCommand, JsonCommandFile} from "../../src/interfaces/command";
 import {CommandEvent} from "../../src/interfaces/general";
 
 const userProfile = process.env.USERPROFILE;
@@ -36,11 +36,11 @@ export async function readCommands(path: string): Promise<{commands?: Commands; 
         return {reason: 'no-json'};
 
     try {
-        const commandsArray: Array<JsonCommand> = JSON.parse(readFileSync(path).toString());
+        const commandsArray: JsonCommandFile = JSON.parse(readFileSync(path).toString());
 
         const commands = commandsArray.reduce((
             commands: Commands,
-            command: {name: string; id: number; params: number[]}
+            command: JsonCommand
         ) => {
             commands[command.name] = {id: command.id, params: command.params};
             return commands;

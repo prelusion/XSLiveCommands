@@ -3,6 +3,9 @@
         <div class="">
             SteamID: {{ steamId }}
         </div>
+        <div id="displayMessage">
+            {{ message }}
+        </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
 </template>
@@ -32,10 +35,16 @@ export default defineComponent({
                     text: "Join as Tyrant",
                 },
             ] as Array<ButtonConfig>,
+            message: "",
         };
     },
     mounted() {
         // this.$store.commit("changeWindow", "Create");
+        const data = this.$store.state.data as {message: string} | null;
+        if (data !== null) {
+            this.message = data.message;
+            this.$store.state.data = null;
+        }
     },
     computed: {
         steamId(): string {
@@ -49,4 +58,9 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+#displayMessage {
+    margin-top: 8vh;
+    text-align: center;
+    color: #ce3d3d;
+}
 </style>
