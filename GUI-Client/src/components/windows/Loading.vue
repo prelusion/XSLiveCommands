@@ -41,7 +41,7 @@ export default defineComponent({
                         this.$store.commit("changeWindow", {
                             window: "Main",
                             data: {
-                                'message': 'The server does not recognize the room anymore. Please recreate it.'
+                                'message': 'The server does not recognize the room anymore, please join or create a new one.'
                             }
                         });
                     }
