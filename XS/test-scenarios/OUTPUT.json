@@ -1,15 +1,36 @@
 [{
     "name": "Send resources",
     "id": 1,
-    "params": [
-        "wood",
-        "food",
-        "gold",
-        "stone",
+    "params": [{
+            "name": "wood",
+            "default": 0,
+            "type": "int"
+        },
+        {
+            "name": "food",
+            "default": 0,
+            "type": "int"
+        },
+        {
+            "name": "gold",
+            "default": 0,
+            "type": "int"
+        },
+        {
+            "name": "stone",
+            "default": 0,
+            "type": "int"
+        },
         {
             "name": "player",
-            "default": -1,
-            "required": true
+            "type": "int"
         }
     ]
+}, {
+    "name": "Send message",
+    "id": 2,
+    "params": [{
+        "name": "message",
+        "type": "string"
+    }]
 }]

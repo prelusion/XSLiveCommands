@@ -1,71 +1,66 @@
-import {ipcMain} from "electron";
-import fs, {readFileSync} from "fs";
-import {CommandTemplates, JsonCommand, JsonCommandFile} from "../../src/interfaces/command";
-import {CommandEvent} from "../../src/interfaces/general";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.writeEvent = exports.readCommands = exports.readCycle = exports.deleteXsDataFiles = exports.profileFolderPath = void 0;
+const tslib_1 = require("tslib");
+const electron_1 = require("electron");
+const fs_1 = tslib_1.__importStar(require("fs"));
 const userProfile = process.env.USERPROFILE;
-
-export function profileFolderPath(steamId: string): string {
+function profileFolderPath(steamId) {
     return `${userProfile}\\Games\\Age of Empires 2 DE\\${steamId}\\profile\\`;
 }
-
-export function deleteXsDataFiles(steamId: string, scenario: string): void {
+exports.profileFolderPath = profileFolderPath;
+function deleteXsDataFiles(steamId, scenario) {
     const profileFolder = profileFolderPath(steamId);
-
     for (const path of ["command.xsdat", `${scenario}.xsdat`]) {
-        if (fs.existsSync(profileFolder + path)) {
-            fs.unlinkSync(profileFolder + path);
+        if (fs_1.default.existsSync(profileFolder + path)) {
+            fs_1.default.unlinkSync(profileFolder + path);
         }
     }
 }
-
-export function readCycle(steamId: string, scenario: string): number | undefined {
+exports.deleteXsDataFiles = deleteXsDataFiles;
+function readCycle(steamId, scenario) {
     const profileFolder = profileFolderPath(steamId);
-
     try {
-        const cycleFile = readFileSync(`${profileFolder}${scenario}.xsdat`, {flag: "a+", encoding: null});
+        const cycleFile = (0, fs_1.readFileSync)(`${profileFolder}${scenario}.xsdat`, { flag: "a+", encoding: null });
         return Buffer.from(cycleFile).readInt32LE();
-    } catch (err) {
+    }
+    catch (err) {
         // File doesn't exist. Ignored because of HUGE ERROR and file doesn't have to exist.
     }
     return undefined;
 }
-
-export async function readCommands(path: string): Promise<{commands?: CommandTemplates; reason?: string}> {
-    if (!fs.existsSync(path))
-        return {reason: 'no-json'};
-
-    try {
-        const commandsArray: JsonCommandFile = JSON.parse(readFileSync(path).toString());
-
-        const commands = commandsArray.reduce((
-            commands: CommandTemplates,
-            command: JsonCommand
-        ) => {
-            commands[command.name] = {
-                funcName: command.funcName,
-                params: command.params,
-            };
-            return commands;
-        }, {});
-
-        return {commands};
-    } catch {
-        return {reason: 'invalid-json'};
-    }
+exports.readCycle = readCycle;
+function readCommands(path) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        if (!fs_1.default.existsSync(path))
+            return { reason: 'no-json' };
+        try {
+            const commandsArray = JSON.parse((0, fs_1.readFileSync)(path).toString());
+            const commands = commandsArray.reduce((commands, command) => {
+                commands[command.name] = {
+                    funcName: command.funcName,
+                    params: command.params,
+                };
+                return commands;
+            }, {});
+            return { commands };
+        }
+        catch (_a) {
+            return { reason: 'invalid-json' };
+        }
+    });
 }
-
+exports.readCommands = readCommands;
 /**
  * Convert the buffer to hexadecimal so it's easier to debug
  *
  * @param buffer
  */
-function buf2hex(buffer: Buffer) {
+function buf2hex(buffer) {
     return [...new Uint8Array(buffer)]
         .map(x => x.toString(16).padStart(2, "0"))
         .join("");
 }
-
 /**
  * File layout:
  *
@@ -87,18 +82,14 @@ function buf2hex(buffer: Buffer) {
  *      | ENDIF            | >    |        |        |                         |            |
  *      | END REPEAT       | >    |        |        |                         |            |
  */
-export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
+function writeEvent(steamId, scenario, event) {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
-
     if (!event.params)
         event.params = [];
-
     const intSize = 4;
-    const preParamIntCount = 3;  // Execution Cycle Number, CommandId, Parameter Count
-
+    const preParamIntCount = 3; // Execution Cycle Number, CommandId, Parameter Count
     // Buffer gets the right amount of bytes allocated to it.
     const buffer = Buffer.alloc(intSize * preParamIntCount + event.params.length * intSize);
-
     let offset = 0;
     buffer.writeInt32LE(event.executeCycleNumber, offset);
     offset += intSize;
@@ -106,33 +97,29 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
     offset += intSize;
     buffer.writeInt32LE(event.params.length, offset);
     offset += intSize;
-
     for (const param of event.params) {
         buffer.writeInt32LE(param, offset);
         offset += intSize;
     }
-
-    fs.writeFile(commandFilePath, buffer, (err) => {
-        if (err) throw new Error("Writing to file didn't work");
+    fs_1.default.writeFile(commandFilePath, buffer, (err) => {
+        if (err)
+            throw new Error("Writing to file didn't work");
     });
 }
-
+exports.writeEvent = writeEvent;
 // =========================================================================================
 // ======================= Handlers for wrapping the above functions =======================
 // =========================================================================================
-
-ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) => {
+electron_1.ipcMain.handle("fs:deleteXsDataFiles", (_, steamId, scenario) => {
     return deleteXsDataFiles(steamId, scenario);
 });
-
-ipcMain.handle("fs:readCycle", (_, steamId: string, scenario: string) => {
+electron_1.ipcMain.handle("fs:readCycle", (_, steamId, scenario) => {
     return readCycle(steamId, scenario);
 });
-
-ipcMain.handle("fs:readCommands", (_, path: string) => {
+electron_1.ipcMain.handle("fs:readCommands", (_, path) => {
     return readCommands(path);
 });
-
-ipcMain.handle("fs:writeEvent", (_, steamId: string, scenario: string, event: CommandEvent) => {
+electron_1.ipcMain.handle("fs:writeEvent", (_, steamId, scenario, event) => {
     return writeEvent(steamId, scenario, event);
 });
+//# sourceMappingURL=fs.js.map

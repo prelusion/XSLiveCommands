@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "outDir": "../dist",
+    "outDir": "../dist-electron",
     "types": [
       "webpack-env",
       "mocha",
