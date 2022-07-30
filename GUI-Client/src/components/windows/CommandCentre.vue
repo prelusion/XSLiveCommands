@@ -78,13 +78,12 @@ import Buttons from "@/components/Buttons.vue";
 import {
     CommandParamConfig,
     CommandTemplates,
-    Param
+    Param, ParamType
 } from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "@/interfaces/general";
 import {QueueHandler} from "@/classes/queue-handler";
-import {ParamType} from "@/enums/commands";
 
 export default defineComponent({
     name: "CommandCentre",

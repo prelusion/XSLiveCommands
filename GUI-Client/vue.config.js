@@ -54,11 +54,7 @@ module.exports = {
 
                 // Electron packing. Setting this to false results in a warning when building.
                 // I'm not sure why it is not recommended. I might get back to this in the future^tm.
-                // asar: true,
-
-                asar: {
-                    smartUnpack: true,
-                }
+                asar: false,
 
                 // extraResources: [
                 //     {

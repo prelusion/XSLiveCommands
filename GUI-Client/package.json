@@ -8,7 +8,7 @@
     "build:electron": "tsc --project .\\electron\\",
     "build:vue": "vue-cli-service build",
     "start": "set NODE_ENV=development&& npm run build:all && electron ./dist/electron/main.js",
-    "start:electron": "set NODE_ENV=development&& electron ./dist-electron/electron/main.js",
+    "start:electron": "set NODE_ENV=development&& electron ./dist/electron/main.js",
     "watch:electron": "nodemon --watch .\\electron\\ -e ts --exec \"npm run build:electron && npm run start:electron\"",
     "watch:vue": "vue-cli-service build --watch",
     "build:production": "npm run build:electron && vue-cli-service electron:build"

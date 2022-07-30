@@ -1,5 +1,3 @@
-import {ParamType} from "@/enums/commands";
-
 export interface CommandParamConfig {
     name: string;
     type: string;
@@ -38,3 +36,13 @@ export interface Param {
     type: ParamType;
     data: string | number | boolean;
 }
+
+// ------------------< Useful Enum >------------------ \\
+
+export enum ParamType {
+    INT,
+    FLOAT,
+    BOOL,
+    STRING,
+}
+
