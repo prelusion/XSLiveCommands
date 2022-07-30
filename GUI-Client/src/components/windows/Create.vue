@@ -34,7 +34,7 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {CommandTemplates} from "@/interfaces/command";
+import {Commands} from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
@@ -49,7 +49,7 @@ export default defineComponent({
 
             filepath: "",
             password: "",
-            commands: {} as CommandTemplates | undefined,
+            commands: {} as Commands | undefined,
 
             showPassword: false,
             creationInProgress: false,

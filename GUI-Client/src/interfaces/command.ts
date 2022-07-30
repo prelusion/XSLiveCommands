@@ -1,40 +1,32 @@
-import {ParamType} from "@/enums/commands";
-
-export interface CommandParamConfig {
-    name: string;
-    type: string;
-    default?: string | number | boolean;
-}
-
-interface CommandCore {
-    funcName: string;
-    params: Array<CommandParamConfig>;
-}
-
 // ------------------< Json >------------------ \\
 
-// JsonCommandFile is converted to a Record<string, CommandTemplate> for ease of access
+export type CommandTemplateParamConfigObject = {
+    name: string;
+    default?: number;
+    required?: boolean;
+};
+
+export type CommandTemplateParamConfig = string | CommandTemplateParamConfigObject;
+
+export interface JsonCommand {
+    name: string;
+    id: number;
+    params: Array<CommandTemplateParamConfig>;
+}
 
 export type JsonCommandFile = Array<JsonCommand>;
 
-export interface JsonCommand extends CommandCore{
-    name: string;
+// ------------------< Received Commands >------------------ \\
+
+export interface CommandTemplate {
+    id: number;
+    params: Array<CommandTemplateParamConfig>;
 }
-
-// ------------------< Templates >------------------ \\
-
-export type CommandTemplate = CommandCore
-export type CommandTemplates = Record<string, CommandTemplate>;
-
-// ------------------< Writeable Commands >------------------ \\
 
 export interface Command {
-    funcName: string;
-    params: Array<Param>;
+    id: number;
+    params: Array<number>;
 }
 
-export interface Param {
-    name: string;
-    type: ParamType;
-    data: string | number | boolean;
-}
+
+export type Commands = Record<string, CommandTemplate>;

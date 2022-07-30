@@ -1,11 +1,11 @@
-import {CommandTemplates} from "./command";
+import {Commands} from "./command";
 
 export interface Room {
     id: string;
     host: string;
     scenario: string;
     numberOfConnections: number;
-    commands: CommandTemplates;
+    commands: Commands;
     events: Array<CommandEvent>;
 }
 

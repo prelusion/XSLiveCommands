@@ -1,17 +1,17 @@
 {
   "name": "aoe2-live-commands",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "description": "",
-  "author": "Prelusion, Alian & KSneijders",
+  "author": "KSneijders & Prelusion",
   "scripts": {
     "build:all": "npm run build:electron && npm run build:vue",
-    "build:electron": "tsc --project .\\electron\\",
+    "build:electron": "tsc -p electron",
     "build:vue": "vue-cli-service build",
     "start": "set NODE_ENV=development&& npm run build:all && electron ./dist/electron/main.js",
-    "start:electron": "set NODE_ENV=development&& electron ./dist-electron/electron/main.js",
-    "watch:electron": "nodemon --watch .\\electron\\ -e ts --exec \"npm run build:electron && npm run start:electron\"",
+    "start:electron": "set NODE_ENV=development&& electron ./dist/electron/main.js",
+    "watch:electron": "nodemon --watch electron -e ts --exec \"npm run build:electron && npm run start:electron\"",
     "watch:vue": "vue-cli-service build --watch",
-    "build:production": "npm run build:electron && vue-cli-service electron:build"
+    "build:production": "vue-cli-service electron:build"
   },
   "main": "background.js",
   "dependencies": {
@@ -26,8 +26,7 @@
     "typescript": "^4.7.2",
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
-    "vuex": "^4.0.0-0",
-    "windows": "^0.1.1"
+    "vuex": "^4.0.0-0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
@@ -49,6 +48,7 @@
     "electron": "^11.0.3",
     "electron-builder": "^22.13.1",
     "electron-devtools-installer": "^3.1.0",
+    "electron-packager": "^15.4.0",
     "electron-reloader": "^1.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0-0",

@@ -40,9 +40,9 @@ module.exports = {
 
             // List native deps here if they don't work
             externals: [],
-            preload: './dist/electron/preload.js',
+            preload: './electron/preload.js',
             // Use this to change the entrypoint of your app's main process
-            mainProcessFile: './dist/electron/main.js',
+            mainProcessFile: './electron/main.js',
             // Use this to change the entry point of your app's render process. default src/[main|index].[js|ts]
             rendererProcessFile: './src/main.ts',
             // Manually disable typescript plugin for main process.
@@ -50,24 +50,20 @@ module.exports = {
             disableMainProcessTypescript: true,
 
             builderOptions: {
-                productName: 'AoE2 Live Commands',
+                productName: 'AoE2 2v1',
 
                 // Electron packing. Setting this to false results in a warning when building.
                 // I'm not sure why it is not recommended. I might get back to this in the future^tm.
-                // asar: true,
-
-                asar: {
-                    smartUnpack: true,
-                }
+                asar: false,
 
                 // extraResources: [
-                //     {
-                //         "from": "./extraResources/",
-                //         "to": "extraResources",
-                //         "filter": [
-                //             "**/*"
-                //         ]
-                //     }
+                    // {
+                    //     "from": "./extraResources/",
+                    //     "to": "extraResources",
+                    //     "filter": [
+                    //         "**/*"
+                    //     ]
+                    // }
                 // ]
             }
         }

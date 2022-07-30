@@ -283,5 +283,3 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/node,webstorm,visualstudiocode
 
 XS/.idea/workspace.xml
-
-GUI-Client/prod-dist/*
