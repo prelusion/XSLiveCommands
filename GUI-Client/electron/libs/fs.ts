@@ -1,7 +1,6 @@
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
-import {CommandTemplates, JsonCommand, JsonCommandFile} from "../../src/interfaces/command";
-import {CommandEvent} from "../../src/interfaces/general";
+import {CommandEvent, CommandTemplates, JsonCommand, JsonCommandFile, ParamType} from "../../src/interfaces/command";
 
 const userProfile = process.env.USERPROFILE;
 
@@ -31,7 +30,7 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
-export async function readCommands(path: string): Promise<{commands?: CommandTemplates; reason?: string}> {
+export async function readCommands(path: string): Promise<{ commands?: CommandTemplates; reason?: string }> {
     if (!fs.existsSync(path))
         return {reason: 'no-json'};
 
@@ -66,26 +65,46 @@ function buf2hex(buffer: Buffer) {
         .join("");
 }
 
+type BufferInfo = { buffer: Buffer; offset: 0 }
+
+function addIntToBuff(bufferInfo: BufferInfo, int: number) {
+    bufferInfo.buffer.writeInt32LE(int, bufferInfo.offset);
+    bufferInfo.offset += 4;
+}
+
+function addFloatToBuff(bufferInfo: BufferInfo, float: number) {
+    bufferInfo.buffer.writeFloatLE(float, bufferInfo.offset);
+    bufferInfo.offset += 4;
+}
+
+function addStringToBuff(bufferInfo: BufferInfo, str: string) {
+    bufferInfo.buffer.writeInt32LE(str.length, bufferInfo.offset);
+    bufferInfo.offset += 4;
+    bufferInfo.buffer.write(str, bufferInfo.offset, 'utf8');
+    bufferInfo.offset += str.length;
+}
+
 /**
  * File layout:
  *
- *      |                  | SIZE | CmlB   | TYPE   | DESCRIPTION             | ASSIGNMENT |
- *      |                  | ---- | ------ | ------ | ----------------------- | ---------- |
- *      | START            | >    |        |        |                         |            |
- *      |                  | 4    | 4      | int32  | Execution Cycle Number  |            |
- *      |                  | 4    | 8      | int32  | CommandId               |            |
- *      |                  | 4    | 12     | int32  | Parameter Count         | = N        |
- *      | REPEAT <N>       | >    |        |        |                         |            |
- *      |                  | 4    | 4      | int32  | Length of <name> string | = X        |
- *      |                  | x    | 4+X    | string | Name of the string      |            |
- *      |                  | 4    | 8+X    | int32  | Variable Type           | = T        |
- *      | IF (T == string) | >    |        |        |                         |            |
- *      |                  | 4    | 12+X   | int32  | Length of <name> string | = L        |
- *      |                  | L    | 12+X+L | string | Data                    |            |
- *      | ELSE             | >    |        |        |                         |            |
- *      |                  | 4    | 12+X   | I,B,F  | Data                    |            |
- *      | ENDIF            | >    |        |        |                         |            |
- *      | END REPEAT       | >    |        |        |                         |            |
+ *      |                  | SIZE | CmlB   | TYPE   | DESCRIPTION                 | ASSIGNMENT |
+ *      |                  | ---- | ------ | ------ | --------------------------- | ---------- |
+ *      | START            | >    |        |        |                             |            |
+ *      |                  | 4    | 4      | int32  | Execution Cycle Number      |            |
+ *      |                  | 4    | 8      | int32  | Length of <funcName> string | = F        |
+ *      |                  | F    | 8+F    | string | Name of the function        |            |
+ *      |                  | 4    | 12+F   | int32  | Parameter Count             | = N        |
+ *      | REPEAT <N>       | >    |        |        |                             |            |
+ *      |                  | 4    | 4      | int32  | Length of <name> string     | = X        |
+ *      |                  | X    | 4+X    | string | Name of the string          |            |
+ *      |                  | 4    | 8+X    | int32  | Variable Type               | = T        |
+ *      | IF (T == string) | >    |        |        |                             |            |
+ *      |                  | 4    | 12+X   | int32  | Length of <name> string     | = L        |
+ *      |                  | L    | 12+X+L | string | Data                        |            |
+ *      | ELSE             | >    |        |        |                             |            |
+ *      |                  | 4    | 12+X   | I,B,F  | Data                        |            |
+ *      | ENDIF            | >    |        |        |                             |            |
+ *      | END REPEAT       | >    |        |        |                             |            |
  */
 export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
@@ -93,26 +112,43 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
     if (!event.params)
         event.params = [];
 
-    const intSize = 4;
-    const preParamIntCount = 3;  // Execution Cycle Number, CommandId, Parameter Count
+    let bufferSize = 12 + event.funcName.length;
+    for (let i = 0; i < event.params.length; i++) {
+        const p = event.params[i];
+        bufferSize += 4;
 
-    // Buffer gets the right amount of bytes allocated to it.
-    const buffer = Buffer.alloc(intSize * preParamIntCount + event.params.length * intSize);
-
-    let offset = 0;
-    buffer.writeInt32LE(event.executeCycleNumber, offset);
-    offset += intSize;
-    buffer.writeInt32LE(event.commandId, offset);
-    offset += intSize;
-    buffer.writeInt32LE(event.params.length, offset);
-    offset += intSize;
-
-    for (const param of event.params) {
-        buffer.writeInt32LE(param, offset);
-        offset += intSize;
+        if (p.type === ParamType.STRING) {
+            bufferSize += (p.data as string).length;
+        }
     }
 
-    fs.writeFile(commandFilePath, buffer, (err) => {
+    const bufferInfo: BufferInfo = {
+        buffer: Buffer.alloc(bufferSize),
+        offset: 0
+    }
+
+    addIntToBuff(bufferInfo, event.executeCycleNumber);
+    addStringToBuff(bufferInfo, event.funcName);
+    addIntToBuff(bufferInfo, event.params.length);
+
+    for (const param of event.params) {
+        switch (param.type) {
+            case ParamType.INT:
+                addIntToBuff(bufferInfo, param.data as number);
+                break;
+            case ParamType.FLOAT:
+                addFloatToBuff(bufferInfo, param.data as number);
+                break;
+            case ParamType.BOOL:
+                addIntToBuff(bufferInfo, param.data as number);
+                break;
+            case ParamType.STRING:
+                addStringToBuff(bufferInfo, param.data as string);
+                break;
+        }
+    }
+
+    fs.writeFile(commandFilePath, bufferInfo.buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work");
     });
 }

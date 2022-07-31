@@ -6,7 +6,6 @@ export interface CommandParamConfig {
 
 interface CommandCore {
     funcName: string;
-    params: Array<CommandParamConfig>;
 }
 
 // ------------------< Json >------------------ \\
@@ -15,19 +14,22 @@ interface CommandCore {
 
 export type JsonCommandFile = Array<JsonCommand>;
 
-export interface JsonCommand extends CommandCore{
+export interface JsonCommand extends CommandCore {
+    params: Array<CommandParamConfig>;
     name: string;
 }
 
 // ------------------< Templates >------------------ \\
 
-export type CommandTemplate = CommandCore
+export interface CommandTemplate extends CommandCore {
+    params: Array<CommandParamConfig>;
+}
+
 export type CommandTemplates = Record<string, CommandTemplate>;
 
 // ------------------< Writeable Commands >------------------ \\
 
-export interface Command {
-    funcName: string;
+export interface Command extends CommandCore {
     params: Array<Param>;
 }
 
@@ -35,6 +37,12 @@ export interface Param {
     name: string;
     type: ParamType;
     data: string | number | boolean;
+}
+
+// ------------------< Received Commands >------------------ \\
+
+export interface CommandEvent extends Command {
+    executeCycleNumber: number;
 }
 
 // ------------------< Useful Enum >------------------ \\
@@ -45,4 +53,3 @@ export enum ParamType {
     BOOL,
     STRING,
 }
-

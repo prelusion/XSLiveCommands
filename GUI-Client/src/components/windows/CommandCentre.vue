@@ -76,13 +76,13 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {
+    CommandEvent,
     CommandParamConfig,
     CommandTemplates,
     Param, ParamType
 } from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {defineComponent} from "vue";
-import {CommandEvent} from "@/interfaces/general";
 import {QueueHandler} from "@/classes/queue-handler";
 
 export default defineComponent({
@@ -241,6 +241,7 @@ export default defineComponent({
             }
 
             this.setText("Command Sent!");
+            this.inputParams = [];
 
             SocketHandler.instance.sendCommand({
                 funcName: this.commandId,

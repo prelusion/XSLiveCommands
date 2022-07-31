@@ -1,4 +1,4 @@
-import {CommandTemplates} from "./command";
+import {CommandEvent, CommandTemplates} from "./command";
 
 export interface Room {
     id: string;
@@ -9,8 +9,3 @@ export interface Room {
     events: Array<CommandEvent>;
 }
 
-export interface CommandEvent {
-    commandId: number;
-    params: Array<number>;
-    executeCycleNumber: number;
-}
