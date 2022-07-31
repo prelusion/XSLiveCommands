@@ -88,7 +88,7 @@ export class RoomHandler {
         room.last_execution_cycle = clientEvent.executeCycleNumber =
             Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
 
-        console.log(`[Room ${roomId}] Command registered: ID ${clientEvent.commandId} executed at: ${clientEvent.executeCycleNumber}`);
+        console.log(`[Room ${roomId}] Command registered: ${clientEvent.funcName} executed at: ${clientEvent.executeCycleNumber}`);
 
         this.io.to(roomId).emit("event", clientEvent);
         room.events.push(clientEvent);
@@ -136,7 +136,7 @@ export class RoomHandler {
 
 function toClientEvent(command: Command): ClientEvent {
     return {
-        commandId: command.id,
+        funcName: command.funcName,
         params: command.params,
         executeCycleNumber: 0,
     };

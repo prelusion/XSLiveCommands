@@ -105,7 +105,6 @@ export default defineComponent({
             if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
                 this.tyrantMode.enabled = true;
                 this.tyrantMode.progress = 0;
-                console.log("Enabled");
                 return;
             }
             if (!this.tyrantMode.enabled) {
@@ -126,7 +125,6 @@ export default defineComponent({
                 }
                 return;
             }
-            this.tyrantMode.enabled = false;
             this.tyrantMode.progress = 0;
         }
     },
