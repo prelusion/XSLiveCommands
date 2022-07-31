@@ -7,7 +7,7 @@ import {startIoServer} from "./handlers/client-handler";
 // Load .env file
 config();
 
-export const EXECUTE_CYCLE_OFFSET = parseInt(process.env.EXECUTE_CYCLE_OFFSET) || 3;
+export const EXECUTE_CYCLE_OFFSET = parseInt(process.env.EXECUTE_CYCLE_OFFSET || '3');
 
 function main() {
     const port = (process.env.PORT || 80) as number;

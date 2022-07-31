@@ -1,5 +1,5 @@
 import {Server, Socket} from "socket.io";
-import {Command, Commands, RoomMessage} from "../interfaces";
+import {Command, Commands, Room, RoomMessage} from "../interfaces";
 import {toRoomMessage} from "../scripts/rooms";
 import {RoomHandler} from "./room-handler";
 
@@ -26,7 +26,7 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.setRoomCurrentCycle(roomId, cycle);
         });
 
-        socket.on("verifyRoomExists", (roomId: string, callback: (boolean) => void) => {
+        socket.on("verifyRoomExists", (roomId: string, callback: (b: boolean) => void) => {
             return callback(!!RoomHandler.instance.getRoomByID(roomId));
         });
 
@@ -78,7 +78,7 @@ export function startIoServer(io: Server) {
         socket.on("leaveRoom", (callback: (() => void) | null) => {
             const roomId = roomIdFromSocket(socket);
             if (roomId === undefined)
-                return callback();
+                return callback ? callback() : null;
 
             RoomHandler.instance.leaveRoom(roomId, socket);
 
@@ -92,7 +92,7 @@ export function startIoServer(io: Server) {
             if (roomId === undefined)
                 return;
 
-            const room = RoomHandler.instance.getRoomByID(roomId);
+            const room = RoomHandler.instance.getRoomByID(roomId) as Room;
             // If socket is not in the tyrants list and socket is not the host, don't allow command
             if (!(room.tyrants.includes(socket.id) || room.host === socket.id))
                 return;
