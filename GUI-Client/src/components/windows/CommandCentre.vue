@@ -25,6 +25,12 @@
                     Choose Command:
                 </div>
                 <input v-model="selectedCommand" list="commands">
+                <button @click="selectedCommand = ''"
+                        id="clear-command-button"
+                        title="Clear the command selection text box"
+                >
+                    Clear
+                </button>
 
                 <datalist id="commands">
                     <option v-bind:key="name" v-for="(name) in Object.keys(commands)" v-bind:value="name"></option>
@@ -35,13 +41,21 @@
                 <div class="header">
                     Specify Arguments:
                 </div>
-                <div class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
-                    <label>
-                        <input type="number" v-model="inputParams[index]">
-                        {{ paramName }}
-                        <span v-if="paramIsObject(index) && ensureParamIsObject(index).required">*</span>
-                    </label>
-                </div>
+                <table>
+                    <tr class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
+                        <td>
+                            {{ paramName }}
+                            <span v-if="getCommandParameterPlaceholderText(index) === ''">*</span>
+                        </td>
+                        <td>
+                            <input v-bind:type="commandInputType(index)"
+                                   v-bind:placeholder="getCommandParameterPlaceholderText(index)"
+                                   v-bind:id="`q${index}`"
+                                   v-model="inputParams[index]"
+                            >
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <div id="text">
@@ -61,10 +75,14 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {Commands, CommandTemplateParamConfig, CommandTemplateParamConfigObject} from "@/interfaces/command";
+import {
+    CommandEvent,
+    CommandParamConfig,
+    CommandTemplates,
+    Param, ParamType
+} from "@/interfaces/command";
 import {ensure} from "@/util/general";
 import {defineComponent} from "vue";
-import {CommandEvent} from "@/interfaces/general";
 import {QueueHandler} from "@/classes/queue-handler";
 
 export default defineComponent({
@@ -73,10 +91,12 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            commands: {} as Commands,
+            ParamType,
+
+            commands: {} as CommandTemplates,
             numberOfConnectedClients: 0,
 
-            inputParams: [] as Array<number | string | undefined>,
+            inputParams: [] as Array<number | string | boolean | undefined>,
             selectedCommand: "",
 
             text: [] as Array<string>,
@@ -102,7 +122,6 @@ export default defineComponent({
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
-
         const socket = ensure(SocketHandler.instance.socket);
 
         this.commands = room.commands;
@@ -120,46 +139,65 @@ export default defineComponent({
         SocketHandler() {
             return SocketHandler.instance;
         },
-        commandId(): number | undefined {
-            return this.commands[this.selectedCommand]?.id;
+        commandId(): string | undefined {
+            return this.commands[this.selectedCommand]?.funcName;
         },
-        commandParams(): Array<CommandTemplateParamConfig> {
+        commandParams(): Array<CommandParamConfig> {
             return this.commands[this.selectedCommand]?.params ?? [];
         },
         paramNames(): Array<string> {
             return Object.values(this.commandParams).map((e): string => {
-                if (typeof e === "string") {
-                    return e;
-                }
                 return e.name;
             });
         }
     },
     methods: {
         ensure,
+        copyRoomId() {
+            window.clipboard.write(ensure(SocketHandler.instance.room).id);
+        },
+        getCommandParameter(index: number): CommandParamConfig {
+            return this.commandParams[index];
+        },
+        getCommandParameterDefault(index: number): string {
+            return (this.getCommandParameter(index)?.default ?? '').toString();
+        },
+        getCommandParameterPlaceholderText(index: number): string {
+            const d = this.getCommandParameterDefault(index);
+            return d ? 'default: ' + d : ''
+        },
+        getCommandParameterType(index: number): ParamType {
+            const TYPES: Record<string, ParamType | undefined> = {
+                'int': ParamType.INT,
+                'float': ParamType.FLOAT,
+                'bool': ParamType.BOOL,
+                'string': ParamType.STRING,
+            }
+            const paramType = TYPES[this.getCommandParameter(index).type];
+
+            if (paramType === undefined) {
+                const paramName = this.getCommandParameter(index).name;
+                throw TypeError(`Unknown type in commands. (param: '${paramName}', index: ${index})`);
+            }
+            return paramType
+        },
+        commandInputType(index: number): string {
+            const TYPES: Record<ParamType, string | undefined> = {
+                [ParamType.INT]: 'number',
+                [ParamType.FLOAT]: 'number',
+                [ParamType.BOOL]: 'checkbox',
+                [ParamType.STRING]: 'text',
+            }
+            const type = TYPES[this.getCommandParameterType(index)];
+
+            if (type === undefined) {
+                const paramName = this.getCommandParameter(index).name;
+                throw TypeError(`Invalid input field type (${type}). (param: '${paramName}', index: ${index})`);
+            }
+            return type;
+        },
         roomConnectionUpdate(n: number) {
             this.numberOfConnectedClients = n;
-        },
-        paramIsObject(index: number): boolean {
-            return typeof this.commandParams[index] !== "string";
-        },
-        ensureParamIsObject(index: number): CommandTemplateParamConfigObject {
-            const param = this.commandParams[index];
-            if (typeof param === "string") {
-                throw TypeError("Param is type string whilst it should never be string.");
-            }
-            return param;
-        },
-        setDefault(): void {
-            for (let i = 0; i < this.commandParams.length; ++i) {
-                const param = this.commandParams[i];
-
-                if (typeof param !== "string" && param.default !== undefined) {
-                    this.inputParams[i] = param.default;
-                } else {
-                    this.inputParams[i] = undefined;
-                }
-            }
         },
         setError(...strings: Array<string>): void {
             this.error = true;
@@ -178,27 +216,37 @@ export default defineComponent({
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
             }
+            const values: Array<Param> = [];
 
             for (let i = 0; i < this.commandParams.length; ++i) {
-                const value = this.inputParams[i];
+                let value = this.inputParams[i];
                 const param = this.commandParams[i];
+                const type = param.type;
+                const default_ = param.default;
 
-                console.log(typeof value,value,)
-
-                if (typeof param !== "string") {
-                    if ((value === undefined || value === '') && param.required) {
-                        return this.setError("Please enter numbers for all required arguments before sending the command!");
-                    }
+                // A checkbox loaded initially (not clicked) is undefined even though it should be false.
+                if (type.toLowerCase() === 'bool' && value === undefined) {
+                    value = false
+                }
+                
+                if (value === undefined && default_ === undefined) {
+                    return this.setError("Please enter numbers for all required arguments before sending the command!");
+                } else {
+                    values.push({
+                        type: this.getCommandParameterType(i),
+                        data: (value ?? default_) as string | number | boolean,
+                        name: this.commandParams[i].name,
+                    });
                 }
             }
 
             this.setText("Command Sent!");
+            this.inputParams = [];
 
             SocketHandler.instance.sendCommand({
-                id: this.commandId,
-                params: this.inputParams.map(e => typeof e === "number" ? e : 0)
+                funcName: this.commandId,
+                params: values
             });
-            this.setDefault();
         },
     },
     watch: {
@@ -206,9 +254,6 @@ export default defineComponent({
             this.text = [];
             this.inputParams = [];
         },
-        selectedCommand() {
-            this.setDefault();
-        }
     },
 });
 
@@ -223,16 +268,21 @@ export default defineComponent({
     #command-centre {
         #command {
             margin-top: 10px;
+
+            #clear-command-button {
+                margin-left: 4px;
+            }
         }
 
         #params {
             margin-top: 10px;
 
             .param-entry {
-                margin-top: 3px;
+                margin: 4px 0;
 
-                label {
+                td:first-child {
                     text-transform: capitalize;
+                    padding-right: 10px;
                 }
             }
         }
@@ -268,7 +318,7 @@ export default defineComponent({
     }
 }
 
-input {
+input, button {
     padding: 4px;
 }
 </style>

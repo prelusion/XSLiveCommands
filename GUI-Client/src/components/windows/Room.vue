@@ -26,9 +26,9 @@ import {GameHandler} from "@/classes/game-handler";
 import {QueueHandler} from "@/classes/queue-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {CommandEvent} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {defineComponent} from "vue";
+import {CommandEvent} from "../../interfaces/command";
 
 export default defineComponent({
     name: "Room",
@@ -105,7 +105,6 @@ export default defineComponent({
             if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
                 this.tyrantMode.enabled = true;
                 this.tyrantMode.progress = 0;
-                console.log("Enabled");
                 return;
             }
             if (!this.tyrantMode.enabled) {
@@ -126,7 +125,6 @@ export default defineComponent({
                 }
                 return;
             }
-            this.tyrantMode.enabled = false;
             this.tyrantMode.progress = 0;
         }
     },
