@@ -27,3 +27,12 @@ export function assert(value: unknown): asserts value {
         throw new TypeError("value must be defined");
     }
 }
+
+/**
+ * Add a leading zero if the number is less than 10
+ *
+ * @param num
+ */
+export function zeroLead(num: string | number): string {
+    return num.toString().length === 1 ? '0' + num : num.toString();
+}
