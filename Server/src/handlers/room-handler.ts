@@ -86,12 +86,17 @@ export class RoomHandler {
 
         // Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
         room.last_execution_cycle = clientEvent.executeCycleNumber =
-            Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
+            this.getExecutionCycleForNewCommand(roomId);
 
-        console.log(`[Room ${roomId}] Command registered: ID ${clientEvent.commandId} executed at: ${clientEvent.executeCycleNumber}`);
+        console.log(`[Room ${roomId}] Command registered: ${clientEvent.funcName} executed at: ${clientEvent.executeCycleNumber}`);
 
         this.io.to(roomId).emit("event", clientEvent);
         room.events.push(clientEvent);
+    }
+
+    public getExecutionCycleForNewCommand(roomId: string): number {
+        const room = this.getRoomByID(roomId);
+        return Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
     }
 
     public removeRoom(roomId: string) {
@@ -136,7 +141,7 @@ export class RoomHandler {
 
 function toClientEvent(command: Command): ClientEvent {
     return {
-        commandId: command.id,
+        funcName: command.funcName,
         params: command.params,
         executeCycleNumber: 0,
     };

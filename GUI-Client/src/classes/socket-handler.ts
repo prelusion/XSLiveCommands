@@ -1,5 +1,5 @@
 import {GameHandler} from "@/classes/game-handler";
-import {Command, Commands} from "@/interfaces/command";
+import {Command, CommandTemplates} from "@/interfaces/command";
 import {Room} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
@@ -14,6 +14,7 @@ export class SocketHandler {
 
     private _socket: Socket | null = null;
     private _room: Room | null = null;
+    private readonly _currentCycle = -1;
 
     static get instance(): SocketHandler {
         if (this._instance === null) {
@@ -108,7 +109,7 @@ export class SocketHandler {
         });
     }
 
-    public createRoom(filename: string, commands: Commands, password = ""): Promise<void> {
+    public createRoom(filename: string, commands: CommandTemplates, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
@@ -125,6 +126,20 @@ export class SocketHandler {
                 }
             });
         });
+    }
+
+    public getExecutionCyclePrediction(): Promise<number> {
+        return new Promise((resolve) => {
+            assert(this.socket);
+
+            this.socket.emit("executionCyclePrediction", async (c: number) => {
+                resolve(c);
+            });
+        });
+    }
+
+    get currentCycle(): number {
+        return this._currentCycle;
     }
 
     public registerEventListeners(): void {

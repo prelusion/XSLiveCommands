@@ -1,4 +1,7 @@
 <template>
+    <div id="connection-window" v-if="$store.state.window !== 'Loading' && !$store.state.connectionOk">
+        <div>Lost connection with the server. <br> Reconnecting...</div>
+    </div>
     <div id="main">
         <component :is="$store.state.window"></component>
     </div>
@@ -45,6 +48,24 @@ body {
     min-height: $height;
     margin: 0;
     font-family: Calibri, serif;
+}
+
+#connection-window {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    background-color: rgb(212, 213, 213);
+    opacity: 0.8;
+    z-index: 100;
+
+    div {
+        padding-top: 30vh;
+        text-align: center;
+        opacity: 1;
+        font-weight: bold;
+    }
 }
 
 #main {

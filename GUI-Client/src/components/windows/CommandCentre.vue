@@ -20,27 +20,71 @@
             </table>
         </div>
         <div id="command-centre">
-            <div id="command">
-                <div class="header">
-                    Choose Command:
-                </div>
-                <input v-model="selectedCommand" list="commands">
-
-                <datalist id="commands">
-                    <option v-bind:key="name" v-for="(name) in Object.keys(commands)" v-bind:value="name"></option>
-                </datalist>
+            <div class="header">
+                Choose Command:
             </div>
+            <div id="command">
+                <div id="command-selection">
+                    <div>
+                        <input v-model="selectedCommand" list="commands">
+                        <button @click="selectedCommand = ''"
+                                id="clear-command-button"
+                                title="Clear the command selection text box"
+                        >
+                            Clear
+                        </button>
 
-            <div id="params">
-                <div class="header">
-                    Specify Arguments:
+                        <datalist id="commands">
+                            <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
+                                    v-bind:value="name"></option>
+                        </datalist>
+                    </div>
+
+                    <div id="params">
+                        <div class="header">
+                            Specify Arguments:
+                        </div>
+                        <table>
+                            <tr class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
+                                <td>
+                                    {{ paramName }}
+                                    <span v-if="getCommandParameterPlaceholderText(index) === ''">*</span>
+                                </td>
+                                <td>
+                                    <input v-bind:type="commandInputType(index)"
+                                           v-bind:placeholder="getCommandParameterPlaceholderText(index)"
+                                           v-bind:id="`q${index}`"
+                                           v-model="inputParams[index]"
+                                    >
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
-                <div class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
-                    <label>
-                        <input type="number" v-model="inputParams[index]">
-                        {{ paramName }}
-                        <span v-if="paramIsObject(index) && ensureParamIsObject(index).required">*</span>
-                    </label>
+                <div id="plan-command">
+<!--                    <div>-->
+<!--                        <input v-model="planCommand" type="checkbox" id="plan-check">-->
+<!--                        <label for="plan-check">Plan command</label>-->
+<!--                    </div>-->
+
+<!--                    <div v-if="planCommand">-->
+<!--                        <table>-->
+<!--                            <tr>-->
+<!--                                <td>Minute</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>Second</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+<!--                    </div>-->
+                    <p title="The execution time might not exactly line up with the shown time if other commands have already been sent around this time">
+                        Execute at approximately: {{ planInTime }}. Cycle: {{ expectedCycle }}
+                    </p>
+<!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
+<!--                        This time has already passed. The given time will be ignored.-->
+<!--                    </p>-->
                 </div>
             </div>
 
@@ -61,11 +105,11 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {Commands, CommandTemplateParamConfig, CommandTemplateParamConfigObject} from "@/interfaces/command";
-import {ensure} from "@/util/general";
+import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} from "@/interfaces/command";
+import {ensure, zeroLead} from "@/util/general";
 import {defineComponent} from "vue";
-import {CommandEvent} from "@/interfaces/general";
 import {QueueHandler} from "@/classes/queue-handler";
+const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
@@ -73,14 +117,23 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            commands: {} as Commands,
+            ParamType,
+
+            commands: {} as CommandTemplates,
             numberOfConnectedClients: 0,
 
-            inputParams: [] as Array<number | string | undefined>,
+            inputParams: [] as Array<number | string | boolean | undefined>,
             selectedCommand: "",
+
+            planCommand: false,
+            expectedCycle: -1,
+            // planMinute: undefined as number | undefined,
+            // planSecond: undefined as number | undefined,
 
             text: [] as Array<string>,
             error: true,
+
+            interval: -1,
 
             buttonConfig: [
                 {
@@ -102,7 +155,6 @@ export default defineComponent({
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
-
         const socket = ensure(SocketHandler.instance.socket);
 
         this.commands = room.commands;
@@ -110,56 +162,98 @@ export default defineComponent({
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
+
+        this.interval = setInterval(() => {
+            this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
+        }, 1000);
     },
     unmounted() {
         const socket = ensure(SocketHandler.instance.socket);
         socket.off("room-connection-update", this.roomConnectionUpdate);
         socket.off("event", this.eventRegistered);
+
+        clearInterval(this.interval);
     },
     computed: {
         SocketHandler() {
             return SocketHandler.instance;
         },
-        commandId(): number | undefined {
-            return this.commands[this.selectedCommand]?.id;
+        // planCycle(): number {
+        //     return (this.planMinute ?? 0) * 12 + Math.ceil((this.planSecond ?? 0) / 5)
+        // },
+        // plannedOrCurrentCycle(): number {
+        //     return Math.max(this.planCycle, this.SocketHandler.currentCycle);
+        // },
+        planInTime(): string {
+            // Cycle 0 = 0:05. Cycle 1 = 0:10 (hence the +5)
+            let seconds = this.expectedCycle * 5 + 5;
+            let minutes = Math.floor(seconds / 60);
+            seconds = seconds % 60;
+
+            const hours = Math.floor((minutes || 0) / 60);
+            minutes = (minutes || 0) % 60;
+
+            return `${zeroLead(hours)}:${zeroLead(minutes)}:${zeroLead(seconds)}`;
         },
-        commandParams(): Array<CommandTemplateParamConfig> {
+        commandId(): string | undefined {
+            return this.commands[this.selectedCommand]?.funcName;
+        },
+        commandParams(): Array<CommandParamConfig> {
             return this.commands[this.selectedCommand]?.params ?? [];
         },
         paramNames(): Array<string> {
             return Object.values(this.commandParams).map((e): string => {
-                if (typeof e === "string") {
-                    return e;
-                }
                 return e.name;
             });
         }
     },
     methods: {
         ensure,
+        copyRoomId() {
+            window.clipboard.write(ensure(SocketHandler.instance.room).id);
+        },
+        getCommandParameter(index: number): CommandParamConfig {
+            return this.commandParams[index];
+        },
+        getCommandParameterDefault(index: number): string {
+            return (this.getCommandParameter(index)?.default ?? '').toString();
+        },
+        getCommandParameterPlaceholderText(index: number): string {
+            const d = this.getCommandParameterDefault(index);
+            return d ? 'default: ' + d : ''
+        },
+        getCommandParameterType(index: number): ParamType {
+            const TYPES: Record<string, ParamType | undefined> = {
+                'int': ParamType.INT,
+                'float': ParamType.FLOAT,
+                'bool': ParamType.BOOL,
+                'string': ParamType.STRING,
+            }
+            const paramType = TYPES[this.getCommandParameter(index).type];
+
+            if (paramType === undefined) {
+                const paramName = this.getCommandParameter(index).name;
+                throw TypeError(`Unknown type in commands. (param: '${paramName}', index: ${index})`);
+            }
+            return paramType
+        },
+        commandInputType(index: number): string {
+            const TYPES: Record<ParamType, string | undefined> = {
+                [ParamType.INT]: 'number',
+                [ParamType.FLOAT]: 'number',
+                [ParamType.BOOL]: 'checkbox',
+                [ParamType.STRING]: 'text',
+            }
+            const type = TYPES[this.getCommandParameterType(index)];
+
+            if (type === undefined) {
+                const paramName = this.getCommandParameter(index).name;
+                throw TypeError(`Invalid input field type (${type}). (param: '${paramName}', index: ${index})`);
+            }
+            return type;
+        },
         roomConnectionUpdate(n: number) {
             this.numberOfConnectedClients = n;
-        },
-        paramIsObject(index: number): boolean {
-            return typeof this.commandParams[index] !== "string";
-        },
-        ensureParamIsObject(index: number): CommandTemplateParamConfigObject {
-            const param = this.commandParams[index];
-            if (typeof param === "string") {
-                throw TypeError("Param is type string whilst it should never be string.");
-            }
-            return param;
-        },
-        setDefault(): void {
-            for (let i = 0; i < this.commandParams.length; ++i) {
-                const param = this.commandParams[i];
-
-                if (typeof param !== "string" && param.default !== undefined) {
-                    this.inputParams[i] = param.default;
-                } else {
-                    this.inputParams[i] = undefined;
-                }
-            }
         },
         setError(...strings: Array<string>): void {
             this.error = true;
@@ -178,27 +272,37 @@ export default defineComponent({
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
             }
+            const values: Array<Param> = [];
 
             for (let i = 0; i < this.commandParams.length; ++i) {
-                const value = this.inputParams[i];
+                let value = this.inputParams[i];
                 const param = this.commandParams[i];
+                const type = param.type;
+                const default_ = param.default;
 
-                console.log(typeof value,value,)
+                // A checkbox loaded initially (not clicked) is undefined even though it should be false.
+                if (type.toLowerCase() === 'bool' && value === undefined) {
+                    value = false
+                }
 
-                if (typeof param !== "string") {
-                    if ((value === undefined || value === '') && param.required) {
-                        return this.setError("Please enter numbers for all required arguments before sending the command!");
-                    }
+                if (value === undefined && default_ === undefined) {
+                    return this.setError("Please enter numbers for all required arguments before sending the command!");
+                } else {
+                    values.push({
+                        type: this.getCommandParameterType(i),
+                        data: (value ?? default_) as string | number | boolean,
+                        name: this.commandParams[i].name,
+                    });
                 }
             }
 
             this.setText("Command Sent!");
+            this.inputParams = [];
 
             SocketHandler.instance.sendCommand({
-                id: this.commandId,
-                params: this.inputParams.map(e => typeof e === "number" ? e : 0)
+                funcName: this.commandId,
+                params: values
             });
-            this.setDefault();
         },
     },
     watch: {
@@ -206,8 +310,30 @@ export default defineComponent({
             this.text = [];
             this.inputParams = [];
         },
-        selectedCommand() {
-            this.setDefault();
+        planSecond(current: number | undefined | '') {
+            if (current === '' || current === undefined)
+                return this.planSecond = undefined;
+
+            if (Math.round(current) !== current) {
+                this.planSecond = Math.floor(current);
+            }
+            if (current > 59) {
+                this.planSecond = 59;
+            }
+            if (current < 0) {
+                this.planSecond = 0;
+            }
+        },
+        planMinute(current: number | undefined | '') {
+            if (current === '' || current === undefined)
+                return this.planMinute = undefined;
+
+            if (Math.round(current) !== current) {
+                this.planMinute = Math.floor(current);
+            }
+            if (current < 0) {
+                this.planMinute = 0;
+            }
         }
     },
 });
@@ -223,16 +349,38 @@ export default defineComponent({
     #command-centre {
         #command {
             margin-top: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 50px;
+
+            #clear-command-button {
+                margin-left: 4px;
+            }
+
+            #plan-command {
+                margin-top: 3px;
+                width: 50vw;
+
+                #plan-cycle-warning {
+                    color: red;
+                }
+
+                input {
+                    margin-top: 3px;
+                }
+            }
         }
 
         #params {
             margin-top: 10px;
 
             .param-entry {
-                margin-top: 3px;
+                margin: 4px 0;
 
-                label {
+                td:first-child {
                     text-transform: capitalize;
+                    padding-right: 10px;
                 }
             }
         }
@@ -253,7 +401,7 @@ export default defineComponent({
     #info {
         border-bottom: 1px solid #b6b6b6;
         padding-bottom: 10px;
-        
+
         table {
             tr {
                 td:first-child {
@@ -268,7 +416,11 @@ export default defineComponent({
     }
 }
 
-input {
+input, button {
     padding: 4px;
+}
+
+input[type=checkbox] {
+    margin-left: 0;
 }
 </style>

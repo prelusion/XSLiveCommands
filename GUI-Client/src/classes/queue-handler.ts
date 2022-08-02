@@ -1,4 +1,4 @@
-import {CommandEvent} from "@/interfaces/general";
+import {CommandEvent} from "../interfaces/command";
 
 export class QueueHandler {
     private constructor() {

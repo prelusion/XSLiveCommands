@@ -1,13 +1,13 @@
 export interface ServerEvent {
     commandId: number;
-    params: number[];
+    params: Array<number>;
     password: string,
     // inGameTime?: number
 }
 
 export interface ClientEvent {
-    commandId: number;
-    params: number[];
+    funcName: string;
+    params: Array<string | number | boolean>;
     executeCycleNumber: number;
 }
 
@@ -18,12 +18,12 @@ interface CoreRoom {
     host: string;
     scenario: string;
     commands: Commands;
-    events: ClientEvent[];
+    events: Array<ClientEvent>;
 }
 
 export interface Room extends CoreRoom {
-    connections: string[];
-    tyrants: string[];
+    connections: Array<string>;
+    tyrants: Array<string>;
     password: string | null;
     last_execution_cycle: number;
     current_cycle: number;
@@ -34,6 +34,6 @@ export interface RoomMessage extends CoreRoom {
 }
 
 export interface Command {
-    id: number;
-    params: number[];
+    funcName: string;
+    params: Array<string | number | boolean>;
 }

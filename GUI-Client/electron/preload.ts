@@ -1,5 +1,5 @@
 import {contextBridge, ipcRenderer} from "electron";
-import {CommandEvent} from "../src/interfaces/general";
+import {CommandEvent} from "../src/interfaces/command";
 
 // In this file we want to expose protected methods that allow the renderer
 // process to use the ipcRenderer without exposing the entire object.

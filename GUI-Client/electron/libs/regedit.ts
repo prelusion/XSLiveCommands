@@ -1,11 +1,16 @@
 import {ipcMain} from "electron";
-import {promisified as regedit} from "regedit";
 import SteamID from "steamid";
+
+// Window module doesn't have type definitions. This is simple typing for all that we need.
+const Windows: {
+    registry: (regexKey: string) => { 'ActiveUser': { 'value': string } };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+} = require("windows");
 
 export async function getSteamId(): Promise<string> {
     const key = "HKCU\\Software\\Valve\\Steam\\ActiveProcess";
-    const listResult = await regedit.list([key]);
-    const accountId = listResult[key]["values"]["ActiveUser"]["value"];
+    const keySet = Windows.registry(key);
+    const accountId = keySet["ActiveUser"]["value"];
 
     return SteamID.fromIndividualAccountID(accountId as string).getSteamID64();
 }

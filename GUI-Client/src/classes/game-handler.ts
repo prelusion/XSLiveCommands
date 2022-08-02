@@ -1,7 +1,7 @@
 import {QueueHandler} from "@/classes/queue-handler";
 import {SocketHandler} from "@/classes/socket-handler";
-import {CommandEvent} from "@/interfaces/general";
 import {ensure} from "@/util/general";
+import {CommandEvent} from "../interfaces/command";
 
 const {setInterval, clearInterval} = window;
 
@@ -31,15 +31,18 @@ export class GameHandler {
     }
 
     public startCoreLoop(scenario: string) {
+        // Tick rate of highFrequency rule in XS
+        const readSpeed = Math.round(1000 / 60);
+
         this.coreInterval = setInterval(async () => {
             const cycle = await window.fs.readCycle(this.steamId, scenario);
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
-                console.log("\n\n")
-                console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
-                console.log(`cycle: ${cycle}`);
-                console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
+                // console.log("\n\n")
+                // console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
+                // console.log(`cycle: ${cycle}`);
+                // console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
 
                 // If the last registered command execution cycle has passed and there are more commands
                 // Send the next command to XS
@@ -54,7 +57,7 @@ export class GameHandler {
                     console.log(`writing finished...`);
                 }
             }
-        }, 1000);
+        }, readSpeed);
     }
 
     public stopCoreLoop() {
