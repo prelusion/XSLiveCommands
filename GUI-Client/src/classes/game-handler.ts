@@ -39,10 +39,10 @@ export class GameHandler {
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
-                console.log("\n\n")
-                console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
-                console.log(`cycle: ${cycle}`);
-                console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
+                // console.log("\n\n")
+                // console.log(`this.lastCommandCycle: ${this.lastCommandCycle}`);
+                // console.log(`cycle: ${cycle}`);
+                // console.log(`QueueHandler.isEmpty(): ${QueueHandler.instance.isEmpty()} (${QueueHandler.instance.length()})`);
 
                 // If the last registered command execution cycle has passed and there are more commands
                 // Send the next command to XS
