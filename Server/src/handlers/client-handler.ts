@@ -98,6 +98,15 @@ export function startIoServer(io: Server) {
                 return;
 
             RoomHandler.instance.sendRoomNewCommand(roomId, command);
-        })
+        });
+
+        socket.on("executionCyclePrediction", (callback: (number) => number) => {
+            const roomId = roomIdFromSocket(socket);
+            if (roomId === undefined || !callback)
+                return;
+
+            const c = RoomHandler.instance.getExecutionCycleForNewCommand(roomId);
+            callback(c);
+        });
     });
 }

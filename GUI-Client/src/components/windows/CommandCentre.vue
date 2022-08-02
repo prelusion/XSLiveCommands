@@ -62,29 +62,29 @@
                     </div>
                 </div>
                 <div id="plan-command">
-                    <div>
-                        <input v-model="planCommand" type="checkbox" id="plan-check">
-                        <label for="plan-check">Plan command</label>
-                    </div>
+<!--                    <div>-->
+<!--                        <input v-model="planCommand" type="checkbox" id="plan-check">-->
+<!--                        <label for="plan-check">Plan command</label>-->
+<!--                    </div>-->
 
-                    <div v-if="planCommand">
-                        <table>
-                            <tr>
-                                <td>Minute</td>
-                                <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>
-                            </tr>
-                            <tr>
-                                <td>Second</td>
-                                <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>
-                            </tr>
-                        </table>
-                    </div>
+<!--                    <div v-if="planCommand">-->
+<!--                        <table>-->
+<!--                            <tr>-->
+<!--                                <td>Minute</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>Second</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+<!--                    </div>-->
                     <p title="The execution time might not exactly line up with the shown time if other commands have already been sent around this time">
-                        Execute at approximately: {{ planInTime }}. Cycle: {{ plannedOrCurrentCycle }}
+                        Execute at approximately: {{ planInTime }}. Cycle: {{ expectedCycle }}
                     </p>
-                    <p v-if="planCycle < SocketHandler.currentCycle" id="plan-cycle-warning">
-                        This time has already passed. The given time will be ignored.
-                    </p>
+<!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
+<!--                        This time has already passed. The given time will be ignored.-->
+<!--                    </p>-->
                 </div>
             </div>
 
@@ -109,6 +109,7 @@ import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} fr
 import {ensure, zeroLead} from "@/util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "@/classes/queue-handler";
+const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
@@ -125,11 +126,14 @@ export default defineComponent({
             selectedCommand: "",
 
             planCommand: false,
-            planMinute: undefined as number | undefined,
-            planSecond: undefined as number | undefined,
+            expectedCycle: -1,
+            // planMinute: undefined as number | undefined,
+            // planSecond: undefined as number | undefined,
 
             text: [] as Array<string>,
             error: true,
+
+            interval: -1,
 
             buttonConfig: [
                 {
@@ -158,24 +162,31 @@ export default defineComponent({
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
+
+        this.interval = setInterval(() => {
+            this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
+        }, 1000);
     },
     unmounted() {
         const socket = ensure(SocketHandler.instance.socket);
         socket.off("room-connection-update", this.roomConnectionUpdate);
         socket.off("event", this.eventRegistered);
+
+        clearInterval(this.interval);
     },
     computed: {
         SocketHandler() {
             return SocketHandler.instance;
         },
-        planCycle(): number {
-            return (this.planMinute ?? 0) * 12 + Math.ceil((this.planSecond ?? 0) / 5)
-        },
-        plannedOrCurrentCycle(): number {
-            return Math.max(this.planCycle, this.SocketHandler.currentCycle);
-        },
+        // planCycle(): number {
+        //     return (this.planMinute ?? 0) * 12 + Math.ceil((this.planSecond ?? 0) / 5)
+        // },
+        // plannedOrCurrentCycle(): number {
+        //     return Math.max(this.planCycle, this.SocketHandler.currentCycle);
+        // },
         planInTime(): string {
-            let seconds = this.plannedOrCurrentCycle * 5;
+            // Cycle 0 = 0:05. Cycle 1 = 0:10 (hence the +5)
+            let seconds = this.expectedCycle * 5 + 5;
             let minutes = Math.floor(seconds / 60);
             seconds = seconds % 60;
 

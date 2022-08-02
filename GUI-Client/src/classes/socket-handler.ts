@@ -128,6 +128,16 @@ export class SocketHandler {
         });
     }
 
+    public getExecutionCyclePrediction(): Promise<number> {
+        return new Promise((resolve) => {
+            assert(this.socket);
+
+            this.socket.emit("executionCyclePrediction", async (c: number) => {
+                resolve(c);
+            });
+        });
+    }
+
     get currentCycle(): number {
         return this._currentCycle;
     }
