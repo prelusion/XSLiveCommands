@@ -14,6 +14,7 @@ export class SocketHandler {
 
     private _socket: Socket | null = null;
     private _room: Room | null = null;
+    private readonly _currentCycle = -1;
 
     static get instance(): SocketHandler {
         if (this._instance === null) {
@@ -125,6 +126,20 @@ export class SocketHandler {
                 }
             });
         });
+    }
+
+    public getExecutionCyclePrediction(): Promise<number> {
+        return new Promise((resolve) => {
+            assert(this.socket);
+
+            this.socket.emit("executionCyclePrediction", async (c: number) => {
+                resolve(c);
+            });
+        });
+    }
+
+    get currentCycle(): number {
+        return this._currentCycle;
     }
 
     public registerEventListeners(): void {

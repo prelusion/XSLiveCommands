@@ -20,42 +20,72 @@
             </table>
         </div>
         <div id="command-centre">
-            <div id="command">
-                <div class="header">
-                    Choose Command:
-                </div>
-                <input v-model="selectedCommand" list="commands">
-                <button @click="selectedCommand = ''"
-                        id="clear-command-button"
-                        title="Clear the command selection text box"
-                >
-                    Clear
-                </button>
-
-                <datalist id="commands">
-                    <option v-bind:key="name" v-for="(name) in Object.keys(commands)" v-bind:value="name"></option>
-                </datalist>
+            <div class="header">
+                Choose Command:
             </div>
+            <div id="command">
+                <div id="command-selection">
+                    <div>
+                        <input v-model="selectedCommand" list="commands">
+                        <button @click="selectedCommand = ''"
+                                id="clear-command-button"
+                                title="Clear the command selection text box"
+                        >
+                            Clear
+                        </button>
 
-            <div id="params">
-                <div class="header">
-                    Specify Arguments:
+                        <datalist id="commands">
+                            <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
+                                    v-bind:value="name"></option>
+                        </datalist>
+                    </div>
+
+                    <div id="params">
+                        <div class="header">
+                            Specify Arguments:
+                        </div>
+                        <table>
+                            <tr class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
+                                <td>
+                                    {{ paramName }}
+                                    <span v-if="getCommandParameterPlaceholderText(index) === ''">*</span>
+                                </td>
+                                <td>
+                                    <input v-bind:type="commandInputType(index)"
+                                           v-bind:placeholder="getCommandParameterPlaceholderText(index)"
+                                           v-bind:id="`q${index}`"
+                                           v-model="inputParams[index]"
+                                    >
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
-                <table>
-                    <tr class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
-                        <td>
-                            {{ paramName }}
-                            <span v-if="getCommandParameterPlaceholderText(index) === ''">*</span>
-                        </td>
-                        <td>
-                            <input v-bind:type="commandInputType(index)"
-                                   v-bind:placeholder="getCommandParameterPlaceholderText(index)"
-                                   v-bind:id="`q${index}`"
-                                   v-model="inputParams[index]"
-                            >
-                        </td>
-                    </tr>
-                </table>
+                <div id="plan-command">
+<!--                    <div>-->
+<!--                        <input v-model="planCommand" type="checkbox" id="plan-check">-->
+<!--                        <label for="plan-check">Plan command</label>-->
+<!--                    </div>-->
+
+<!--                    <div v-if="planCommand">-->
+<!--                        <table>-->
+<!--                            <tr>-->
+<!--                                <td>Minute</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>Second</td>-->
+<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+<!--                    </div>-->
+                    <p title="The execution time might not exactly line up with the shown time if other commands have already been sent around this time">
+                        Execute at approximately: {{ planInTime }}. Cycle: {{ expectedCycle }}
+                    </p>
+<!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
+<!--                        This time has already passed. The given time will be ignored.-->
+<!--                    </p>-->
+                </div>
             </div>
 
             <div id="text">
@@ -75,15 +105,11 @@
 import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {
-    CommandEvent,
-    CommandParamConfig,
-    CommandTemplates,
-    Param, ParamType
-} from "@/interfaces/command";
-import {ensure} from "@/util/general";
+import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} from "@/interfaces/command";
+import {ensure, zeroLead} from "@/util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "@/classes/queue-handler";
+const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
@@ -99,8 +125,15 @@ export default defineComponent({
             inputParams: [] as Array<number | string | boolean | undefined>,
             selectedCommand: "",
 
+            planCommand: false,
+            expectedCycle: -1,
+            // planMinute: undefined as number | undefined,
+            // planSecond: undefined as number | undefined,
+
             text: [] as Array<string>,
             error: true,
+
+            interval: -1,
 
             buttonConfig: [
                 {
@@ -129,15 +162,38 @@ export default defineComponent({
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
+
+        this.interval = setInterval(() => {
+            this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
+        }, 1000);
     },
     unmounted() {
         const socket = ensure(SocketHandler.instance.socket);
         socket.off("room-connection-update", this.roomConnectionUpdate);
         socket.off("event", this.eventRegistered);
+
+        clearInterval(this.interval);
     },
     computed: {
         SocketHandler() {
             return SocketHandler.instance;
+        },
+        // planCycle(): number {
+        //     return (this.planMinute ?? 0) * 12 + Math.ceil((this.planSecond ?? 0) / 5)
+        // },
+        // plannedOrCurrentCycle(): number {
+        //     return Math.max(this.planCycle, this.SocketHandler.currentCycle);
+        // },
+        planInTime(): string {
+            // Cycle 0 = 0:05. Cycle 1 = 0:10 (hence the +5)
+            let seconds = this.expectedCycle * 5 + 5;
+            let minutes = Math.floor(seconds / 60);
+            seconds = seconds % 60;
+
+            const hours = Math.floor((minutes || 0) / 60);
+            minutes = (minutes || 0) % 60;
+
+            return `${zeroLead(hours)}:${zeroLead(minutes)}:${zeroLead(seconds)}`;
         },
         commandId(): string | undefined {
             return this.commands[this.selectedCommand]?.funcName;
@@ -228,7 +284,7 @@ export default defineComponent({
                 if (type.toLowerCase() === 'bool' && value === undefined) {
                     value = false
                 }
-                
+
                 if (value === undefined && default_ === undefined) {
                     return this.setError("Please enter numbers for all required arguments before sending the command!");
                 } else {
@@ -254,6 +310,31 @@ export default defineComponent({
             this.text = [];
             this.inputParams = [];
         },
+        planSecond(current: number | undefined | '') {
+            if (current === '' || current === undefined)
+                return this.planSecond = undefined;
+
+            if (Math.round(current) !== current) {
+                this.planSecond = Math.floor(current);
+            }
+            if (current > 59) {
+                this.planSecond = 59;
+            }
+            if (current < 0) {
+                this.planSecond = 0;
+            }
+        },
+        planMinute(current: number | undefined | '') {
+            if (current === '' || current === undefined)
+                return this.planMinute = undefined;
+
+            if (Math.round(current) !== current) {
+                this.planMinute = Math.floor(current);
+            }
+            if (current < 0) {
+                this.planMinute = 0;
+            }
+        }
     },
 });
 
@@ -268,9 +349,26 @@ export default defineComponent({
     #command-centre {
         #command {
             margin-top: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 50px;
 
             #clear-command-button {
                 margin-left: 4px;
+            }
+
+            #plan-command {
+                margin-top: 3px;
+                width: 50vw;
+
+                #plan-cycle-warning {
+                    color: red;
+                }
+
+                input {
+                    margin-top: 3px;
+                }
             }
         }
 
@@ -320,5 +418,9 @@ export default defineComponent({
 
 input, button {
     padding: 4px;
+}
+
+input[type=checkbox] {
+    margin-left: 0;
 }
 </style>

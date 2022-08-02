@@ -28,7 +28,7 @@ import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {assert, ensure} from "@/util/general";
 import {defineComponent} from "vue";
-import {CommandEvent} from "../../interfaces/command";
+import {CommandEvent} from "@/interfaces/command";
 
 export default defineComponent({
     name: "Room",

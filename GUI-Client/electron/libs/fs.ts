@@ -65,19 +65,37 @@ function buf2hex(buffer: Buffer) {
         .join("");
 }
 
-type BufferInfo = { buffer: Buffer; offset: 0 }
+type BufferInfo = { buffer: Buffer; offset: 0 };
 
-function addIntToBuff(bufferInfo: BufferInfo, int: number) {
+function addTypeToBuff(bufferInfo: BufferInfo, type: ParamType) {
+    bufferInfo.buffer.writeInt32LE(type, bufferInfo.offset);
+    bufferInfo.offset += 4;
+}
+
+function addIntToBuff(bufferInfo: BufferInfo, int: number, addType = true) {
+    if (addType)
+        addTypeToBuff(bufferInfo, ParamType.INT);
     bufferInfo.buffer.writeInt32LE(int, bufferInfo.offset);
     bufferInfo.offset += 4;
 }
 
-function addFloatToBuff(bufferInfo: BufferInfo, float: number) {
+function addBoolToBuff(bufferInfo: BufferInfo, bool: boolean, addType = true) {
+    if (addType)
+        addTypeToBuff(bufferInfo, ParamType.BOOL);
+    bufferInfo.buffer.writeInt32LE(bool ? 1 : 0, bufferInfo.offset);
+    bufferInfo.offset += 4;
+}
+
+function addFloatToBuff(bufferInfo: BufferInfo, float: number, addType = true) {
+    if (addType)
+        addTypeToBuff(bufferInfo, ParamType.FLOAT);
     bufferInfo.buffer.writeFloatLE(float, bufferInfo.offset);
     bufferInfo.offset += 4;
 }
 
-function addStringToBuff(bufferInfo: BufferInfo, str: string) {
+function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true) {
+    if (addType)
+        addTypeToBuff(bufferInfo, ParamType.STRING);
     bufferInfo.buffer.writeInt32LE(str.length, bufferInfo.offset);
     bufferInfo.offset += 4;
     bufferInfo.buffer.write(str, bufferInfo.offset, 'utf8');
@@ -95,8 +113,8 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string) {
  *      |                  | F    | 8+F    | string | Name of the function        |            |
  *      |                  | 4    | 12+F   | int32  | Parameter Count             | = N        |
  *      | REPEAT <N>       | >    |        |        |                             |            |
- *      |                  | 4    | 4      | int32  | Length of <name> string     | = X        |
- *      |                  | X    | 4+X    | string | Name of the string          |            |
+ *      |                  | 4    | 4      | int32  | Length of <name> param      | = X        |
+ *      |                  | X    | 4+X    | string | Name of the param           |            |
  *      |                  | 4    | 8+X    | int32  | Variable Type               | = T        |
  *      | IF (T == string) | >    |        |        |                             |            |
  *      |                  | 4    | 12+X   | int32  | Length of <name> string     | = L        |
@@ -115,7 +133,10 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
     let bufferSize = 12 + event.funcName.length;
     for (let i = 0; i < event.params.length; i++) {
         const p = event.params[i];
-        bufferSize += 4;
+        // Type & Value (or pre-string val if string)
+        bufferSize += 8;
+        // Param name (pre-string val + string)
+        bufferSize += 4 + p.name.length;
 
         if (p.type === ParamType.STRING) {
             bufferSize += (p.data as string).length;
@@ -127,11 +148,13 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
         offset: 0
     }
 
-    addIntToBuff(bufferInfo, event.executeCycleNumber);
-    addStringToBuff(bufferInfo, event.funcName);
-    addIntToBuff(bufferInfo, event.params.length);
+    addIntToBuff(bufferInfo, event.executeCycleNumber, false);
+    addStringToBuff(bufferInfo, event.funcName, false);
+    addIntToBuff(bufferInfo, event.params.length, false);
 
     for (const param of event.params) {
+        addStringToBuff(bufferInfo, param.name, false);
+
         switch (param.type) {
             case ParamType.INT:
                 addIntToBuff(bufferInfo, param.data as number);
@@ -140,13 +163,15 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
                 addFloatToBuff(bufferInfo, param.data as number);
                 break;
             case ParamType.BOOL:
-                addIntToBuff(bufferInfo, param.data as number);
+                addBoolToBuff(bufferInfo, param.data as boolean);
                 break;
             case ParamType.STRING:
                 addStringToBuff(bufferInfo, param.data as string);
                 break;
         }
     }
+
+    // console.log(buf2hex(bufferInfo.buffer));
 
     fs.writeFile(commandFilePath, bufferInfo.buffer, (err) => {
         if (err) throw new Error("Writing to file didn't work");
