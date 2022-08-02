@@ -310,31 +310,31 @@ export default defineComponent({
             this.text = [];
             this.inputParams = [];
         },
-        planSecond(current: number | undefined | '') {
-            if (current === '' || current === undefined)
-                return this.planSecond = undefined;
-
-            if (Math.round(current) !== current) {
-                this.planSecond = Math.floor(current);
-            }
-            if (current > 59) {
-                this.planSecond = 59;
-            }
-            if (current < 0) {
-                this.planSecond = 0;
-            }
-        },
-        planMinute(current: number | undefined | '') {
-            if (current === '' || current === undefined)
-                return this.planMinute = undefined;
-
-            if (Math.round(current) !== current) {
-                this.planMinute = Math.floor(current);
-            }
-            if (current < 0) {
-                this.planMinute = 0;
-            }
-        }
+        // planSecond(current: number | undefined | '') {
+        //     if (current === '' || current === undefined)
+        //         return this.planSecond = undefined;
+        //
+        //     if (Math.round(current) !== current) {
+        //         this.planSecond = Math.floor(current);
+        //     }
+        //     if (current > 59) {
+        //         this.planSecond = 59;
+        //     }
+        //     if (current < 0) {
+        //         this.planSecond = 0;
+        //     }
+        // },
+        // planMinute(current: number | undefined | '') {
+        //     if (current === '' || current === undefined)
+        //         return this.planMinute = undefined;
+        //
+        //     if (Math.round(current) !== current) {
+        //         this.planMinute = Math.floor(current);
+        //     }
+        //     if (current < 0) {
+        //         this.planMinute = 0;
+        //     }
+        // }
     },
 });
 
