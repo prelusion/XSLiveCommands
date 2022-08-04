@@ -3,10 +3,9 @@
         Joining room...
     </div>
     <div v-else>
-        <label>
-            Enter the room ID you want to join: <br/>
-            <input v-model="roomId">
-        </label><br/>
+        <div>
+            <input placeholder="Room Code" v-model="roomId">
+        </div>
         <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
 
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -17,6 +16,7 @@
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
+import {changeTitle} from "@/util/general";
 
 export default defineComponent({
     name: "joinPlayer",
@@ -43,6 +43,8 @@ export default defineComponent({
     },
     mounted() {
         // Execute on creation
+
+        changeTitle(`Join as Player...`);
     },
     computed: {},
     methods: {
@@ -75,6 +77,6 @@ export default defineComponent({
 }
 
 input {
-    padding: 4px;
+    padding: 5px;
 }
 </style>

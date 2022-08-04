@@ -4,20 +4,18 @@
     </div>
     <div v-else>
         <div>
-            <label>
-                Enter the room ID you want to join: <br/>
-                <input v-model="roomId">
-            </label>
+            <input placeholder="Room Code" v-model="roomId">
         </div>
 
         <div id="password-field">
-            <label>
-                Enter the password: <br/>
-                <input v-model="roomPassword" v-bind:type="passwordType">
-            </label>
-            <label id="show-password">
-                <input type="checkbox" v-model="showPassword"> Show password
-            </label>
+            <div>
+                <input placeholder="Password"  v-model="roomPassword" v-bind:type="passwordType">
+            </div>
+            <div id="show-password">
+                <label>
+                    <input v-model="showPassword" type="checkbox"> Show password
+                </label>
+            </div>
         </div>
 
         <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
@@ -30,6 +28,7 @@
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
+import {changeTitle} from "@/util/general";
 
 export default defineComponent({
     name: "JoinTyrant",
@@ -57,9 +56,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        console.log("Mounted");
-
-        // Execute on creation
+        changeTitle(`Join as Tyrant...`);
     },
     computed: {
         passwordType(): string {
@@ -96,7 +93,13 @@ export default defineComponent({
 }
 
 #password-field {
+    display: flex;
     margin-top: 5px;
+    align-items: center;
+
+    div {
+        margin-top: 5px;
+    }
 
     #show-password {
         user-select: none;
@@ -104,6 +107,6 @@ export default defineComponent({
 }
 
 input {
-    padding: 4px;
+    padding: 5px;
 }
 </style>

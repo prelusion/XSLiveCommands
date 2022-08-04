@@ -25,7 +25,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 // Keep a global reference of the window object. If you don't, the window will
 // be closed automatically when the JS object is garbage collected.
-let win;
+export let win: BrowserWindow | null;
 
 /**
  * Creates the browser window with the specified options.
@@ -43,6 +43,10 @@ async function createWindow() {
             preload: path.join(__dirname, "preload.js"),
         },
     });
+
+    if (!isDev)
+        win.setMenu(null);
+    win.setTitle('XS Live Commands');
 
     if (isDev) {
         await win.loadFile(path.join(__dirname, "..", "src", "index.html"));
@@ -97,3 +101,6 @@ require("./libs/fs");
 
 // Clipboard - Handling clipboard actions
 require("./libs/clipboard");
+
+// Electron - Handling electron actions
+require("./libs/manager");

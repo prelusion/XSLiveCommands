@@ -47,7 +47,7 @@ $padding: 20px;
 body {
     min-height: $height;
     margin: 0;
-    font-family: Calibri, serif;
+    font-family: "Segoe UI", serif;
 }
 
 #connection-window {

@@ -2,7 +2,7 @@
     <div>
         <table>
             <tr>
-                <td>Room ID:</td>
+                <td>Room Code:</td>
                 <td>{{ ensure(SocketHandler.room).id }}</td>
                 <td>
                     <button @click="copyRoomId()">Copy</button>
@@ -13,7 +13,7 @@
                 <td>{{ ensure(SocketHandler.room).scenario }}</td>
             </tr>
             <tr>
-                <td>Number of connected players:</td>
+                <td>Players:</td>
                 <td> {{ numberOfConnectedClients }}</td>
             </tr>
         </table>
@@ -26,7 +26,7 @@ import {GameHandler} from "@/classes/game-handler";
 import {QueueHandler} from "@/classes/queue-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
-import {assert, ensure} from "@/util/general";
+import {assert, changeTitle, ensure} from "@/util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "@/interfaces/command";
 
@@ -58,7 +58,8 @@ export default defineComponent({
         };
     },
     mounted() {
-        this.numberOfConnectedClients = ensure(SocketHandler.instance.room).numberOfConnections;
+        const room = ensure(SocketHandler.instance.room);
+        this.numberOfConnectedClients = room.numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
         const data = this.$store.state.data as { 'asHost': boolean };
@@ -70,6 +71,8 @@ export default defineComponent({
         if (this.asHost) {
             document.addEventListener('keydown', this.enableTyrantModeControls);
         }
+
+        changeTitle(`Room ${room.id}`);
     },
     unmounted() {
         const socket = ensure(SocketHandler.instance.socket);
@@ -136,9 +139,9 @@ export default defineComponent({
 <style scoped lang="scss">
 table {
     tr {
-        td:first-child {
-            text-align: right;
-        }
+        //td:first-child {
+        //    text-align: right;
+        //}
 
         td:nth-child(2) {
             padding-left: 10px;

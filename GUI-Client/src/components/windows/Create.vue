@@ -4,26 +4,28 @@
     </div>
     <div v-else>
         <div>
-            <div id="file-selection">
-                <div>
-                    Selected file:
-                    <span>{{ filename || 'No file selected' }}</span>
-                </div>
-                <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Select scenario file</button>
-                <span id="error" v-html="errors.join('<br>')"></span>
-            </div>
-
             <div id="password">
-                <label>
-                    Set a password for Tyrant: <br/>
-                    <input v-model="password" v-bind:type="passwordType">
+                <div id="show-password">
+                    <input v-model="password" placeholder="Password for Tyrants" v-bind:type="passwordType">
 
                     <label>
                         <input v-model="showPassword" type="checkbox"> Show password
                     </label>
+                </div>
+
+                <span class="small-text">
+                    This password is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
                     <br/>
-                    <span class="small-text">This is <b>NOT</b> for players joining. Password is for the Tyrant joining.</span>
-                </label>
+                    (it may be blank, but that is not recommended)
+                </span>
+            </div>
+
+            <div id="file-selection">
+                <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Browse...</button>
+                <span id="file-selection-text">{{ filename || 'No scenario selected' }}</span>
+                <div>
+                    <span id="error" v-html="errors.join('<br>')"></span>
+                </div>
             </div>
         </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -35,7 +37,7 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {CommandTemplates} from "@/interfaces/command";
-import {ensure} from "@/util/general";
+import {changeTitle, ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
 
@@ -72,6 +74,7 @@ export default defineComponent({
     },
     mounted() {
         // -
+        changeTitle('Create Room...');
     },
     computed: {
         passwordType(): string {
@@ -120,7 +123,7 @@ export default defineComponent({
                             if (result.reason === 'no-json') {
                                 this.errors = [
                                     "Commands File Not Found",
-                                    "A JSON file with the same name as the scenario containing information about the commands must be present",
+                                    "A JSON file with the same name as the scenario containing information about the commands must be present.",
                                 ];
                             } else if (result.reason === 'invalid-json') {
                                 this.errors = [
@@ -155,28 +158,41 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-
-#file-selection {
-    button {
+#password {
+    input {
         padding: 5px;
     }
 
-    #error {
-        color: red;
-        padding: 10px;
+    .small-text {
+        margin-top: 2px;
+        font-size: 12px;
+        color: gray;
+        display: inline-block;
+        line-height: 12px;
+    }
+
+    #show-password {
+        display: flex;
+        align-items: center;
     }
 }
 
-#password {
-    margin-top: 5px;
+#file-selection {
+    margin-top: 20px;
 
-    input {
-        padding: 4px;
+    button {
+        padding: 8px;
     }
 
-    .small-text {
-        font-size: 13px;
-        color: gray;
+    #file-selection-text {
+        margin-left: 10px;
+    }
+
+    #error {
+        display: inline-block;
+        color: red;
+        font-size: 14px;
+        line-height: 14px;
     }
 }
 

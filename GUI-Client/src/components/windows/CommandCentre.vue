@@ -3,7 +3,7 @@
         <div id="info">
             <table>
                 <tr>
-                    <td>Room ID:</td>
+                    <td>Room Code:</td>
                     <td>{{ ensure(SocketHandler.room).id }}</td>
                     <td>
                         <button @click="copyRoomId()">Copy</button>
@@ -14,19 +14,16 @@
                     <td>{{ ensure(SocketHandler.room).scenario }}</td>
                 </tr>
                 <tr>
-                    <td>Number of connected players:</td>
+                    <td>Players:</td>
                     <td> {{ numberOfConnectedClients }}</td>
                 </tr>
             </table>
         </div>
         <div id="command-centre">
-            <div class="header">
-                Choose Command:
-            </div>
             <div id="command">
                 <div id="command-selection">
                     <div>
-                        <input v-model="selectedCommand" list="commands">
+                        <input v-model="selectedCommand" list="commands" placeholder="Choose Command">
                         <button @click="selectedCommand = ''"
                                 id="clear-command-button"
                                 title="Clear the command selection text box"
@@ -42,18 +39,13 @@
 
                     <div id="params">
                         <div class="header">
-                            Specify Arguments:
+                            Arguments:
                         </div>
                         <table>
-                            <tr class="param-entry" v-bind:key="index" v-for="(paramName, index) in paramNames">
-                                <td>
-                                    {{ paramName }}
-                                    <span v-if="getCommandParameterPlaceholderText(index) === ''">*</span>
-                                </td>
+                            <tr class="param-entry" v-bind:key="index" v-for="(_, index) in commandParams?.length ?? 0">
                                 <td>
                                     <input v-bind:type="commandInputType(index)"
                                            v-bind:placeholder="getCommandParameterPlaceholderText(index)"
-                                           v-bind:id="`q${index}`"
                                            v-model="inputParams[index]"
                                     >
                                 </td>
@@ -79,8 +71,9 @@
 <!--                            </tr>-->
 <!--                        </table>-->
 <!--                    </div>-->
-                    <p title="The execution time might not exactly line up with the shown time if other commands have already been sent around this time">
-                        Execute at approximately: {{ planInTime }}. Cycle: {{ expectedCycle }}
+                    <p class="expected-execution-time">
+                        Execute at: {{ planInTime }}. <br/>
+                        Cycle: {{ expectedCycle }}
                     </p>
 <!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
 <!--                        This time has already passed. The given time will be ignored.-->
@@ -106,7 +99,7 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} from "@/interfaces/command";
-import {ensure, zeroLead} from "@/util/general";
+import {changeTitle, ensure, zeroLead} from "@/util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "@/classes/queue-handler";
 const {setInterval} = window;
@@ -166,6 +159,11 @@ export default defineComponent({
         this.interval = setInterval(() => {
             this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
         }, 1000);
+
+        console.log(this.commands)
+
+        changeTitle(`COMMAND CENTRE! (Room: ${room.id})`);
+        window.manager.resize(800, 600);
     },
     unmounted() {
         const socket = ensure(SocketHandler.instance.socket);
@@ -213,14 +211,16 @@ export default defineComponent({
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
         },
         getCommandParameter(index: number): CommandParamConfig {
+            console.log(this.commandParams, this.commandParams[index])
             return this.commandParams[index];
         },
         getCommandParameterDefault(index: number): string {
             return (this.getCommandParameter(index)?.default ?? '').toString();
         },
         getCommandParameterPlaceholderText(index: number): string {
+            const p = this.getCommandParameter(index);
             const d = this.getCommandParameterDefault(index);
-            return d ? 'default: ' + d : ''
+            return `${p.name}${d ? ` (default: ${d})` : '*'}`;
         },
         getCommandParameterType(index: number): ParamType {
             const TYPES: Record<string, ParamType | undefined> = {
@@ -347,8 +347,9 @@ export default defineComponent({
     justify-content: space-between;
 
     #command-centre {
+        margin-top: 15px;
+
         #command {
-            margin-top: 10px;
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -359,8 +360,7 @@ export default defineComponent({
             }
 
             #plan-command {
-                margin-top: 3px;
-                width: 50vw;
+                width: 30vw;
 
                 #plan-cycle-warning {
                     color: red;
@@ -369,12 +369,14 @@ export default defineComponent({
                 input {
                     margin-top: 3px;
                 }
+
+                .expected-execution-time {
+                    margin: 0;
+                }
             }
         }
 
         #params {
-            margin-top: 10px;
-
             .param-entry {
                 margin: 4px 0;
 
@@ -401,23 +403,11 @@ export default defineComponent({
     #info {
         border-bottom: 1px solid #b6b6b6;
         padding-bottom: 10px;
-
-        table {
-            tr {
-                td:first-child {
-                    text-align: right;
-                }
-
-                td:nth-child(2) {
-                    padding-left: 10px;
-                }
-            }
-        }
     }
 }
 
 input, button {
-    padding: 4px;
+    padding: 5px;
 }
 
 input[type=checkbox] {

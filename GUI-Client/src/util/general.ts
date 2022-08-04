@@ -36,3 +36,14 @@ export function assert(value: unknown): asserts value {
 export function zeroLead(num: string | number): string {
     return num.toString().length === 1 ? '0' + num : num.toString();
 }
+
+/**
+ * Change the window title
+ *
+ * @param title The title to change too (after the separator)
+ * @param prefix The prefix of the title (before the separator)
+ * @param sep The separator between prefix and title
+ */
+export function changeTitle(title: string, prefix = "XS Live Commands", sep = "|"): void {
+    document.title = `${prefix} ${title ? sep : ''} ${title}`
+}

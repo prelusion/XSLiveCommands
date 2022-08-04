@@ -50,7 +50,7 @@ module.exports = {
             disableMainProcessTypescript: true,
 
             builderOptions: {
-                productName: 'AoE2 Live Commands',
+                productName: 'XS Live Commands',
 
                 // Electron packing. Setting this to false results in a warning when building.
                 // I'm not sure why it is not recommended. I might get back to this in the future^tm.

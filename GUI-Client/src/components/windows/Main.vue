@@ -14,6 +14,7 @@
 import {GameHandler} from "@/classes/game-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
+import {changeTitle} from "@/util/general";
 
 export default defineComponent({
     name: "MainRoom",
@@ -39,6 +40,9 @@ export default defineComponent({
         };
     },
     mounted() {
+        changeTitle('');
+        window.manager.resize(600, 300);
+
         // this.$store.commit("changeWindow", "Create");
         const data = this.$store.state.data as {message: string} | null;
         if (data !== null) {

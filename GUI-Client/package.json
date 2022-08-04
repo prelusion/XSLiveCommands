@@ -1,6 +1,7 @@
 {
-  "name": "aoe2-live-commands",
-  "version": "0.1.0",
+  "name": "xs-live-commands",
+  "productName": "test",
+  "version": "0.1.2",
   "description": "",
   "author": "Prelusion, Alian & KSneijders",
   "scripts": {

@@ -20,8 +20,14 @@ contextBridge.exposeInMainWorld('fs', {
     readCycle: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
     writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, scenario, event),
-})
+});
 
 contextBridge.exposeInMainWorld('clipboard', {
     write: (text: string) => ipcRenderer.invoke('clipboard:write', text),
 });
+
+contextBridge.exposeInMainWorld('manager', {
+    resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
+});
+
+

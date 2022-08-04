@@ -6,6 +6,7 @@ import {getSteamId} from "@/../electron/libs/regedit";
 import store from "@/store";
 import {createApp} from "vue";
 import {write} from "../electron/libs/clipboard";
+import {resize} from "../electron/libs/manager";
 import App from "./App.vue";
 
 
@@ -30,6 +31,9 @@ declare global {
         };
         clipboard: {
             write: typeof write;
+        };
+        manager: {
+            resize: typeof resize;
         };
     }
 }
