@@ -71,10 +71,11 @@
 <!--                            </tr>-->
 <!--                        </table>-->
 <!--                    </div>-->
-                    <p class="expected-execution-time">
-                        Execute at: {{ planInTime }}. <br/>
-                        Cycle: {{ expectedCycle }}
-                    </p>
+                        <!-- Todo: Temporarily disabled due to datalist bug -->
+<!--                    <p class="expected-execution-time">-->
+<!--                        Execute at: {{ planInTime }}. <br/>-->
+<!--                        Cycle: {{ expectedCycle }}-->
+<!--                    </p>-->
 <!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
 <!--                        This time has already passed. The given time will be ignored.-->
 <!--                    </p>-->
@@ -215,7 +216,6 @@ export default defineComponent({
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
         },
         getCommandParameter(index: number): CommandParamConfig {
-            console.log(this.commandParams, this.commandParams[index])
             return this.commandParams[index];
         },
         getCommandParameterDefault(index: number): string {
