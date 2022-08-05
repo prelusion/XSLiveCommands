@@ -22,13 +22,13 @@ export default defineComponent({
             error: [] as Array<string>,
         };
     },
-    mounted() {
+    async mounted() {
         window.regedit.getSteamId().then(steamId => {
             GameHandler.instance.steamId = steamId;
             this.retrievedSteamId = true;
         });
 
-        const socket = io("ws://localhost:80");
+        const socket = io(await window.manager.getEnvVar('SERVER_URL') as string);
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
             SocketHandler.instance.socket = socket;

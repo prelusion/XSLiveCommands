@@ -28,6 +28,5 @@ contextBridge.exposeInMainWorld('clipboard', {
 
 contextBridge.exposeInMainWorld('manager', {
     resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
+    getEnvVar: (str: string) => ipcRenderer.invoke('manager:get_env_var', str),
 });
-
-

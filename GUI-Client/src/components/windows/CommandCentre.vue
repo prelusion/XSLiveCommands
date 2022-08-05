@@ -120,6 +120,7 @@ export default defineComponent({
 
             planCommand: false,
             expectedCycle: -1,
+            cycleTime: 2,
             // planMinute: undefined as number | undefined,
             // planSecond: undefined as number | undefined,
 
@@ -183,8 +184,8 @@ export default defineComponent({
         //     return Math.max(this.planCycle, this.SocketHandler.currentCycle);
         // },
         planInTime(): string {
-            // Cycle 0 = 0:05. Cycle 1 = 0:10 (hence the +5)
-            let seconds = this.expectedCycle * 5 + 5;
+            // Cycle 0 = 0:0<cycleTime>. Cycle 1 = 0:0:0<cycleTime>*2 (hence the +cycleTime)
+            let seconds = this.expectedCycle * this.cycleTime + this.cycleTime;
             let minutes = Math.floor(seconds / 60);
             seconds = seconds % 60;
 

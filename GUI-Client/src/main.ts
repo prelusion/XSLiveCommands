@@ -6,7 +6,7 @@ import {getSteamId} from "@/../electron/libs/regedit";
 import store from "@/store";
 import {createApp} from "vue";
 import {write} from "../electron/libs/clipboard";
-import {resize} from "../electron/libs/manager";
+import {resize, getEnvVar} from "../electron/libs/manager";
 import App from "./App.vue";
 
 
@@ -34,6 +34,7 @@ declare global {
         };
         manager: {
             resize: typeof resize;
+            getEnvVar: typeof getEnvVar;
         };
     }
 }

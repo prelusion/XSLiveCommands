@@ -20,8 +20,11 @@ try {
 }
 
 dotenv.config();
-
 const isDev = process.env.NODE_ENV === "development";
+
+if (isDev && !process.env['SERVER_URL']) {
+    throw Error('No SERVER_URL defined in .env');
+}
 
 // Keep a global reference of the window object. If you don't, the window will
 // be closed automatically when the JS object is garbage collected.
@@ -44,15 +47,16 @@ async function createWindow() {
         },
     });
 
-    if (!isDev)
+    if (!isDev) {
         win.setMenu(null);
+        process.env['SERVER_URL'] = 'https://xssync.aoe2.se/'
+    }
     win.setTitle('XS Live Commands');
 
     if (isDev) {
         await win.loadFile(path.join(__dirname, "..", "src", "index.html"));
         win.webContents.openDevTools();
     }
-    // ToDo: Check the path in this, it probably broke after ts-ification:
     // Production
     else {
         await win.loadFile(path.join(__dirname, "..", "app", "index.html"));
