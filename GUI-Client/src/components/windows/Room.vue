@@ -124,7 +124,12 @@ export default defineComponent({
                 this.tyrantMode.progress++;
 
                 if (this.tyrantMode.progress === this.tyrantMode.word.length) {
-                    this.$store.commit('changeWindow', 'CommandCentre');
+                    this.$store.commit('changeWindow', {
+                        window: 'CommandCentre',
+                        data: {
+                            numberOfConnections: this.numberOfConnectedClients
+                        }
+                    });
                 }
                 return;
             }

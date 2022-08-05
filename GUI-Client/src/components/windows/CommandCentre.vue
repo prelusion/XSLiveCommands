@@ -154,14 +154,17 @@ export default defineComponent({
         this.commands = room.commands;
         this.numberOfConnectedClients = room.numberOfConnections;
 
+        const data = this.$store.state.data;
+        if (data) {
+            this.numberOfConnectedClients = (data as {numberOfConnections: number}).numberOfConnections;
+        }
+
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
 
         this.interval = setInterval(() => {
             this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
         }, 1000);
-
-        console.log(this.commands)
 
         changeTitle(`COMMAND CENTRE! (Room: ${room.id})`);
         window.manager.resize(800, 600);
