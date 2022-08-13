@@ -8,6 +8,7 @@ import {SocketHandler} from "@/classes/socket-handler";
 import {io} from "socket.io-client";
 import {defineComponent} from "vue";
 import {ConfigFileFormatV1} from "../../interfaces/config";
+import {CONFIG_VERSION} from "../../versions";
 
 const {setTimeout} = window;
 
@@ -26,7 +27,7 @@ export default defineComponent({
     },
     async mounted() {
         // Don't read this async as the config file could contain info that is used for the other loading tasks
-        const config = await window.config.readConfig(parseFloat(window.CONFIG_VERSION)) as ConfigFileFormatV1;
+        const config = await window.config.readConfig(parseFloat(CONFIG_VERSION)) as ConfigFileFormatV1;
         if (config.version) {
             this.$store.state.config = config;
             this.loadedSettings = true;

@@ -48,7 +48,7 @@ export default defineComponent({
 $padding: 20px - 10;
 
 #buttons {
-    position: absolute;
+    position: fixed;
     display: flex;
     flex-direction: row;
     justify-content: space-between;

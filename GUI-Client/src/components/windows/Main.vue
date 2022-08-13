@@ -1,10 +1,13 @@
 <template>
-    <div>
+    <div class="main-wrapper">
         <div class="">
             SteamID: {{ steamId }}
         </div>
         <div id="displayMessage">
             {{ message }}
+        </div>
+        <div id="version">
+            v{{ CLIENT_VERSION }}
         </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
@@ -15,6 +18,7 @@ import {GameHandler} from "@/classes/game-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
+import {CLIENT_VERSION} from "../../versions";
 
 export default defineComponent({
     name: "MainRoom",
@@ -37,6 +41,7 @@ export default defineComponent({
                 },
             ] as Array<ButtonConfig>,
             message: "",
+            CLIENT_VERSION,
         };
     },
     mounted() {
@@ -62,9 +67,20 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-#displayMessage {
-    margin-top: 8vh;
-    text-align: center;
-    color: #ce3d3d;
+.main-wrapper {
+    position: relative;
+
+    #displayMessage {
+        margin-top: 8vh;
+        text-align: center;
+        color: #ce3d3d;
+    }
+
+    #version {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
 }
+
 </style>

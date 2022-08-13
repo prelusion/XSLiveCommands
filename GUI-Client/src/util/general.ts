@@ -6,6 +6,8 @@
  *
  * @author Karol Majewski @ https://stackoverflow.com/a/54738437/7230293
  */
+import {CLIENT_VERSION} from "../versions";
+
 export function ensure<T>(argument: T | undefined | null, message = "This value was promised to be there."): T {
     if (argument === undefined || argument === null) {
         throw new TypeError(message);
@@ -44,6 +46,6 @@ export function zeroLead(num: string | number): string {
  * @param prefix The prefix of the title (before the separator)
  * @param sep The separator between prefix and title
  */
-export function changeTitle(title: string, prefix = "XS Live Commands", sep = "|"): void {
+export function changeTitle(title: string, prefix = `XS Live Commands (v${CLIENT_VERSION})`, sep = "|"): void {
     document.title = `${prefix} ${title ? sep : ''} ${title}`
 }

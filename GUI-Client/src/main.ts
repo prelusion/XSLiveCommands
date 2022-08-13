@@ -15,9 +15,6 @@ createApp(App)
     .use(store)
     .mount("#app");
 
-window.CLIENT_VERSION = '0.1.3';
-window.CONFIG_VERSION = '0.1';
-
 // Register all exposed variables here (from '/electron/preload.js')
 declare global {
     interface Window {
@@ -45,7 +42,5 @@ declare global {
             writeConfig: typeof writeConfig;
             resetConfig: typeof resetConfig;
         };
-        CLIENT_VERSION: string;
-        CONFIG_VERSION: string;
     }
 }

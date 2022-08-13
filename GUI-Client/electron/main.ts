@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import {app, BrowserWindow} from "electron";
 import path from "path";
+import {CLIENT_VERSION} from "../src/versions";
 
 try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -51,7 +52,7 @@ async function createWindow() {
         win.setMenu(null);
         process.env['SERVER_URL'] = 'https://xssync.aoe2.se/'
     }
-    win.setTitle('XS Live Commands');
+    win.setTitle(`XS Live Commands (v${CLIENT_VERSION})`);
 
     if (isDev) {
         await win.loadFile(path.join(__dirname, "..", "src", "index.html"));
