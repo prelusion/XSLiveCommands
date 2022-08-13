@@ -6,6 +6,7 @@ export default createStore({
         window: "Loading",
         data: null,
         connectionOk: false,
+        config: {},
     } as State,
 
     getters: {},

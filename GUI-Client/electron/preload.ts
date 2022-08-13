@@ -1,5 +1,6 @@
-import {contextBridge, ipcRenderer} from "electron";
+import {contextBridge, ipcMain, ipcRenderer} from "electron";
 import {CommandEvent} from "../src/interfaces/command";
+import {ConfigFileCoreFormat} from "../src/interfaces/config";
 
 // In this file we want to expose protected methods that allow the renderer
 // process to use the ipcRenderer without exposing the entire object.
@@ -29,4 +30,10 @@ contextBridge.exposeInMainWorld('clipboard', {
 contextBridge.exposeInMainWorld('manager', {
     resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
     getEnvVar: (str: string) => ipcRenderer.invoke('manager:get_env_var', str),
+});
+
+contextBridge.exposeInMainWorld('config', {
+    readConfig: (version: number) => ipcRenderer.invoke('config:readConfig', version),
+    writeConfig: (config: ConfigFileCoreFormat, version: number) => ipcRenderer.invoke('config:writeConfig', config, version),
+    resetConfig: (version: number) => ipcRenderer.invoke('config:resetConfig', version),
 });

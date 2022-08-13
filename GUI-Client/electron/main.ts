@@ -108,3 +108,6 @@ require("./libs/clipboard");
 
 // Electron - Handling electron actions
 require("./libs/manager");
+
+// Electron - Handling config reading and writing
+require("./libs/config");

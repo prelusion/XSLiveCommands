@@ -7,6 +7,7 @@ import {GameHandler} from "@/classes/game-handler";
 import {SocketHandler} from "@/classes/socket-handler";
 import {io} from "socket.io-client";
 import {defineComponent} from "vue";
+import {ConfigFileFormatV1} from "../../interfaces/config";
 
 const {setTimeout} = window;
 
@@ -19,34 +20,31 @@ export default defineComponent({
             timeout: -1,
             connectedToServer: false,
             retrievedSteamId: false,
+            loadedSettings: false,
             error: [] as Array<string>,
         };
     },
     async mounted() {
+        // Don't read this async as the config file could contain info that is used for the other loading tasks
+        const config = await window.config.readConfig(parseFloat(window.CONFIG_VERSION)) as ConfigFileFormatV1;
+        if (config.version) {
+            this.$store.state.config = config;
+            this.loadedSettings = true;
+        }
+
         window.regedit.getSteamId().then(steamId => {
             GameHandler.instance.steamId = steamId;
             this.retrievedSteamId = true;
         });
 
-        const socket = io(await window.manager.getEnvVar('SERVER_URL') as string);
+        const serverUrl = await window.manager.getEnvVar('SERVER_URL') as string;
+        const socket = io(config["custom-server-hostport"] || serverUrl);
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
-            SocketHandler.instance.socket = socket;
 
-            if (SocketHandler.instance.room) {
-                socket.emit('verifyRoomExists', SocketHandler.instance.room.id, (exists: boolean) => {
-                    if (!exists) {
-                        SocketHandler.instance.leaveRoom();
-
-                        this.$store.commit("changeWindow", {
-                            window: "Main",
-                            data: {
-                                'message': 'The server does not recognize the room anymore, please join or create a new one.'
-                            }
-                        });
-                    }
-                });
-            }
+            const sh = SocketHandler.instance;
+            sh.socket = socket;
+            sh.verifyRoomExistsOnReconnect(this.$store);
 
             this.connectedToServer = true;
         });
@@ -58,6 +56,7 @@ export default defineComponent({
     computed: {
         text() {
             let lines = [
+                (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully."),
                 (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully."),
                 (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully."),
             ];
@@ -70,7 +69,7 @@ export default defineComponent({
     },
     methods: {
         checkIfLoadingComplete() {
-            if (this.connectedToServer && this.retrievedSteamId) {
+            if (this.connectedToServer && this.retrievedSteamId && this.loadedSettings) {
                 setTimeout(() => this.$store.commit("changeWindow", "Main"), 200);
             }
         },

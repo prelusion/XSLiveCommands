@@ -4,6 +4,8 @@ import {Room} from "@/interfaces/general";
 import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
 import {QueueHandler} from "@/classes/queue-handler";
+import {Store} from "vuex";
+import {State} from "@vue/runtime-core";
 
 export class SocketHandler {
     private constructor() {
@@ -86,6 +88,27 @@ export class SocketHandler {
                         reject(`An unknown error occurred. Please try again.`);
                     }
                 });
+        });
+    }
+
+    public verifyRoomExistsOnReconnect($store: Store<State>): void {
+        assert(this.socket);
+
+        if (!this.room)
+            return
+
+        this.socket.emit('verifyRoomExists', this.room.id, async (exists: boolean) => {
+            if (exists)
+                return;
+
+            await SocketHandler.instance.leaveRoom();
+
+            $store.commit("changeWindow", {
+                window: "Main",
+                data: {
+                    'message': 'The server does not recognize the room anymore, please join or create a new one.'
+                }
+            });
         });
     }
 

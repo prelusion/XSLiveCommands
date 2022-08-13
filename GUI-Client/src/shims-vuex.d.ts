@@ -1,6 +1,7 @@
 // vuex-shim.d.ts
 
 import {Store} from "vuex";
+import {ConfigFileFormatV1} from "./interfaces/config";
 
 declare module "@vue/runtime-core" {
     // Declare your own store states.
@@ -8,6 +9,7 @@ declare module "@vue/runtime-core" {
         data: unknown;
         window: string;
         connectionOk: boolean;
+        config: ConfigFileFormatV1;
     }
 
     interface ComponentCustomProperties {

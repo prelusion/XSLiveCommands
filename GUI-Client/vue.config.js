@@ -55,15 +55,24 @@ module.exports = {
                 // Electron packing. Setting this to false results in a warning when building.
                 // I'm not sure why it is not recommended. I might get back to this in the future^tm.
                 asar: false,
-
-                // extraResources: [
+                extraResources: [
+                    {
+                        from: "./bin",
+                        to: "bin",
+                        filter: [
+                            "**/*"
+                        ]
+                    }
+                ],
+                // "files": [
                 //     {
-                //         "from": "./extraResources/",
-                //         "to": "extraResources",
+                //         "from": "./ElectronHostHook/node_modules",
+                //         "to": "ElectronHostHook/node_modules",
                 //         "filter": [
                 //             "**/*"
                 //         ]
-                //     }
+                //     },
+                //     "**/*"
                 // ]
             }
         }
