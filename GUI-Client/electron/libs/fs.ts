@@ -1,6 +1,7 @@
 import {ipcMain} from "electron";
 import fs, {readFileSync} from "fs";
 import {CommandEvent, CommandTemplates, JsonCommand, JsonCommandFile, ParamType} from "../../src/interfaces/command";
+import {clearInterval} from "timers";
 
 const userProfile = process.env.USERPROFILE;
 
@@ -55,13 +56,13 @@ export async function readCommands(path: string): Promise<{ commands?: CommandTe
 }
 
 /**
- * Convert the buffer to hexadecimal so it's easier to debug
+ * Convert the buffer to hexadecimal, so it's easier to debug
  *
  * @param buffer
  */
 function buf2hex(buffer: Buffer) {
     return [...new Uint8Array(buffer)]
-        .map(x => x.toString(16).padStart(2, "0"))
+        .map(x => (x as number).toString(16).padStart(2, "0"))
         .join("");
 }
 
@@ -171,16 +172,17 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
         }
     }
 
-    // console.log(buf2hex(bufferInfo.buffer));
-
-    fs.writeFile(commandFilePath, bufferInfo.buffer, (err) => {
-        if (err) throw new Error("Writing to file didn't work");
-    });
+    const interval = setInterval(() => {
+        fs.writeFile(commandFilePath, bufferInfo.buffer, (err) => {
+            if (!err)
+                clearInterval(interval);
+        });
+    }, 1);
 }
 
-// =========================================================================================
-// ======================= Handlers for wrapping the above functions =======================
-// =========================================================================================
+/** ========================================================================================
+ *                        Handlers for wrapping the above functions                      
+ *  ======================================================================================*/
 
 ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) => {
     return deleteXsDataFiles(steamId, scenario);

@@ -15,9 +15,9 @@ export async function getSteamId(): Promise<string> {
     return SteamID.fromIndividualAccountID(accountId as string).getSteamID64();
 }
 
-// =========================================================================================
-// ======================= Handlers for wrapping the above functions =======================
-// =========================================================================================
+/** ========================================================================================
+ *                        Handlers for wrapping the above functions                      
+ *  ======================================================================================*/
 
 ipcMain.handle("regedit:getSteamId", () => {
     return getSteamId();
