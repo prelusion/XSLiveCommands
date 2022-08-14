@@ -1,8 +1,5 @@
-import {valueof} from "./general";
-
 export interface ConfigFileCoreFormat {
     'version': number;
-    'some-other-key': string;
 }
 
 export interface ConfigFileFormatV01 extends ConfigFileCoreFormat {
