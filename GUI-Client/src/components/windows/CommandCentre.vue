@@ -133,7 +133,7 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Disconnect",
                     callback: async () => {
                         await SocketHandler.instance.leaveRoom();

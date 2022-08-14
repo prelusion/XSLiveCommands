@@ -77,7 +77,7 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Cancel",
                 },
                 {

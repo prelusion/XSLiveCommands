@@ -46,7 +46,7 @@ export default defineComponent({
             },
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Disconnect",
                     callback: async () => {
                         assert(SocketHandler.instance.room);

@@ -44,7 +44,7 @@ export default defineComponent({
             errorMsg: "",
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Cancel",
                 },
                 {
