@@ -44,23 +44,24 @@ async function createWindow() {
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,
-            preload: path.join(__dirname, "preload.js"),
+            preload: path.join(app.getAppPath(), "preload.js"),
         },
     });
 
     if (!isDev) {
-        win.setMenu(null);
+        // win.setMenu(null);
         process.env['SERVER_URL'] = 'https://xssync.aoe2.se/'
     }
     win.setTitle(`XS Live Commands (v${CLIENT_VERSION})`);
 
+    // Development
     if (isDev) {
-        await win.loadFile(path.join(__dirname, "..", "src", "index.html"));
+        await win.loadFile(path.join(app.getAppPath(), "..", "src", "index.html"));
         win.webContents.openDevTools();
     }
     // Production
     else {
-        await win.loadFile(path.join(__dirname, "..", "app", "index.html"));
+        await win.loadFile(path.join(app.getAppPath(), "..", "app.asar", "index.html"));
     }
 }
 
@@ -74,7 +75,7 @@ app.on("ready", () => {
     createWindow();
 
     app.on("activate", () => {
-        // On macOS it's common to re-create a window in the app when the dock icon
+        // On macOS, it's common to re-create a window in the app when the dock icon
         // is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
