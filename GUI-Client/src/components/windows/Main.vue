@@ -33,7 +33,7 @@ export default defineComponent({
                 },
                 {
                     window: "JoinPlayer",
-                    text: "Join as Player",
+                    text: "Join as Player / Spectator",
                 },
                 {
                     window: "JoinTyrant",
