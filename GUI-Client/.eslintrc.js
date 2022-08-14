@@ -17,6 +17,9 @@ module.exports = {
 
     // Doesn't allow for custom event rule names like: 'button-clicked' or 'enlarge-text' (from vue website)
     'vue/valid-v-on': 'off',
+
+    // https://eslint.vuejs.org/rules/multi-word-component-names.html
+    'vue/multi-word-component-names': 'off',
   },
   overrides: [
     {

@@ -56,6 +56,7 @@ import {CommandTemplates} from "@/interfaces/command";
 import {changeTitle, ensure} from "@/util/general";
 import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "CreateRoom",

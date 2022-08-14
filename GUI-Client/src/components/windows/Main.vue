@@ -19,6 +19,7 @@ import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
 import {CLIENT_VERSION} from "../../versions";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "MainRoom",

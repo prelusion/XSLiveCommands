@@ -1,4 +1,4 @@
-import {State} from "@vue/runtime-core";
+import {State} from "vue";
 import {createStore} from "vuex";
 import {ConfigFileFormatNewest} from "../interfaces/config";
 import {CONFIG_VERSION} from "../versions";

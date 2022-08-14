@@ -5,7 +5,7 @@ import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
 import {QueueHandler} from "@/classes/queue-handler";
 import {Store} from "vuex";
-import {State} from "@vue/runtime-core";
+import {State} from "vue";
 
 export class SocketHandler {
     private constructor() {

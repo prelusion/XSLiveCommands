@@ -29,6 +29,7 @@ import Buttons from "@/components/Buttons.vue";
 import {assert, changeTitle, ensure} from "@/util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "@/interfaces/command";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "Room",
