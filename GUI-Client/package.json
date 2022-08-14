@@ -19,6 +19,7 @@
     "axios": "^0.21.2",
     "core-js": "^3.6.5",
     "dotenv": "^16.0.1",
+    "native-reg": "^1.1.0",
     "regedit": "^5.1.1",
     "socket.io-client": "^4.5.1",
     "steamid": "^2.0.0",

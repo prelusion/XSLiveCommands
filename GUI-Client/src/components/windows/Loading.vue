@@ -34,6 +34,9 @@ export default defineComponent({
         }
 
         window.regedit.getSteamId().then(steamId => {
+            if (steamId === null)
+                return;
+
             GameHandler.instance.steamId = steamId;
             this.retrievedSteamId = true;
         });

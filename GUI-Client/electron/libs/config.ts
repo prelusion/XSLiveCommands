@@ -67,7 +67,6 @@ function writeJsonFile(name: string, value: unknown): boolean {
  * Upgrade the config file if necessary
  */
 function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number) {
-    console.log(typeof configFile.version, version)
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }
