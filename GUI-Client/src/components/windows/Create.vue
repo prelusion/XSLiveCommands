@@ -21,8 +21,24 @@
             </div>
 
             <div id="file-selection">
-                <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Browse...</button>
-                <span id="file-selection-text">{{ filename || 'No scenario selected' }}</span>
+                <div class="flex-row-center">
+                    <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Browse...</button>
+                    <span v-if="lastScenarioPath" class="flex-row-center">
+                        |
+                        <button
+                            id="last-scenario-path-button"
+                            @click="selectFile(lastScenarioPath)"
+                            v-bind:disabled="selectInProgress"
+                            v-bind:title="lastScenarioPath"
+                        >
+                            Select Previous
+                            <span class="small-text">
+                                {{ lastScenarioPath.split("\\").at(-1) }}
+                            </span>
+                        </button>
+                    </span>
+                    <span id="file-selection-text">{{ filename || 'No scenario selected' }}</span>
+                </div>
                 <div>
                     <span id="error" v-html="errors.join('<br>')"></span>
                 </div>
@@ -52,6 +68,7 @@ export default defineComponent({
             filepath: "",
             password: "",
             commands: {} as CommandTemplates | undefined,
+            lastScenarioPath: "",
 
             showPassword: false,
             creationInProgress: false,
@@ -73,8 +90,12 @@ export default defineComponent({
         };
     },
     mounted() {
-        // -
         changeTitle('Create Room...');
+        const config = ensure(this.$store.state.config);
+
+        if (config['last-scenario-path']) {
+            this.lastScenarioPath = config['last-scenario-path'];
+        }
     },
     computed: {
         passwordType(): string {
@@ -111,34 +132,38 @@ export default defineComponent({
                 .select(GameHandler.instance.steamId)
                 .then(async (value: SteamIdResponse) => {
                     this.selectInProgress = false;
-
                     if (value.filepath) {
-                        const result = await window.fs.readCommands(this.getCommandFilepath(value.filepath));
-
-                        if (result.commands) {
-                            this.filepath = value.filepath;
-                            this.commands = result.commands;
-                            this.errors = [];
-                        } else {
-                            if (result.reason === 'no-json') {
-                                this.errors = [
-                                    "Commands File Not Found",
-                                    "A JSON file with the same name as the scenario containing information about the commands must be present.",
-                                ];
-                            } else if (result.reason === 'invalid-json') {
-                                this.errors = [
-                                    "Invalid Commands File",
-                                    "The JSON Commands file corresponding with the scenario is invalid.",
-                                ];
-                            }
-                        }
+                        await this.selectFile(value.filepath);
                     } else if (value.reason !== "cancelled") {
                         this.errors = ["Unknown Error", "An unknown error has occurred."];
                     }
                 });
         },
+        async selectFile(filepath: string) {
+            const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
+
+            if (result.commands) {
+                this.filepath = filepath;
+                this.commands = result.commands;
+                this.errors = [];
+            } else {
+                if (result.reason === 'no-json') {
+                    this.errors = [
+                        "Commands File Not Found",
+                        "A JSON file with the same name as the scenario containing information about the commands must be present.",
+                    ];
+                } else if (result.reason === 'invalid-json') {
+                    this.errors = [
+                        "Invalid Commands File",
+                        "The JSON Commands file corresponding with the scenario is invalid.",
+                    ];
+                }
+            }
+        },
         createRoom() {
             this.creationInProgress = true;
+
+            this.$store.commit('patchConfig', {key: 'last-scenario-path', value: this.filepath});
 
             SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
                 .then(() => {
@@ -158,17 +183,24 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+.small-text {
+    margin-top: 2px;
+    font-size: 12px;
+    color: gray;
+    display: inline-block;
+    line-height: 12px;
+}
+
+.flex-row-center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
 #password {
     input {
         padding: 5px;
-    }
-
-    .small-text {
-        margin-top: 2px;
-        font-size: 12px;
-        color: gray;
-        display: inline-block;
-        line-height: 12px;
     }
 
     #show-password {
@@ -181,7 +213,13 @@ export default defineComponent({
     margin-top: 20px;
 
     button {
-        padding: 8px;
+        height: 35px;
+        display: inline-block;
+
+        span.small-text {
+            font-size: 10px;
+            display: block;
+        }
     }
 
     #file-selection-text {

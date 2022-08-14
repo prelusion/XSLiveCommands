@@ -56,6 +56,10 @@ function writeFile(name: string, ext: string, value: string): boolean {
  * @throws SyntaxError When the json is invalid
  */
 function writeJsonFile(name: string, value: unknown): boolean {
+    console.log('before')
+    console.log(JSON.stringify(value))
+    console.log('after')
+
     return writeFile(name, 'json', JSON.stringify(value));
 }
 
@@ -63,6 +67,7 @@ function writeJsonFile(name: string, value: unknown): boolean {
  * Upgrade the config file if necessary
  */
 function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number) {
+    console.log(typeof configFile.version, version)
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }
@@ -115,7 +120,9 @@ export function readConfig(version: number): ConfigFileCoreFormat {
  *  Write the configuration file
  */
 export function writeConfig(config: ConfigFileCoreFormat, version: number): boolean {
+    console.log(config, version, 'here');
     const upgradedConfig = upgradeConfigFile(config, version);
+    console.log(upgradedConfig);
     return writeJsonFile('config', upgradedConfig);
 }
 
