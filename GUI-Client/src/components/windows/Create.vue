@@ -73,8 +73,11 @@ export default defineComponent({
         };
     },
     mounted() {
-        // -
         changeTitle('Create Room...');
+
+        if (this.$store.state.config as ) {
+
+        }
     },
     computed: {
         passwordType(): string {
@@ -139,6 +142,8 @@ export default defineComponent({
         },
         createRoom() {
             this.creationInProgress = true;
+
+            this.$store.commit('patchConfig', {key: 'last-scenario-path', value: this.filepath});
 
             SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
                 .then(() => {
