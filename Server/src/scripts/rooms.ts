@@ -4,7 +4,7 @@ export function toRoomMessage(room: Room): RoomMessage {
     return {
         id: room.id,
         host: room.host,
-        scenario: room.scenario,
+        map: room.map,
         numberOfConnections: room.connections.length,
         commands: room.commands,
         events: room.events,
@@ -22,7 +22,7 @@ export function createRoom(
     return {
         id: id,
         host: host,
-        scenario: scenario,
+        map: scenario,
         connections: connections,
         tyrants: [],
         events: [],

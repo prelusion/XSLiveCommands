@@ -17,12 +17,12 @@ contextBridge.exposeInMainWorld('dialog', {
 });
 
 contextBridge.exposeInMainWorld('fs', {
-    deleteXsDataFiles: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, scenario),
-    readCycle: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
+    deleteXsDataFiles: (steamId: string, map: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, map),
+    readCycle: (steamId: string, map: string) => ipcRenderer.invoke('fs:readCycle', steamId, map),
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
-    writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, scenario, event),
+    writeEvent: (steamId: string, map: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, map, event),
     readModsJson: (steamId: string) => ipcRenderer.invoke('fs:readModsJson', steamId),
-    getCompatibleScenarios: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleScenarios', steamId, modFolderPath),
+    getCompatibleMaps: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleMaps', steamId, modFolderPath),
     exists: (absolutePath: string) => ipcRenderer.invoke('fs:exists', absolutePath),
 });
 
@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('clipboard', {
 
 contextBridge.exposeInMainWorld('manager', {
     resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
-    getEnvVar: (str: string) => ipcRenderer.invoke('manager:get_env_var', str),
+    getEnvVar: (str: string) => ipcRenderer.invoke('manager:getEnvVar', str),
 });
 
 contextBridge.exposeInMainWorld('config', {

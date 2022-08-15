@@ -1,10 +1,9 @@
 "use strict";
 
-import {select} from "@/../electron/libs/dialog";
 import {
     deleteXsDataFiles,
     exists,
-    getCompatibleScenarios,
+    getCompatibleMaps,
     readCommands,
     readCycle,
     readModsJson,
@@ -29,16 +28,13 @@ declare global {
         regedit: {
             getSteamId: typeof getSteamId;
         };
-        dialog: {
-            select: typeof select;
-        };
         fs: {
             deleteXsDataFiles: typeof deleteXsDataFiles;
             readCycle: typeof readCycle;
             readCommands: typeof readCommands;
             writeEvent: typeof writeEvent;
             readModsJson: typeof readModsJson;
-            getCompatibleScenarios: typeof getCompatibleScenarios;
+            getCompatibleMaps: typeof getCompatibleMaps;
             exists: typeof exists;
         };
         clipboard: {

@@ -23,19 +23,19 @@ export class GameHandler {
         return this._instance;
     }
 
-    public async resetState(scenario: string): Promise<void> {
-        await window.fs.deleteXsDataFiles(this.steamId, scenario);
+    public async resetState(map: string): Promise<void> {
+        await window.fs.deleteXsDataFiles(this.steamId, map);
         this.lastCommandCycle = -1;
         QueueHandler.instance.clear();
         this.stopCoreLoop();
     }
 
-    public startCoreLoop(scenario: string) {
+    public startCoreLoop(map: string) {
         // Tick rate of highFrequency rule in XS
         const readSpeed = Math.round(1000 / 60);
 
         this.coreInterval = setInterval(async () => {
-            const cycle = await window.fs.readCycle(this.steamId, scenario);
+            const cycle = await window.fs.readCycle(this.steamId, map);
             if (cycle !== undefined) {
                 SocketHandler.instance.sendCycle(cycle);
 
@@ -53,7 +53,7 @@ export class GameHandler {
                     console.log(event)
 
                     this.lastCommandCycle = event.executeCycleNumber;
-                    await window.fs.writeEvent(this.steamId, scenario, event);
+                    await window.fs.writeEvent(this.steamId, map, event);
                     console.log(`writing finished...`);
                 }
             }

@@ -9,8 +9,8 @@
                 </td>
             </tr>
             <tr>
-                <td>Scenario:</td>
-                <td>{{ ensure(SocketHandler.room).scenario }}</td>
+                <td>Map:</td>
+                <td>{{ ensure(SocketHandler.room).map }}</td>
             </tr>
             <tr>
                 <td>Players:</td>
@@ -51,7 +51,7 @@ export default defineComponent({
                         assert(SocketHandler.instance.room);
 
                         await SocketHandler.instance.leaveRoom();
-                        await GameHandler.instance.resetState(SocketHandler.instance.room.scenario);
+                        await GameHandler.instance.resetState(SocketHandler.instance.room.map);
                     },
                 },
             ] as Array<ButtonConfig>,

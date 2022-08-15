@@ -17,21 +17,21 @@ function modsFolderPath(steamId: string): string {
     return path.join(userProfile, "Games", "Age of Empires 2 DE", steamId, "mods");
 }
 
-export function deleteXsDataFiles(steamId: string, scenario: string): void {
+export function deleteXsDataFiles(steamId: string, map: string): void {
     const profileFolder = profileFolderPath(steamId);
 
-    for (const datfile of ["command.xsdat", `${scenario}.xsdat`]) {
+    for (const datfile of ["command.xsdat", `${map}.xsdat`]) {
         if (fs.existsSync(path.join(profileFolder, datfile))) {
             fs.unlinkSync(path.join(profileFolder, datfile));
         }
     }
 }
 
-export function readCycle(steamId: string, scenario: string): number | undefined {
+export function readCycle(steamId: string, map: string): number | undefined {
     const profileFolder = profileFolderPath(steamId);
 
     try {
-        const cycleFile = fs.readFileSync(path.join(profileFolder, `${scenario}.xsdat`), {flag: "a+", encoding: null});
+        const cycleFile = fs.readFileSync(path.join(profileFolder, `${map}.xsdat`), {flag: "a+", encoding: null});
         return Buffer.from(cycleFile).readInt32LE();
     } catch (err) {
         // File doesn't exist. Ignored because of HUGE ERROR and file doesn't have to exist.
@@ -81,37 +81,44 @@ export function readModsJson(steamId: string): Array<Mod> {
 }
 
 /**
- * Gets the names of all the scenarios in the mod folder specified that support XS Live Commands.
+ * Gets the names of all the scenarios & RMS files in the mod folder specified that support XS Live Commands.
  *
  * @param steamId
  * @param modFolderPath path to the mod folder relative to the user mods folder
  */
-export function getCompatibleScenarios(steamId: string, modFolderPath: string): Record<string, string> {
+export function getCompatibleMaps(steamId: string, modFolderPath: string): Record<string, string> {
+    let filePaths: Array<string> = [];
+
     const scenarioFolder = path.join(
         modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "scenario"
     );
+    if(fs.existsSync(scenarioFolder))
+        filePaths.push(...recursiveReaddir(scenarioFolder, true));
 
-    if (!fs.existsSync(scenarioFolder))
+    const rmsFolder = path.join(
+        modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "random-map-scripts"
+    );
+    if(fs.existsSync(rmsFolder))
+        filePaths.push(...recursiveReaddir(rmsFolder, true));
+
+    if (filePaths.length === 0)
         return {};
 
-    let filePaths = recursiveReaddir(scenarioFolder, true);
     filePaths = filePaths.filter(
-        filename => filename.endsWith(".aoe2scenario")
-                    && filePaths.includes(filename.replace(/.aoe2scenario$/, ".json")),
+        filename => filename.match(/.(?:aoe2scenario|rms|rms2)$/)
+                    && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json")),
     );
-
-    const scenarios: Record<string, string> = {};
+    const maps: Record<string, string> = {};
     for(const filePath of filePaths) {
-        const scenarioName = filePath
+        const mapName = filePath
             .replaceAll("\\", "/")
             .split("/")
-            .splice(-1)[0]
-            .replace(/.aoe2scenario$/, "");
+            .splice(-1)[0];
 
-        scenarios[scenarioName] = filePath;
+        maps[mapName] = filePath;
     }
 
-    return scenarios;
+    return maps;
 }
 
 export function exists(absolutePath: string): boolean {
@@ -188,7 +195,7 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true) {
  *      | ENDIF            | >    |        |        |                             |            |
  *      | END REPEAT       | >    |        |        |                             |            |
  */
-export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
+export function writeEvent(steamId: string, map: string, event: CommandEvent): void {
     const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
 
     if (!event.params)
@@ -247,28 +254,28 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
  *                        Handlers for wrapping the above functions
  *  ======================================================================================*/
 
-ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) => {
-    return deleteXsDataFiles(steamId, scenario);
+ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, map: string) => {
+    return deleteXsDataFiles(steamId, map);
 });
 
-ipcMain.handle("fs:readCycle", (_, steamId: string, scenario: string) => {
-    return readCycle(steamId, scenario);
+ipcMain.handle("fs:readCycle", (_, steamId: string, map: string) => {
+    return readCycle(steamId, map);
 });
 
 ipcMain.handle("fs:readCommands", (_, path: string) => {
     return readCommands(path);
 });
 
-ipcMain.handle("fs:writeEvent", (_, steamId: string, scenario: string, event: CommandEvent) => {
-    return writeEvent(steamId, scenario, event);
+ipcMain.handle("fs:writeEvent", (_, steamId: string, map: string, event: CommandEvent) => {
+    return writeEvent(steamId, map, event);
 });
 
 ipcMain.handle("fs:readModsJson", (_, steamId: string) => {
     return readModsJson(steamId);
 });
 
-ipcMain.handle("fs:getCompatibleScenarios", (_, steamId: string, modFolderPath: string) => {
-    return getCompatibleScenarios(steamId, modFolderPath);
+ipcMain.handle("fs:getCompatibleMaps", (_, steamId: string, modFolderPath: string) => {
+    return getCompatibleMaps(steamId, modFolderPath);
 });
 
 ipcMain.handle("fs:exists", (_, absolutePath: string) => {

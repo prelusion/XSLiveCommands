@@ -41,7 +41,7 @@ export default defineComponent({
     },
     mounted() {
         changeTitle('');
-        window.manager.resize(600, 300);
+        window.manager.resize(600, 325);
 
         // this.$store.commit("changeWindow", "Create");
         const data = this.$store.state.data as {message: string} | null;

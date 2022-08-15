@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/GUI-Client.iml" filepath="$PROJECT_DIR$/.idea/GUI-Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Server/.idea/aoe2-live-commands.iml" filepath="$PROJECT_DIR$/../Server/.idea/aoe2-live-commands.iml" />
     </modules>
   </component>
 </project>

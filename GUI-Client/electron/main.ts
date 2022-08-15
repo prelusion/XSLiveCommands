@@ -40,7 +40,7 @@ export let win: BrowserWindow | null;
 async function createWindow() {
     win = new BrowserWindow({
         width: 600,
-        height: 300,
+        height: 325,
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,
@@ -97,9 +97,6 @@ app.on("window-all-closed", () => {
 
 // Regedit - Handling registry requests
 require("./libs/regedit");
-
-// dialog - Handling electron dialog
-require("./libs/dialog");
 
 // fs - Handling file system calls
 require("./libs/fs");

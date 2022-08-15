@@ -3,7 +3,7 @@ import {AnyConfigFileFormat, ConfigFileCoreFormat} from "../../src/interfaces/co
 export const configDefaults: Record<string, AnyConfigFileFormat> = {
     '0.1': {
         'version': 0.1,
-        'last-scenario-path': '',
+        'last-map-path': '',
         'custom-server-hostport': ''
     }
 };

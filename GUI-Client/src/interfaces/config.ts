@@ -3,7 +3,7 @@ export interface ConfigFileCoreFormat {
 }
 
 export interface ConfigFileFormatV01 extends ConfigFileCoreFormat {
-    'last-scenario-path': string;
+    'last-map-path': string;
     'custom-server-hostport': string;
 }
 
