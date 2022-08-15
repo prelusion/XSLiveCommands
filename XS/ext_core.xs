@@ -1,5 +1,5 @@
 // for logging
-const bool verbose = true;
+const bool verbose = false;
 
 // current execution cycle for synchronisation
 int cycle = 0;
@@ -63,17 +63,16 @@ string getString(string name = "") {
 rule _ext_core__updateCycle
     active
     runImmediately
-    minInterval 5
-    maxInterval 5
+    minInterval 2
+    maxInterval 2
+    priority 9
 {
     if(verbose)
         xsChatData(">>> Cycle: " + cycle);
 
-    xsEnableRule("_ext_core__writeCycleToFile");
-
     if (cycle == cmdExecCycle) {
         xsAddRuntimeEvent("Scenario Triggers", cmdFuncName, -1);
-        xsEnableRule("_ext_core__loadCommand");
+        xsAddRuntimeEvent("Random Map", cmdFuncName, -1);
     }
 
     cycle = cycle + 1;
@@ -82,14 +81,14 @@ rule _ext_core__updateCycle
 rule _ext_core__writeCycleToFile
     active
     runImmediately
-    highFrequency
+    minInterval 2
+    maxInterval 2
+    priority 8
 {
     bool createSuccess = xsCreateFile(false);
     if (createSuccess) {
         bool writeSuccess = xsWriteInt(cycle);
         xsCloseFile();
-        if(writeSuccess)
-            xsDisableSelf();
     }
 }
 
@@ -115,6 +114,7 @@ rule _ext_core__loadCommand
     runImmediately
     minInterval 2
     maxInterval 2
+    priority 10
 {
     bool success = xsOpenFile("command");
     if (success == false) {
@@ -235,7 +235,6 @@ rule _ext_core__loadCommand
     }
 
     xsCloseFile();
-    xsDisableSelf();
 }
 
 // initialise the arrays
