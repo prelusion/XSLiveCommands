@@ -1,4 +1,4 @@
-import {contextBridge, ipcMain, ipcRenderer} from "electron";
+import {contextBridge, ipcRenderer} from "electron";
 import {CommandEvent} from "../src/interfaces/command";
 import {ConfigFileCoreFormat} from "../src/interfaces/config";
 
@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld('fs', {
     readCycle: (steamId: string, scenario: string) => ipcRenderer.invoke('fs:readCycle', steamId, scenario),
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
     writeEvent: (steamId: string, scenario: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, scenario, event),
+    readModsJson: (steamId: string) => ipcRenderer.invoke('fs:readModsJson', steamId),
+    getCompatibleScenarios: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleScenarios', steamId, modFolderPath),
+    exists: (absolutePath: string) => ipcRenderer.invoke('fs:exists', absolutePath),
 });
 
 contextBridge.exposeInMainWorld('clipboard', {

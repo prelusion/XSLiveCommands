@@ -3,8 +3,10 @@ import {ConfigFileCoreFormat} from "../../src/interfaces/config";
 import {configDefaults, upgradeConfigFileToVersion} from "../util/config-data";
 import {ipcMain} from "electron";
 
-const XS_SYNC_SUBFOLDERS = [''];
+// windows specific:
 const USER_PROFILE_PATH = process.env.USERPROFILE;
+
+const XS_SYNC_SUBFOLDERS = [''];
 const XS_SYNC_FILE_PATH = `${USER_PROFILE_PATH}\\.xs-sync\\`
 
 /** ========================================================================================

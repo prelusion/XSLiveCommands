@@ -1,7 +1,7 @@
 import {dialog, ipcMain} from "electron";
 
 // windows specific:
-const userProfile = process.env.USERPROFILE;
+export const userProfile = process.env.USERPROFILE;
 
 export interface SteamIdResponse {
     filepath?: string;

@@ -1,7 +1,15 @@
 "use strict";
 
 import {select} from "@/../electron/libs/dialog";
-import {deleteXsDataFiles, readCommands, readCycle, writeEvent} from "@/../electron/libs/fs";
+import {
+    deleteXsDataFiles,
+    exists,
+    getCompatibleScenarios,
+    readCommands,
+    readCycle,
+    readModsJson,
+    writeEvent,
+} from "@/../electron/libs/fs";
 import {getSteamId} from "@/../electron/libs/regedit";
 import store from "@/store";
 import {createApp} from "vue";
@@ -29,6 +37,9 @@ declare global {
             readCycle: typeof readCycle;
             readCommands: typeof readCommands;
             writeEvent: typeof writeEvent;
+            readModsJson: typeof readModsJson;
+            getCompatibleScenarios: typeof getCompatibleScenarios;
+            exists: typeof exists;
         };
         clipboard: {
             write: typeof write;

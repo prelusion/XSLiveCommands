@@ -23,7 +23,7 @@
             <div id="command">
                 <div id="command-selection">
                     <div>
-                        <input v-model="selectedCommand" list="commands" placeholder="Choose Command">
+                        <input v-model="selectedCommand" list="commands" placeholder="Select Command">
                         <button @click="selectedCommand = ''"
                                 id="clear-command-button"
                                 title="Clear the command selection text box"
@@ -32,7 +32,7 @@
                         </button>
 
                         <datalist id="commands">
-                            <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
+                            <option v-bind:key="name" v-for="(name) in Object.keys(this.commands)"
                                     v-bind:value="name"></option>
                         </datalist>
                     </div>
@@ -54,31 +54,31 @@
                     </div>
                 </div>
                 <div id="plan-command">
-<!--                    <div>-->
-<!--                        <input v-model="planCommand" type="checkbox" id="plan-check">-->
-<!--                        <label for="plan-check">Plan command</label>-->
-<!--                    </div>-->
+                    <!--<div>-->
+                    <!--    <input v-model="planCommand" type="checkbox" id="plan-check">-->
+                    <!--    <label for="plan-check">Plan command</label>-->
+                    <!--</div>-->
 
-<!--                    <div v-if="planCommand">-->
-<!--                        <table>-->
-<!--                            <tr>-->
-<!--                                <td>Minute</td>-->
-<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
-<!--                            </tr>-->
-<!--                            <tr>-->
-<!--                                <td>Second</td>-->
-<!--                                <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
-<!--                            </tr>-->
-<!--                        </table>-->
-<!--                    </div>-->
-                        <!-- Todo: Temporarily disabled due to datalist bug -->
-<!--                    <p class="expected-execution-time">-->
-<!--                        Execute at: {{ planInTime }}. <br/>-->
-<!--                        Cycle: {{ expectedCycle }}-->
-<!--                    </p>-->
-<!--                    <p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
-<!--                        This time has already passed. The given time will be ignored.-->
-<!--                    </p>-->
+                    <!--<div v-if="planCommand">-->
+                    <!--    <table>-->
+                    <!--        <tr>-->
+                    <!--            <td>Minute</td>-->
+                    <!--            <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
+                    <!--        </tr>-->
+                    <!--        <tr>-->
+                    <!--            <td>Second</td>-->
+                    <!--            <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
+                    <!--        </tr>-->
+                    <!--    </table>-->
+                    <!--</div>-->
+                    <!--     Todo: Temporarily disabled due to datalist bug -->
+                    <!--<p class="expected-execution-time">-->
+                    <!--    Execute at: {{ planInTime }}. <br/>-->
+                    <!--    Cycle: {{ expectedCycle }}-->
+                    <!--</p>-->
+                    <!--<p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
+                    <!--    This time has already passed. The given time will be ignored.-->
+                    <!--</p>-->
                 </div>
             </div>
 

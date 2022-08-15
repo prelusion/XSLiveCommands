@@ -6,9 +6,6 @@
         <div id="displayMessage">
             {{ message }}
         </div>
-        <div id="version">
-            v{{ CLIENT_VERSION }}
-        </div>
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
 </template>
@@ -18,7 +15,6 @@ import {GameHandler} from "@/classes/game-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
-import {CLIENT_VERSION} from "../../versions";
 
 export default defineComponent({
     name: "MainRoom",
@@ -41,7 +37,6 @@ export default defineComponent({
                 },
             ] as Array<ButtonConfig>,
             message: "",
-            CLIENT_VERSION,
         };
     },
     mounted() {

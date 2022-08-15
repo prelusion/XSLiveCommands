@@ -21,23 +21,16 @@
             </div>
 
             <div id="file-selection">
-                <div class="flex-row-center">
-                    <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Browse...</button>
-                    <span v-if="lastScenarioPath" class="flex-row-center">
-                        |
-                        <button
-                            id="last-scenario-path-button"
-                            @click="selectFile(lastScenarioPath)"
-                            v-bind:disabled="selectInProgress"
-                            v-bind:title="lastScenarioPath"
-                        >
-                            Select Previous
-                            <span class="small-text">
-                                {{ lastScenarioPath.split("\\").at(-1) }}
-                            </span>
-                        </button>
-                    </span>
-                    <span id="file-selection-text">{{ filename || 'No scenario selected' }}</span>
+                <div class="flex-row-center" v-if="this.loadedAvailableScenarios">
+                    <input v-model="enteredFilename" list="scenarios" placeholder="Select Scenario">
+                    <datalist id="scenarios">
+                        <option v-for="(name) in Object.keys(this.scenarios)" v-bind:key="name">{{ name }}</option>
+                    </datalist>
+                    <button @click="enteredFilename = ''"
+                            id="clear-scenario-button"
+                            title="Clear the scenario selection text box">Clear
+                    </button>
+                    <span id="file-selection-text">{{ this.scenarioName || 'No scenario selected' }}</span>
                 </div>
                 <div>
                     <span id="error" v-html="errors.join('<br>')"></span>
@@ -54,7 +47,6 @@ import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {CommandTemplates} from "@/interfaces/command";
 import {changeTitle, ensure} from "@/util/general";
-import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
 
 export default defineComponent({
@@ -67,12 +59,15 @@ export default defineComponent({
 
             filepath: "",
             password: "",
+            enteredFilename: "",
+            scenarioName: "",
             commands: {} as CommandTemplates | undefined,
-            lastScenarioPath: "",
+            scenarios: {} as Record<string, string>,
 
             showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
+            loadedAvailableScenarios: false,
 
             buttonConfig: [
                 {
@@ -89,58 +84,62 @@ export default defineComponent({
             ] as Array<ButtonConfig>,
         };
     },
-    mounted() {
-        changeTitle('Create Room...');
+    async mounted() {
+        changeTitle("Create Room...");
         const config = ensure(this.$store.state.config);
 
-        if (config['last-scenario-path']) {
-            this.lastScenarioPath = config['last-scenario-path'];
+        this.filepath = config["last-scenario-path"] ?? "";
+
+        if (this.filepath) {
+            const scenarioExists = await window.fs.exists(this.filepath);
+            const commandFleExists = await window.fs.exists(this.commandFilepath);
+
+            if (!scenarioExists || !commandFleExists)
+                this.filepath = "";
+            else {
+                this.scenarioName = this.filepath
+                    .replaceAll("\\", "/")
+                    .split("/")
+                    .slice(-1)[0]
+                    .replace(/.aoe2scenario$/, "");
+            }
         }
+
+        // this list is already sorted in order of decreasing priority (increasing priority number) by the game
+        const mods = await window.fs.readModsJson(GameHandler.instance.steamId);
+        mods.push({
+            CheckSum: "",
+            Enabled: true,
+            LastUpdate: "",
+            Path: "..",
+            Priority: mods.length + 1, // profile folder's "mod" has the lowest priority
+            PublishID: -1,
+            Title: "",
+            WorkshopID: -1,
+        });
+
+        for (const mod of mods) {
+            if (!mod.Enabled)
+                continue;
+            // previous scenarios (higher priority) get priority if same name (exactly how the game handles that too)
+            this.scenarios = {
+                ...await window.fs.getCompatibleScenarios(GameHandler.instance.steamId, mod.Path), ...this.scenarios,
+            };
+        }
+
+        this.loadedAvailableScenarios = true;
     },
     computed: {
         passwordType(): string {
             return this.showPassword ? "text" : "password";
         },
-
-        /**
-         * Get the file name from the path
-         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>.aoe2scenario`
-         */
-        filename(): string {
-            return this.filepath.split("\\").splice(-1)[0];
-        },
-
-        /**
-         * Get the plain file name without extension from the path
-         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>`
-         */
-        plainFilename(): string {
-            return this.filename.split(".")[0];
+        commandFilepath(): string {
+            return this.filepath.replace(/.aoe2scenario$/, ".json");
         },
     },
     methods: {
-        getCommandFilepath(filepath: string) {
-            const folders = filepath.split("\\");
-            const file = folders.splice(-1)[0];
-            const folderPath = folders.join('\\');
-            return folderPath + '\\' + file.split(".")[0] + ".json";
-        },
-        openFilePrompt() {
-            this.selectInProgress = true;
-
-            window.dialog
-                .select(GameHandler.instance.steamId)
-                .then(async (value: SteamIdResponse) => {
-                    this.selectInProgress = false;
-                    if (value.filepath) {
-                        await this.selectFile(value.filepath);
-                    } else if (value.reason !== "cancelled") {
-                        this.errors = ["Unknown Error", "An unknown error has occurred."];
-                    }
-                });
-        },
         async selectFile(filepath: string) {
-            const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
+            const result = await window.fs.readCommands(this.commandFilepath);
 
             if (result.commands) {
                 this.filepath = filepath;
@@ -165,7 +164,7 @@ export default defineComponent({
 
             this.$store.commit('patchConfig', {key: 'last-scenario-path', value: this.filepath});
 
-            SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
+            SocketHandler.instance.createRoom(this.scenarioName, ensure(this.commands), this.password)
                 .then(() => {
                     this.$store.commit("changeWindow", {
                         window: 'Room',
@@ -177,7 +176,16 @@ export default defineComponent({
                 });
         },
     },
-    watch: {},
+    watch: {
+        enteredFilename(): void {
+            this.filepath = this.scenarios[this.enteredFilename] ?? "";
+            if (this.filepath) {
+                this.scenarioName = this.enteredFilename;
+                this.selectFile(this.filepath);
+            } else
+                this.scenarioName = "";
+        },
+    },
 });
 
 </script>
@@ -239,4 +247,7 @@ export default defineComponent({
     text-align: center;
 }
 
+input, button {
+    padding: 5px;
+}
 </style>
