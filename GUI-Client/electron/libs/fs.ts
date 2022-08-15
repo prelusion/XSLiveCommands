@@ -196,7 +196,7 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true) {
  *      | END REPEAT       | >    |        |        |                             |            |
  */
 export function writeEvent(steamId: string, map: string, event: CommandEvent): void {
-    const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
+    const commandFilePath = path.join(profileFolderPath(steamId), "command.xsdat");
 
     if (!event.params)
         event.params = [];

@@ -95,14 +95,12 @@ export default defineComponent({
         const filepath = config["last-map-path"] ?? "";
         if (filepath) {
             const scenarioExists = await window.fs.exists(filepath);
-            const commandFleExists = await window.fs.exists(this.getCommandFilepath(filepath));
+            const commandFileExists = await window.fs.exists(this.getCommandFilepath(filepath));
 
-            if (scenarioExists && commandFleExists) {
-                this.filepath = filepath;
-                this.selectFile(this.filepath).then(() => {
-                    this.setNames(filepath);
-                    this.errors = [];
-                });
+            console.log(filepath, scenarioExists, commandFileExists);
+
+            if (scenarioExists && commandFileExists) {
+                this.selectFile(filepath).then(() => this.errors = []);
             }
         }
 
@@ -142,17 +140,12 @@ export default defineComponent({
         getCommandFilepath(filepath: string): string {
             return filepath.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json");
         },
-        setNames(filepath: string): void {
-            if(this.errors.length === 0) {
-                this.mapName = this.enteredFilename;
-                this.filepath = filepath;
-            }
-        },
         async selectFile(filepath: string) {
             const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
 
             if (result.commands) {
                 this.filepath = filepath;
+                this.mapName = filepath.replaceAll("\\", "/").split("/").slice(-1)[0];
                 this.commands = result.commands;
                 this.errors = [];
             } else {
@@ -191,7 +184,7 @@ export default defineComponent({
             this.errors = [];
             const filepath = this.scenarios[this.enteredFilename] ?? "";
             if (filepath) {
-                this.selectFile(filepath).then(() => this.setNames(filepath));
+                this.selectFile(filepath);
             } else
                 this.mapName = "";
         },
