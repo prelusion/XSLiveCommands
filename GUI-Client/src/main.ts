@@ -2,7 +2,7 @@
 
 import {select} from "@/../electron/libs/dialog";
 import {deleteXsDataFiles, readCommands, readCycle, writeEvent} from "@/../electron/libs/fs";
-import {getSteamId} from "@/../electron/libs/regedit";
+import {getSteamId} from "../electron/libs/native-reg";
 import {createApp} from "vue";
 import {write} from "../electron/libs/clipboard";
 import {getEnvVar, resize} from "../electron/libs/manager";

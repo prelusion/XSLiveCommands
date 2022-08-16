@@ -143,7 +143,7 @@ function disableCorsCheck(win: BrowserWindow) {
 // You can also put them in separate files and require them here.
 
 // Regedit - Handling registry requests
-import("../libs/regedit");
+import("../libs/native-reg");
 
 // dialog - Handling electron dialog
 import("../libs/dialog");
