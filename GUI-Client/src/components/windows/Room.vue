@@ -2,7 +2,7 @@
     <div>
         <table>
             <tr>
-                <td>Room Code:</td>
+                <td>ROOM Code:</td>
                 <td>{{ ensure(SocketHandler.room).id }}</td>
                 <td>
                     <button @click="copyRoomId()">Copy</button>
@@ -29,6 +29,7 @@ import Buttons from "@/components/Buttons.vue";
 import {assert, changeTitle, ensure} from "@/util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "@/interfaces/command";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "Room",
@@ -45,7 +46,7 @@ export default defineComponent({
             },
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Disconnect",
                     callback: async () => {
                         assert(SocketHandler.instance.room);

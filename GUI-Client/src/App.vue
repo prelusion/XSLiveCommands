@@ -14,7 +14,7 @@ import Create from "@/components/windows/Create.vue";
 import JoinPlayer from "@/components/windows/JoinPlayer.vue";
 import JoinTyrant from "@/components/windows/JoinTyrant.vue";
 import Loading from "@/components/windows/Loading.vue";
-import Main from "@/components/windows/Main.vue";
+import MainWindow from "@/components/windows/Main.vue";
 import Room from "@/components/windows/Room.vue";
 import {defineComponent} from "vue";
 
@@ -22,7 +22,7 @@ export default defineComponent({
     name: "App",
     components: {
         Loading,
-        Main,
+        MainWindow,
         Create,
         Room,
         JoinPlayer,

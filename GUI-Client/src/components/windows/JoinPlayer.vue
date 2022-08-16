@@ -17,6 +17,7 @@ import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "joinPlayer",
@@ -29,7 +30,7 @@ export default defineComponent({
             errorMsg: "",
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Cancel",
                 },
                 {
