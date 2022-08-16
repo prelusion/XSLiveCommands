@@ -33,7 +33,7 @@ export default defineComponent({
             this.loadedSettings = true;
         }
 
-        window.regedit.getSteamId().then(steamId => {
+        window.registry.getSteamId().then(steamId => {
             if (steamId === null)
                 return;
 
@@ -42,7 +42,7 @@ export default defineComponent({
         });
 
         const serverUrl = await window.manager.getEnvVar('SERVER_URL') as string;
-        const socket = io(config["custom-server-hostport"] || serverUrl);
+        const socket = io(config["custom-server-hostport"] || serverUrl || 'https://xssync.aoe2.se/');
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
 
@@ -60,9 +60,9 @@ export default defineComponent({
     computed: {
         text() {
             let lines = [
-                (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully."),
-                (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully."),
-                (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully."),
+                (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully!"),
+                (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully!"),
+                (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully!"),
             ];
 
             if (this.error.length > 0)

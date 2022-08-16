@@ -1,12 +1,14 @@
-import {AnyConfigFileFormat, ConfigFileCoreFormat} from "../../src/interfaces/config";
+import {ConfigFileCoreFormat, ConfigFileFormatV01} from "../../src/interfaces/config";
 
-export const configDefaults: Record<string, AnyConfigFileFormat> = {
+export const configDefaults = {
     '0.1': {
         'version': 0.1,
         'last-scenario-path': '',
         'custom-server-hostport': ''
-    }
+    } as ConfigFileFormatV01,
 };
+
+export type ConfigDefaultsKey = keyof typeof configDefaults;
 
 /**
  * Upgrade config file through the versions up till the version given

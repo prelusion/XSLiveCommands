@@ -2,7 +2,7 @@
     <div>
         <table>
             <tr>
-                <td>Room Code:</td>
+                <td>ROOM Code:</td>
                 <td>{{ ensure(SocketHandler.room).id }}</td>
                 <td>
                     <button @click="copyRoomId()">Copy</button>

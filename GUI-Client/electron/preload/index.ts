@@ -1,6 +1,7 @@
-import {contextBridge, ipcMain, ipcRenderer} from "electron";
-import {CommandEvent} from "../src/interfaces/command";
-import {ConfigFileCoreFormat} from "../src/interfaces/config";
+import {contextBridge, ipcRenderer} from "electron";
+import {CommandEvent} from "../../src/interfaces/command";
+import {ConfigFileCoreFormat} from "../../src/interfaces/config";
+
 
 // In this file we want to expose protected methods that allow the renderer
 // process to use the ipcRenderer without exposing the entire object.
@@ -8,8 +9,8 @@ import {ConfigFileCoreFormat} from "../src/interfaces/config";
 // !!! REMEMBER !!!
 // ALL THE CONTEXT BRIDGE CONSTRUCTIONS NEED TO BE DEFINED IN: '/src/main.ts'
 
-contextBridge.exposeInMainWorld('regedit', {
-    getSteamId: () => ipcRenderer.invoke('regedit:getSteamId'),
+contextBridge.exposeInMainWorld('registry', {
+    getSteamId: () => ipcRenderer.invoke('registry:getSteamId'),
 });
 
 contextBridge.exposeInMainWorld('dialog', {
