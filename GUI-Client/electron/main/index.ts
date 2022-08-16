@@ -2,6 +2,7 @@ import {app, BrowserWindow, ipcMain, shell} from "electron";
 import {join} from "path";
 import {release} from "os";
 import dotenv from "dotenv";
+import installExtension, {VUEJS3_DEVTOOLS, VUEJS_DEVTOOLS} from 'electron-devtools-installer';
 
 dotenv.config();
 
@@ -124,7 +125,7 @@ function disableCorsCheck(win: BrowserWindow) {
     // Disable CORS
     win.webContents.session.webRequest.onBeforeSendHeaders(
         (details, callback) => {
-            callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } });
+            callback({requestHeaders: {Origin: '*', ...details.requestHeaders}});
         },
     );
 
@@ -139,10 +140,22 @@ function disableCorsCheck(win: BrowserWindow) {
     });
 }
 
+// Causes bundle warnings:
+// https://github.com/electron/electron/issues/32133 (doesn't seem to get fixed soon)
+// app.whenReady().then(() => {
+//     installExtension(VUEJS3_DEVTOOLS, {
+//         loadExtensionOptions: {
+//             allowFileAccess: true,
+//         },
+//     })
+//         .then((name) => console.log(`Added Extension:  ${name}`))
+//         .catch((err) => console.log('An error occurred: ', err));
+// });
+
 // Below you can include the rest of your app's specific main process code.
 // You can also put them in separate files and require them here.
 
-// Regedit - Handling registry requests
+// Native-reg - Handling registry requests
 import("../libs/native-reg");
 
 // dialog - Handling electron dialog

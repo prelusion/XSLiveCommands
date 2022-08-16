@@ -17,7 +17,7 @@ createApp(App)
 // Register all exposed variables here (from '/electron/preload.js')
 declare global {
     interface Window {
-        regedit: {
+        registry: {
             getSteamId: typeof getSteamId;
         };
         dialog: {

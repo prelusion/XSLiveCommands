@@ -33,7 +33,7 @@ export default defineComponent({
             this.loadedSettings = true;
         }
 
-        window.regedit.getSteamId().then(steamId => {
+        window.registry.getSteamId().then(steamId => {
             if (steamId === null)
                 return;
 

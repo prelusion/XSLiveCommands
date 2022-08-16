@@ -9,8 +9,8 @@ import {ConfigFileCoreFormat} from "../../src/interfaces/config";
 // !!! REMEMBER !!!
 // ALL THE CONTEXT BRIDGE CONSTRUCTIONS NEED TO BE DEFINED IN: '/src/main.ts'
 
-contextBridge.exposeInMainWorld('regedit', {
-    getSteamId: () => ipcRenderer.invoke('regedit:getSteamId'),
+contextBridge.exposeInMainWorld('registry', {
+    getSteamId: () => ipcRenderer.invoke('registry:getSteamId'),
 });
 
 contextBridge.exposeInMainWorld('dialog', {
