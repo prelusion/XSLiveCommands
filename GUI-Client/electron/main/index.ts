@@ -49,17 +49,17 @@ async function createWindow() {
     })
 
     if (app.isPackaged) {
-        win.loadFile(indexHtml)
+        win.loadFile(indexHtml);
     } else {
-        win.loadURL(url)
+        win.loadURL(url);
         // Open devTool if the app is not packaged
-        win.webContents.openDevTools()
+        win.webContents.openDevTools();
     }
 
     // Test actively push message to the Electron-Renderer
     win.webContents.on('did-finish-load', () => {
         win?.webContents.send('main-process-message', new Date().toLocaleString())
-    })
+    });
 
     // Make all links open with the browser, not with the application
     win.webContents.setWindowOpenHandler(({url}) => {
@@ -67,7 +67,9 @@ async function createWindow() {
             shell.openExternal(url)
         }
         return {action: 'deny'}
-    })
+    });
+
+    disableCorsCheck(win);
 }
 
 app.whenReady().then(createWindow);
@@ -113,6 +115,29 @@ ipcMain.handle('open-win', (event, arg) => {
         childWindow.webContents.openDevTools({mode: "undocked", activate: true})
     }
 })
+
+/**
+ * Disable CORS checks as the internal vite doesn't like it when requests are sent to other servers too. (Jealous much?)
+ * @param win The window to disable CORS checks for
+ */
+function disableCorsCheck(win: BrowserWindow) {
+    // Disable CORS
+    win.webContents.session.webRequest.onBeforeSendHeaders(
+        (details, callback) => {
+            callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } });
+        },
+    );
+
+    // Disable CORS
+    win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+        callback({
+            responseHeaders: {
+                'Access-Control-Allow-Origin': ['*'],
+                ...details.responseHeaders,
+            },
+        });
+    });
+}
 
 // Below you can include the rest of your app's specific main process code.
 // You can also put them in separate files and require them here.
