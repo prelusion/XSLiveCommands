@@ -1,3 +1,13 @@
+import {CLIENT_VERSION} from "../versions";
+
+/**
+ * Easy way of logging values returned from changed functions
+ */
+export function logThis<T>(value: T): T {
+    console.log(value);
+    return value;
+}
+
 /**
  * Ensure that the parameter exists. Mostly useful in combination with 'Array.find()' which can return undefined.
  *
@@ -44,6 +54,14 @@ export function zeroLead(num: string | number): string {
  * @param prefix The prefix of the title (before the separator)
  * @param sep The separator between prefix and title
  */
-export function changeTitle(title: string, prefix = "XS Live Commands", sep = "|"): void {
+export function changeTitle(title: string, prefix = `XS Live Commands (v${CLIENT_VERSION})`, sep = "|"): void {
     document.title = `${prefix} ${title ? sep : ''} ${title}`
+}
+
+/**
+ * Checks if given value is string (or String(...))
+ * @param value the value to check
+ */
+export function isString(value: unknown): value is string {
+    return typeof value === 'string' || value instanceof String
 }

@@ -2,13 +2,12 @@ export interface ConfigFileCoreFormat {
     'version': number;
 }
 
-export interface ConfigFileFormatV1 extends ConfigFileCoreFormat{
-    'last-scenario-path': string;
+export interface ConfigFileFormatV01 extends ConfigFileCoreFormat {
+    'last-map-path': string;
     'custom-server-hostport': string;
 }
 
 /**
- * All config file formats (A little more constraint version of unknown)
+ * The newest config file format to work with
  */
-export type AnyConfigFileFormat = ConfigFileCoreFormat
-    | ConfigFileFormatV1;
+export type ConfigFileFormatNewest = ConfigFileFormatV01;

@@ -1,10 +1,12 @@
 import fs from "fs";
 import {ConfigFileCoreFormat} from "../../src/interfaces/config";
-import {configDefaults, upgradeConfigFileToVersion} from "../util/config-data";
+import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../util/config-data";
 import {ipcMain} from "electron";
 
-const XS_SYNC_SUBFOLDERS = [''];
+// windows specific:
 const USER_PROFILE_PATH = process.env.USERPROFILE;
+
+const XS_SYNC_SUBFOLDERS = [''];
 const XS_SYNC_FILE_PATH = `${USER_PROFILE_PATH}\\.xs-sync\\`
 
 /** ========================================================================================
@@ -84,7 +86,7 @@ function configFileExists(): boolean {
  *  Write the configuration file
  */
 export function resetConfig(version: number): boolean {
-    const defaultConfig = configDefaults[version.toString()] as ConfigFileCoreFormat;
+    const defaultConfig = configDefaults[version.toString() as ConfigDefaultsKey];
     if (!defaultConfig) {
         return false;
     }
@@ -115,7 +117,9 @@ export function readConfig(version: number): ConfigFileCoreFormat {
  *  Write the configuration file
  */
 export function writeConfig(config: ConfigFileCoreFormat, version: number): boolean {
+    console.log(config, version, 'here');
     const upgradedConfig = upgradeConfigFile(config, version);
+    console.log(upgradedConfig);
     return writeJsonFile('config', upgradedConfig);
 }
 

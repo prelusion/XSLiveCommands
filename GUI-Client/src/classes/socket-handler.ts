@@ -5,7 +5,7 @@ import {assert, ensure} from "@/util/general";
 import {Socket} from "socket.io-client";
 import {QueueHandler} from "@/classes/queue-handler";
 import {Store} from "vuex";
-import {State} from "@vue/runtime-core";
+import {State} from "vue";
 
 export class SocketHandler {
     private constructor() {
@@ -50,16 +50,16 @@ export class SocketHandler {
 
                     console.log(room.events)
 
-                    if (room.scenario) {
+                    if (room.map) {
                         this.room = room;
-                        await GameHandler.instance.resetState(room.scenario);
+                        await GameHandler.instance.resetState(room.map);
 
                         // Set queue to whatever was received when joining the room
                         if (room.events.length > 0) {
                             QueueHandler.instance.overwrite(room.events);
                         }
 
-                        GameHandler.instance.startCoreLoop(room.scenario);
+                        GameHandler.instance.startCoreLoop(room.map);
 
                         resolve();
                     } else {
@@ -78,10 +78,10 @@ export class SocketHandler {
                     if (room === null)
                         return setTimeout(() => reject(error), 200);
 
-                    if (room.scenario) {
+                    if (room.map) {
                         this.room = room;
-                        await GameHandler.instance.resetState(room.scenario);
-                        GameHandler.instance.startCoreLoop(room.scenario);
+                        await GameHandler.instance.resetState(room.map);
+                        GameHandler.instance.startCoreLoop(room.map);
 
                         resolve();
                     } else {
@@ -104,7 +104,7 @@ export class SocketHandler {
             await SocketHandler.instance.leaveRoom();
 
             $store.commit("changeWindow", {
-                window: "Main",
+                window: "MainWindow",
                 data: {
                     'message': 'The server does not recognize the room anymore, please join or create a new one.'
                 }
@@ -125,9 +125,9 @@ export class SocketHandler {
                 return resolve();
             }
 
-            const scenario = ensure(this.room).scenario;
+            const map = ensure(this.room).map;
             this.socket.emit("leaveRoom", async () => {
-                GameHandler.instance.resetState(scenario).then(resolve);
+                GameHandler.instance.resetState(map).then(resolve);
             });
         });
     }
@@ -139,9 +139,9 @@ export class SocketHandler {
             this.socket.emit("createRoom", filename, commands, password, async (room: Room) => {
                 this.room = room;
 
-                if (room.scenario && room.commands) {
-                    await GameHandler.instance.resetState(room.scenario);
-                    GameHandler.instance.startCoreLoop(room.scenario);
+                if (room.map && room.commands) {
+                    await GameHandler.instance.resetState(room.map);
+                    GameHandler.instance.startCoreLoop(room.map);
 
                     resolve();
                 } else {

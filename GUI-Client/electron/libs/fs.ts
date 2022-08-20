@@ -1,29 +1,38 @@
 import {ipcMain} from "electron";
-import fs, {readFileSync} from "fs";
-import {CommandEvent, CommandTemplates, JsonCommand, JsonCommandFile, ParamType} from "../../src/interfaces/command";
+import fs from "fs";
+import path from "path";
 import {clearInterval} from "timers";
+import {CommandEvent, CommandTemplates, JsonCommand, JsonCommandFile, ParamType} from "../../src/interfaces/command";
+import {Mod} from "../../src/interfaces/mods";
+import {ensure} from "../../src/util/general";
+import {recursiveReaddir} from "../util/general";
 
-const userProfile = process.env.USERPROFILE;
+// windows specific:
+const userProfile = ensure(process.env.USERPROFILE);
 
-export function profileFolderPath(steamId: string): string {
-    return `${userProfile}\\Games\\Age of Empires 2 DE\\${steamId}\\profile\\`;
+function profileFolderPath(steamId: string): string {
+    return path.join(userProfile, "Games", "Age of Empires 2 DE", steamId, "profile");
 }
 
-export function deleteXsDataFiles(steamId: string, scenario: string): void {
+function modsFolderPath(steamId: string): string {
+    return path.join(userProfile, "Games", "Age of Empires 2 DE", steamId, "mods");
+}
+
+export function deleteXsDataFiles(steamId: string, map: string): void {
     const profileFolder = profileFolderPath(steamId);
 
-    for (const path of ["command.xsdat", `${scenario}.xsdat`]) {
-        if (fs.existsSync(profileFolder + path)) {
-            fs.unlinkSync(profileFolder + path);
+    for (const datfile of ["command.xsdat", `${map}.xsdat`]) {
+        if (fs.existsSync(path.join(profileFolder, datfile))) {
+            fs.unlinkSync(path.join(profileFolder, datfile));
         }
     }
 }
 
-export function readCycle(steamId: string, scenario: string): number | undefined {
+export function readCycle(steamId: string, map: string): number | undefined {
     const profileFolder = profileFolderPath(steamId);
 
     try {
-        const cycleFile = readFileSync(`${profileFolder}${scenario}.xsdat`, {flag: "a+", encoding: null});
+        const cycleFile = fs.readFileSync(path.join(profileFolder, `${map}.xsdat`), {flag: "a+", encoding: null});
         return Buffer.from(cycleFile).readInt32LE();
     } catch (err) {
         // File doesn't exist. Ignored because of HUGE ERROR and file doesn't have to exist.
@@ -31,12 +40,12 @@ export function readCycle(steamId: string, scenario: string): number | undefined
     return undefined;
 }
 
-export async function readCommands(path: string): Promise<{ commands?: CommandTemplates; reason?: string }> {
+export async function readCommands(path: string): Promise<{commands?: CommandTemplates; reason?: string}> {
     if (!fs.existsSync(path))
         return {reason: 'no-json'};
 
     try {
-        const commandsArray: JsonCommandFile = JSON.parse(readFileSync(path).toString());
+        const commandsArray: JsonCommandFile = JSON.parse(fs.readFileSync(path).toString());
 
         const commands = commandsArray.reduce((
             commands: CommandTemplates,
@@ -56,6 +65,68 @@ export async function readCommands(path: string): Promise<{ commands?: CommandTe
 }
 
 /**
+ * Reads the mods-status.json in the mods directory and returns a list of all installed mods
+ * @param steamId
+ */
+export function readModsJson(steamId: string): Array<Mod> {
+    const modsFolder = modsFolderPath(steamId);
+
+    if (!fs.existsSync(modsFolder))
+        return [];
+
+    try {
+        return (JSON.parse(fs.readFileSync(path.join(modsFolder, "mod-status.json")).toString()))["Mods"] ?? [];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Gets the names of all the scenarios & RMS files in the mod folder specified that support XS Live Commands.
+ *
+ * @param steamId
+ * @param modFolderPath path to the mod folder relative to the user mods folder
+ */
+export function getCompatibleMaps(steamId: string, modFolderPath: string): Record<string, string> {
+    let filePaths: Array<string> = [];
+
+    const scenarioFolder = path.join(
+        modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "scenario"
+    );
+    if(fs.existsSync(scenarioFolder))
+        filePaths.push(...recursiveReaddir(scenarioFolder, true));
+
+    const rmsFolder = path.join(
+        modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "random-map-scripts"
+    );
+    if(fs.existsSync(rmsFolder))
+        filePaths.push(...recursiveReaddir(rmsFolder, true));
+
+    if (filePaths.length === 0)
+        return {};
+
+    filePaths = filePaths.filter(
+        filename => filename.match(/.(?:aoe2scenario|rms|rms2)$/)
+                    && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json")),
+    );
+    const maps: Record<string, string> = {};
+    for(const filePath of filePaths) {
+        const mapName = filePath
+            .replaceAll("\\", "/")
+            .split("/")
+            .splice(-1)[0];
+
+        maps[mapName] = filePath;
+    }
+
+    return maps;
+}
+
+export function exists(absolutePath: string): boolean {
+    return fs.existsSync(absolutePath);
+}
+
+/**
  * Convert the buffer to hexadecimal, so it's easier to debug
  *
  * @param buffer
@@ -66,7 +137,7 @@ function buf2hex(buffer: Buffer) {
         .join("");
 }
 
-type BufferInfo = { buffer: Buffer; offset: 0 };
+type BufferInfo = {buffer: Buffer; offset: 0};
 
 function addTypeToBuff(bufferInfo: BufferInfo, type: ParamType) {
     bufferInfo.buffer.writeInt32LE(type, bufferInfo.offset);
@@ -125,8 +196,8 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true) {
  *      | ENDIF            | >    |        |        |                             |            |
  *      | END REPEAT       | >    |        |        |                             |            |
  */
-export function writeEvent(steamId: string, scenario: string, event: CommandEvent): void {
-    const commandFilePath = profileFolderPath(steamId) + "command.xsdat";
+export function writeEvent(steamId: string, map: string, event: CommandEvent): void {
+    const commandFilePath = path.join(profileFolderPath(steamId), "command.xsdat");
 
     if (!event.params)
         event.params = [];
@@ -181,21 +252,33 @@ export function writeEvent(steamId: string, scenario: string, event: CommandEven
 }
 
 /** ========================================================================================
- *                        Handlers for wrapping the above functions                      
+ *                        Handlers for wrapping the above functions
  *  ======================================================================================*/
 
-ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, scenario: string) => {
-    return deleteXsDataFiles(steamId, scenario);
+ipcMain.handle("fs:deleteXsDataFiles", (_, steamId: string, map: string) => {
+    return deleteXsDataFiles(steamId, map);
 });
 
-ipcMain.handle("fs:readCycle", (_, steamId: string, scenario: string) => {
-    return readCycle(steamId, scenario);
+ipcMain.handle("fs:readCycle", (_, steamId: string, map: string) => {
+    return readCycle(steamId, map);
 });
 
 ipcMain.handle("fs:readCommands", (_, path: string) => {
     return readCommands(path);
 });
 
-ipcMain.handle("fs:writeEvent", (_, steamId: string, scenario: string, event: CommandEvent) => {
-    return writeEvent(steamId, scenario, event);
+ipcMain.handle("fs:writeEvent", (_, steamId: string, map: string, event: CommandEvent) => {
+    return writeEvent(steamId, map, event);
+});
+
+ipcMain.handle("fs:readModsJson", (_, steamId: string) => {
+    return readModsJson(steamId);
+});
+
+ipcMain.handle("fs:getCompatibleMaps", (_, steamId: string, modFolderPath: string) => {
+    return getCompatibleMaps(steamId, modFolderPath);
+});
+
+ipcMain.handle("fs:exists", (_, absolutePath: string) => {
+    return exists(absolutePath);
 });

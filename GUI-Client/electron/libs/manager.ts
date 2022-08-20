@@ -18,6 +18,6 @@ ipcMain.handle('manager:resize', (_, width: number, height: number): void => {
     resize(width, height);
 });
 
-ipcMain.handle('manager:get_env_var', (_, str: string): string | undefined => {
+ipcMain.handle('manager:getEnvVar', (_, str: string): string | undefined => {
     return getEnvVar(str);
 });

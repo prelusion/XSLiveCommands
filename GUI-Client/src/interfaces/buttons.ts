@@ -1,6 +1,6 @@
 type ButtonCallback = () => void;
 
-interface ButtonConfig {
+export interface ButtonConfig {
     text: string;
     window?: string;
     callback?: ButtonCallback;

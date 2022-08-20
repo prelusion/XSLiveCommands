@@ -16,7 +16,7 @@ export type Commands = Record<string, Command>;
 interface CoreRoom {
     id: string;
     host: string;
-    scenario: string;
+    map: string;
     commands: Commands;
     events: Array<ClientEvent>;
 }

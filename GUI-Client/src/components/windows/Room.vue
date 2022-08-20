@@ -9,8 +9,8 @@
                 </td>
             </tr>
             <tr>
-                <td>Scenario:</td>
-                <td>{{ ensure(SocketHandler.room).scenario }}</td>
+                <td>Map:</td>
+                <td>{{ ensure(SocketHandler.room).map }}</td>
             </tr>
             <tr>
                 <td>Players:</td>
@@ -29,6 +29,7 @@ import Buttons from "@/components/Buttons.vue";
 import {assert, changeTitle, ensure} from "@/util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "@/interfaces/command";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "Room",
@@ -45,13 +46,13 @@ export default defineComponent({
             },
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Disconnect",
                     callback: async () => {
                         assert(SocketHandler.instance.room);
 
                         await SocketHandler.instance.leaveRoom();
-                        await GameHandler.instance.resetState(SocketHandler.instance.room.scenario);
+                        await GameHandler.instance.resetState(SocketHandler.instance.room.map);
                     },
                 },
             ] as Array<ButtonConfig>,

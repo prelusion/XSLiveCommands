@@ -21,8 +21,22 @@
             </div>
 
             <div id="file-selection">
-                <button @click="openFilePrompt" v-bind:disabled="selectInProgress">Browse...</button>
-                <span id="file-selection-text">{{ filename || 'No scenario selected' }}</span>
+                <div class="flex-row-center" v-if="loadedAvailableScenarios">
+                    <input v-model="enteredFilename" list="scenarios" placeholder="Select Map">
+                    <datalist id="scenarios">
+                        <option v-for="(name) in Object.keys(scenarios)" v-bind:key="name">{{ name }}</option>
+                    </datalist>
+                    <button @click="enteredFilename = ''"
+                            id="clear-map-button"
+                            title="Clear the map selection text box">Clear
+                    </button>
+                    <span id="file-selection-text">{{ mapName || 'No map selected' }}</span>
+                </div>
+                <span class="small-text">
+                    For a map to be detected, a JSON file with the same name as the map containing information about supported commands must be present in the same folder as the map.
+                    <br/>
+                    This list will not auto refresh after entering this screen.
+                    </span>
                 <div>
                     <span id="error" v-html="errors.join('<br>')"></span>
                 </div>
@@ -38,8 +52,8 @@ import {SocketHandler} from "@/classes/socket-handler";
 import Buttons from "@/components/Buttons.vue";
 import {CommandTemplates} from "@/interfaces/command";
 import {changeTitle, ensure} from "@/util/general";
-import {SteamIdResponse} from "electron/libs/dialog";
 import {defineComponent} from "vue";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -51,15 +65,19 @@ export default defineComponent({
 
             filepath: "",
             password: "",
+            enteredFilename: "",
+            mapName: "",
             commands: {} as CommandTemplates | undefined,
+            scenarios: {} as Record<string, string>,
 
             showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
+            loadedAvailableScenarios: false,
 
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Cancel",
                 },
                 {
@@ -72,75 +90,85 @@ export default defineComponent({
             ] as Array<ButtonConfig>,
         };
     },
-    mounted() {
-        // -
-        changeTitle('Create Room...');
+    async mounted() {
+        changeTitle("Create Room...");
+        const config = ensure(this.$store.state.config);
+        const filepath = config["last-map-path"] ?? "";
+        if (filepath) {
+            const scenarioExists = await window.fs.exists(filepath);
+            const commandFileExists = await window.fs.exists(this.getCommandFilepath(filepath));
+
+            console.log(filepath, scenarioExists, commandFileExists);
+
+            if (scenarioExists && commandFileExists) {
+                this.selectFile(filepath).then(() => this.errors = []);
+            }
+        }
+
+        // this list is already sorted in order of decreasing priority (increasing priority number) by the game
+        const mods = await window.fs.readModsJson(GameHandler.instance.steamId);
+        mods.push({
+            CheckSum: "",
+            Enabled: true,
+            LastUpdate: "",
+            Path: "..",
+            Priority: mods.length + 1, // profile folder's "mod" has the lowest priority
+            PublishID: -1,
+            Title: "",
+            WorkshopID: -1,
+        });
+
+        for (const mod of mods) {
+            if (!mod.Enabled)
+                continue;
+            // previous scenarios (higher priority) get priority if same name (exactly how the game handles that too)
+            this.scenarios = {
+                ...await window.fs.getCompatibleMaps(GameHandler.instance.steamId, mod.Path), ...this.scenarios,
+            };
+        }
+
+        this.loadedAvailableScenarios = true;
     },
     computed: {
         passwordType(): string {
             return this.showPassword ? "text" : "password";
         },
-
-        /**
-         * Get the file name from the path
-         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>.aoe2scenario`
-         */
-        filename(): string {
-            return this.filepath.split("\\").splice(-1)[0];
-        },
-
-        /**
-         * Get the plain file name without extension from the path
-         * From: `C:/.../.../<file>.aoe2scenario`. To: `<file>`
-         */
-        plainFilename(): string {
-            return this.filename.split(".")[0];
-        },
+        plainMapName(): string {
+            return this.mapName.replace(/.(?:aoe2scenario|rms|rms2)$/, "");
+        }
     },
     methods: {
-        getCommandFilepath(filepath: string) {
-            const folders = filepath.split("\\");
-            const file = folders.splice(-1)[0];
-            const folderPath = folders.join('\\');
-            return folderPath + '\\' + file.split(".")[0] + ".json";
+        getCommandFilepath(filepath: string): string {
+            return filepath.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json");
         },
-        openFilePrompt() {
-            this.selectInProgress = true;
+        async selectFile(filepath: string) {
+            const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
 
-            window.dialog
-                .select(GameHandler.instance.steamId)
-                .then(async (value: SteamIdResponse) => {
-                    this.selectInProgress = false;
-
-                    if (value.filepath) {
-                        const result = await window.fs.readCommands(this.getCommandFilepath(value.filepath));
-
-                        if (result.commands) {
-                            this.filepath = value.filepath;
-                            this.commands = result.commands;
-                            this.errors = [];
-                        } else {
-                            if (result.reason === 'no-json') {
-                                this.errors = [
-                                    "Commands File Not Found",
-                                    "A JSON file with the same name as the scenario containing information about the commands must be present.",
-                                ];
-                            } else if (result.reason === 'invalid-json') {
-                                this.errors = [
-                                    "Invalid Commands File",
-                                    "The JSON Commands file corresponding with the scenario is invalid.",
-                                ];
-                            }
-                        }
-                    } else if (value.reason !== "cancelled") {
-                        this.errors = ["Unknown Error", "An unknown error has occurred."];
-                    }
-                });
+            if (result.commands) {
+                this.filepath = filepath;
+                this.mapName = filepath.replaceAll("\\", "/").split("/").slice(-1)[0];
+                this.commands = result.commands;
+                this.errors = [];
+            } else {
+                this.mapName = "";
+                this.filepath = "";
+                if (result.reason === 'no-json') {
+                    this.errors = [
+                        "Commands File Not Found",
+                    ];
+                } else if (result.reason === 'invalid-json') {
+                    this.errors = [
+                        "Invalid Commands File",
+                    ];
+                }
+            }
         },
         createRoom() {
             this.creationInProgress = true;
 
-            SocketHandler.instance.createRoom(this.plainFilename, ensure(this.commands), this.password)
+            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath});
+
+            SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
                     this.$store.commit("changeWindow", {
                         window: 'Room',
@@ -152,23 +180,39 @@ export default defineComponent({
                 });
         },
     },
-    watch: {},
+    watch: {
+        enteredFilename(): void {
+            this.errors = [];
+            const filepath = this.scenarios[this.enteredFilename] ?? "";
+            if (filepath) {
+                this.selectFile(filepath);
+            } else
+                this.mapName = "";
+        },
+    },
 });
 
 </script>
 
 <style scoped lang="scss">
+.small-text {
+    margin-top: 2px;
+    font-size: 12px;
+    color: gray;
+    display: inline-block;
+    line-height: 12px;
+}
+
+.flex-row-center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
 #password {
     input {
         padding: 5px;
-    }
-
-    .small-text {
-        margin-top: 2px;
-        font-size: 12px;
-        color: gray;
-        display: inline-block;
-        line-height: 12px;
     }
 
     #show-password {
@@ -181,7 +225,13 @@ export default defineComponent({
     margin-top: 20px;
 
     button {
-        padding: 8px;
+        height: 35px;
+        display: inline-block;
+
+        span.small-text {
+            font-size: 10px;
+            display: block;
+        }
     }
 
     #file-selection-text {
@@ -201,4 +251,7 @@ export default defineComponent({
     text-align: center;
 }
 
+input, button {
+    padding: 5px;
+}
 </style>

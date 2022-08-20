@@ -37,9 +37,9 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
-        socket.on("createRoom", (scenario: string, commands: Commands, password: string | null = null, callback) => {
+        socket.on("createRoom", (map: string, commands: Commands, password: string | null = null, callback) => {
             const roomId = Date.now().toString();
-            const room = RoomHandler.instance.createRoom(roomId, socket, scenario, commands, password);
+            const room = RoomHandler.instance.createRoom(roomId, socket, map, commands, password);
 
             if (callback) {
                 return callback(toRoomMessage(room));

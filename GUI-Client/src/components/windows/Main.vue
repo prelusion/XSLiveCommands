@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="main-wrapper">
         <div class="">
             SteamID: {{ steamId }}
         </div>
@@ -15,6 +15,7 @@ import {GameHandler} from "@/classes/game-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "MainRoom",
@@ -29,7 +30,7 @@ export default defineComponent({
                 },
                 {
                     window: "JoinPlayer",
-                    text: "Join as Player",
+                    text: "Join as Player / Spectator",
                 },
                 {
                     window: "JoinTyrant",
@@ -41,7 +42,7 @@ export default defineComponent({
     },
     mounted() {
         changeTitle('');
-        window.manager.resize(600, 300);
+        window.manager.resize(600, 325);
 
         // this.$store.commit("changeWindow", "Create");
         const data = this.$store.state.data as {message: string} | null;
@@ -62,9 +63,20 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-#displayMessage {
-    margin-top: 8vh;
-    text-align: center;
-    color: #ce3d3d;
+.main-wrapper {
+    position: relative;
+
+    #displayMessage {
+        margin-top: 8vh;
+        text-align: center;
+        color: #ce3d3d;
+    }
+
+    #version {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
 }
+
 </style>

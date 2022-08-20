@@ -1,7 +1,7 @@
 import {dialog, ipcMain} from "electron";
 
 // windows specific:
-const userProfile = process.env.USERPROFILE;
+export const userProfile = process.env.USERPROFILE;
 
 export interface SteamIdResponse {
     filepath?: string;
@@ -13,7 +13,8 @@ export function buildResponse({filepath, reason}: SteamIdResponse = {filepath: "
 }
 
 export async function select(steamId: string): Promise<SteamIdResponse> {
-    const scenarioFolder = `${userProfile}\\Games\\Age of Empires 2 DE\\${steamId}\\resources\\_common\\scenario\\`;
+    console.log(`steamId: ${steamId}`);
+    const scenarioFolder = `${userProfile}\\Games\\Age of Empires 2 DE\\${steamId}aaa\\resources\\_common\\scenario\\`;
 
     try {
         const response = await dialog.showOpenDialog({

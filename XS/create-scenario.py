@@ -2,7 +2,7 @@ from pathlib import Path
 
 from AoE2ScenarioParser.scenarios.aoe2_de_scenario import AoE2DEScenario
 
-scenario_folder = "C:/Users/Kerwin Sneijders/Games/Age of Empires 2 DE/76561198140740017/resources/_common/scenario"
+scenario_folder = "" # todo: replace the empty string with your scenario directory path
 scenario_file = "random2p"  # Don't include the '.aoe2scenario' extension
 scenario_output_file = "OUTPUT"
 
