@@ -37,6 +37,10 @@ export class GameHandler {
         this.coreInterval = setInterval(async () => {
             const cycle = await window.fs.readCycle(this.steamId, map);
             if (cycle !== undefined) {
+                // Todo: Add & Test this
+                // if (SocketHandler.instance.currentCycle !== cycle) {
+                //     SocketHandler.instance.sendCycle(cycle);
+                // }
                 SocketHandler.instance.sendCycle(cycle);
 
                 // console.log("\n\n")
