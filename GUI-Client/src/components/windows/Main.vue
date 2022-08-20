@@ -15,6 +15,7 @@ import {GameHandler} from "@/classes/game-handler";
 import Buttons from "@/components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "@/util/general";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "MainRoom",

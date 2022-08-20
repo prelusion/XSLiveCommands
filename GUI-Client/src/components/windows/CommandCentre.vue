@@ -103,6 +103,7 @@ import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} fr
 import {changeTitle, ensure, zeroLead} from "@/util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "@/classes/queue-handler";
+import {ButtonConfig} from "../../interfaces/buttons";
 const {setInterval} = window;
 
 export default defineComponent({
@@ -132,7 +133,7 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Disconnect",
                     callback: async () => {
                         await SocketHandler.instance.leaveRoom();

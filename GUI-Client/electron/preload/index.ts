@@ -1,6 +1,7 @@
 import {contextBridge, ipcRenderer} from "electron";
-import {CommandEvent} from "../src/interfaces/command";
-import {ConfigFileCoreFormat} from "../src/interfaces/config";
+import {CommandEvent} from "../../src/interfaces/command";
+import {ConfigFileCoreFormat} from "../../src/interfaces/config";
+
 
 // In this file we want to expose protected methods that allow the renderer
 // process to use the ipcRenderer without exposing the entire object.
@@ -8,8 +9,8 @@ import {ConfigFileCoreFormat} from "../src/interfaces/config";
 // !!! REMEMBER !!!
 // ALL THE CONTEXT BRIDGE CONSTRUCTIONS NEED TO BE DEFINED IN: '/src/main.ts'
 
-contextBridge.exposeInMainWorld('regedit', {
-    getSteamId: () => ipcRenderer.invoke('regedit:getSteamId'),
+contextBridge.exposeInMainWorld('registry', {
+    getSteamId: () => ipcRenderer.invoke('registry:getSteamId'),
 });
 
 contextBridge.exposeInMainWorld('dialog', {
@@ -22,7 +23,7 @@ contextBridge.exposeInMainWorld('fs', {
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
     writeEvent: (steamId: string, map: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, map, event),
     readModsJson: (steamId: string) => ipcRenderer.invoke('fs:readModsJson', steamId),
-    getCompatibleMaps: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleMaps', steamId, modFolderPath),
+    getCompatibleScenarios: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleScenarios', steamId, modFolderPath),
     exists: (absolutePath: string) => ipcRenderer.invoke('fs:exists', absolutePath),
 });
 
@@ -32,7 +33,7 @@ contextBridge.exposeInMainWorld('clipboard', {
 
 contextBridge.exposeInMainWorld('manager', {
     resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
-    getEnvVar: (str: string) => ipcRenderer.invoke('manager:getEnvVar', str),
+    getEnvVar: (str: string) => ipcRenderer.invoke('manager:get_env_var', str),
 });
 
 contextBridge.exposeInMainWorld('config', {

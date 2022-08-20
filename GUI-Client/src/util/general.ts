@@ -76,3 +76,11 @@ export function zeroLead(num: string | number): string {
 export function changeTitle(title: string, prefix = `XS Live Commands (v${CLIENT_VERSION})`, sep = "|"): void {
     document.title = `${prefix} ${title ? sep : ''} ${title}`
 }
+
+/**
+ * Checks if given value is string (or String(...))
+ * @param value the value to check
+ */
+export function isString(value: unknown): value is string {
+    return typeof value === 'string' || value instanceof String
+}

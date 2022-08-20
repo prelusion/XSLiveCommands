@@ -1,9 +1,9 @@
-import {State} from "@vue/runtime-core";
+import {State} from "vue";
 import {createStore} from "vuex";
 import {ConfigFileFormatNewest} from "../interfaces/config";
 import {CONFIG_VERSION} from "../versions";
 import {toRaw} from "vue";
-import {assert} from "../util/general";
+import {assert, isString} from "../util/general";
 
 export default createStore({
     state: {
@@ -16,7 +16,7 @@ export default createStore({
     getters: {},
     mutations: {
         changeWindow(state: State, payload: string | { window: string; data: unknown }) {
-            if (typeof payload === 'string') {
+            if (isString(payload)) {
                 state.window = payload;
                 state.data = null;
             } else {

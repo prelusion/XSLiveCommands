@@ -1,5 +1,6 @@
 "use strict";
 
+import {select} from "@/../electron/libs/dialog";
 import {
     deleteXsDataFiles,
     exists,
@@ -9,23 +10,22 @@ import {
     readModsJson,
     writeEvent,
 } from "@/../electron/libs/fs";
-import {getSteamId} from "@/../electron/libs/regedit";
-import store from "@/store";
+import {getSteamId} from "../electron/libs/native-reg";
 import {createApp} from "vue";
 import {write} from "../electron/libs/clipboard";
 import {getEnvVar, resize} from "../electron/libs/manager";
 import {readConfig, resetConfig, writeConfig} from "../electron/libs/config";
 import App from "./App.vue";
-
+import store from "./store";
 
 createApp(App)
     .use(store)
-    .mount("#app");
+    .mount('#app');
 
 // Register all exposed variables here (from '/electron/preload.js')
 declare global {
     interface Window {
-        regedit: {
+        registry: {
             getSteamId: typeof getSteamId;
         };
         fs: {

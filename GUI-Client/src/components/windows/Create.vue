@@ -53,6 +53,7 @@ import Buttons from "@/components/Buttons.vue";
 import {CommandTemplates} from "@/interfaces/command";
 import {changeTitle, ensure} from "@/util/general";
 import {defineComponent} from "vue";
+import {ButtonConfig} from "../../interfaces/buttons";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -76,7 +77,7 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "Main",
+                    window: "MainWindow",
                     text: "Cancel",
                 },
                 {

@@ -8,12 +8,6 @@ export interface ConfigFileFormatV01 extends ConfigFileCoreFormat {
 }
 
 /**
- * All config file formats (A little more constraint version of unknown)
- */
-export type AnyConfigFileFormat = ConfigFileCoreFormat
-    | ConfigFileFormatV01;
-
-/**
  * The newest config file format to work with
  */
 export type ConfigFileFormatNewest = ConfigFileFormatV01;

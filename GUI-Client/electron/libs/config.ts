@@ -1,6 +1,6 @@
 import fs from "fs";
-import {ConfigFileCoreFormat} from "../../src/interfaces/config";
-import {configDefaults, upgradeConfigFileToVersion} from "../util/config-data";
+import {ConfigFileCoreFormat, ConfigFileFormatNewest} from "../../src/interfaces/config";
+import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../util/config-data";
 import {ipcMain} from "electron";
 
 // windows specific:
@@ -58,10 +58,6 @@ function writeFile(name: string, ext: string, value: string): boolean {
  * @throws SyntaxError When the json is invalid
  */
 function writeJsonFile(name: string, value: unknown): boolean {
-    console.log('before')
-    console.log(JSON.stringify(value))
-    console.log('after')
-
     return writeFile(name, 'json', JSON.stringify(value));
 }
 
@@ -69,7 +65,6 @@ function writeJsonFile(name: string, value: unknown): boolean {
  * Upgrade the config file if necessary
  */
 function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number) {
-    console.log(typeof configFile.version, version)
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }
@@ -91,7 +86,7 @@ function configFileExists(): boolean {
  *  Write the configuration file
  */
 export function resetConfig(version: number): boolean {
-    const defaultConfig = configDefaults[version.toString()] as ConfigFileCoreFormat;
+    const defaultConfig = configDefaults[version.toString() as ConfigDefaultsKey];
     if (!defaultConfig) {
         return false;
     }
