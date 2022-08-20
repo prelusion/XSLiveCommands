@@ -40,6 +40,7 @@ export class GameHandler {
                 // Todo: Add & Test this
                 // if (SocketHandler.instance.currentCycle !== cycle) {
                 //     SocketHandler.instance.sendCycle(cycle);
+                //     SocketHandler.instance.currentCycle = cycle;
                 // }
                 SocketHandler.instance.sendCycle(cycle);
 
