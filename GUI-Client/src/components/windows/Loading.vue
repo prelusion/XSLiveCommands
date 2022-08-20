@@ -9,6 +9,7 @@ import {io} from "socket.io-client";
 import {defineComponent} from "vue";
 import {ConfigFileFormatNewest} from "../../interfaces/config";
 import {CONFIG_VERSION} from "../../versions";
+import {changeTitle} from "../../util/general";
 
 const {setTimeout} = window;
 
@@ -26,6 +27,8 @@ export default defineComponent({
         };
     },
     async mounted() {
+        changeTitle("Loading...");
+
         // Don't read this async as the config file could contain info that is used for the other loading tasks
         const config = await window.config.readConfig(parseFloat(CONFIG_VERSION)) as ConfigFileFormatNewest;
         if (config.version) {

@@ -1,7 +1,7 @@
 import {ipcMain} from "electron";
 import SteamID from "steamid";
 import * as Registry from 'native-reg';
-import {Access, HKEY} from "native-reg";
+import {Access} from "native-reg";
 
 export async function getSteamId(): Promise<string | null> {
     const regKey = `Software\\Valve\\Steam\\ActiveProcess\\`;

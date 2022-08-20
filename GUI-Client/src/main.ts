@@ -1,6 +1,6 @@
 "use strict";
 
-import {select} from "@/../electron/libs/dialog";
+// import {select} from "@/../electron/libs/dialog";
 import {
     deleteXsDataFiles,
     exists,

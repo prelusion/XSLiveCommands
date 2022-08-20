@@ -19,7 +19,7 @@ export default defineConfig({
 
         electron({
             main: {
-                entry: 'electron/main/index.ts',
+                entry: path.join(__dirname, 'electron', 'main', 'index.ts'),
                 vite: withDebug({
                     build: {
                         outDir: 'dist/electron/main',
@@ -29,7 +29,7 @@ export default defineConfig({
             preload: {
                 input: {
                     // You can configure multiple preload here
-                    index: path.join(__dirname, 'electron/preload/index.ts'),
+                    index: path.join(__dirname, 'electron', 'preload', 'index.ts'),
                 },
                 vite: {
                     build: {
@@ -37,6 +37,11 @@ export default defineConfig({
                         sourcemap: 'inline',
                         outDir: 'dist/electron/preload',
                     },
+                    optimizeDeps: {
+                        entries: [
+                            'electron', 'fs'
+                        ],
+                    }
                 },
             },
             // Enables use of Node.js API in the Renderer-process

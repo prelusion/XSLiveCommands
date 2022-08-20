@@ -4,7 +4,8 @@ import path from "path";
 import {clearInterval} from "timers";
 import {CommandEvent, CommandTemplates, JsonCommand, JsonCommandFile, ParamType} from "../../src/interfaces/command";
 import {Mod} from "../../src/interfaces/mods";
-import {ensure, recursiveReaddir} from "../../src/util/general";
+import {ensure} from "../../src/util/general";
+import {recursiveReaddir} from "../util/general";
 
 // windows specific:
 const userProfile = ensure(process.env.USERPROFILE);

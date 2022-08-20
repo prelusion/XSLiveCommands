@@ -21,16 +21,16 @@
             </div>
 
             <div id="file-selection">
-                <div class="flex-row-center" v-if="this.loadedAvailableScenarios">
+                <div class="flex-row-center" v-if="loadedAvailableScenarios">
                     <input v-model="enteredFilename" list="scenarios" placeholder="Select Map">
                     <datalist id="scenarios">
-                        <option v-for="(name) in Object.keys(this.scenarios)" v-bind:key="name">{{ name }}</option>
+                        <option v-for="(name) in Object.keys(scenarios)" v-bind:key="name">{{ name }}</option>
                     </datalist>
                     <button @click="enteredFilename = ''"
                             id="clear-map-button"
                             title="Clear the map selection text box">Clear
                     </button>
-                    <span id="file-selection-text">{{ this.mapName || 'No map selected' }}</span>
+                    <span id="file-selection-text">{{ mapName || 'No map selected' }}</span>
                 </div>
                 <span class="small-text">
                     For a map to be detected, a JSON file with the same name as the map containing information about supported commands must be present in the same folder as the map.

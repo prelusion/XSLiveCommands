@@ -32,7 +32,7 @@
                         </button>
 
                         <datalist id="commands">
-                            <option v-bind:key="name" v-for="(name) in Object.keys(this.commands)"
+                            <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
                                     v-bind:value="name"></option>
                         </datalist>
                     </div>

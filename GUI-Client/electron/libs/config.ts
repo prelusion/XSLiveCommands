@@ -1,5 +1,5 @@
 import fs from "fs";
-import {ConfigFileCoreFormat, ConfigFileFormatNewest} from "../../src/interfaces/config";
+import {ConfigFileCoreFormat} from "../../src/interfaces/config";
 import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../util/config-data";
 import {ipcMain} from "electron";
 

@@ -3,11 +3,6 @@ import {join} from "path";
 import {release} from "os";
 import dotenv from "dotenv";
 
-// TYPES DECLARATION IS OUTDATED.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import installExtension, {VUEJS3_DEVTOOLS} from 'electron-devtools-installer';
-
 dotenv.config();
 
 // Disable GPU Acceleration for Windows 7
@@ -146,13 +141,22 @@ function disableCorsCheck(win: BrowserWindow) {
     });
 }
 
-// // Causes bundle warnings:
-// // https://github.com/electron/electron/issues/32133 (doesn't seem to get fixed soon)
-app.whenReady().then(() => {
-    installExtension(VUEJS3_DEVTOOLS)
-        .then((name) => console.log(`Added Extension:  ${name}`))
-        .catch((err) => console.log('An error occurred: ', err));
-});
+// Deal with this shit later (conditionally import only when in dev mode)
+// (async () => {
+//     if (!app.isPackaged) {
+//         // TYPES DECLARATION IS OUTDATED.
+//         const installExtension = await import('electron-devtools-installer');
+//         const {VUEJS_DEVTOOLS} = await import('electron-devtools-installer');
+//
+//         // // Causes bundle warnings:
+//         // // https://github.com/electron/electron/issues/32133 (doesn't seem to get fixed soon)
+//         app.whenReady().then(() => {
+//             installExtension(VUEJS3_DEVTOOLS)
+//                 .then((name: string) => console.log(`Added Extension:  ${name}`))
+//                 .catch((err: ErrorEvent) => console.log('An error occurred: ', err));
+//         });
+//     }
+// })();
 
 // Below you can include the rest of your app's specific main process code.
 // You can also put them in separate files and require them here.
