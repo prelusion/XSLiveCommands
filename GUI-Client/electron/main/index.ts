@@ -2,7 +2,11 @@ import {app, BrowserWindow, ipcMain, shell} from "electron";
 import {join} from "path";
 import {release} from "os";
 import dotenv from "dotenv";
-import installExtension, {VUEJS3_DEVTOOLS, VUEJS_DEVTOOLS} from 'electron-devtools-installer';
+
+// TYPES DECLARATION IS OUTDATED.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import installExtension, {VUEJS3_DEVTOOLS} from 'electron-devtools-installer';
 
 dotenv.config();
 
@@ -40,7 +44,8 @@ async function createWindow() {
     win = new BrowserWindow({
         width: 600,
         height: 300,
-        title: '0000000000000',
+        // Shown in first part of starting the app
+        title: 'XS Live Commands is starting...',
         // icon: join(ROOT_PATH.public, 'favicon.ico'),
         webPreferences: {
             preload,
@@ -51,10 +56,11 @@ async function createWindow() {
 
     if (app.isPackaged) {
         win.loadFile(indexHtml);
+        win.setMenu(null);
     } else {
         win.loadURL(url);
         // Open devTool if the app is not packaged
-        win.webContents.openDevTools();
+        // win.webContents.openDevTools();
     }
 
     // Test actively push message to the Electron-Renderer
@@ -107,13 +113,13 @@ ipcMain.handle('open-win', (event, arg) => {
         webPreferences: {
             preload,
         },
-    })
+    });
 
     if (app.isPackaged) {
-        childWindow.loadFile(indexHtml, {hash: arg})
+        childWindow.loadFile(indexHtml, {hash: arg});
     } else {
         childWindow.loadURL(`${url}/#${arg}`)
-        childWindow.webContents.openDevTools({mode: "undocked", activate: true})
+        childWindow.webContents.openDevTools({mode: "undocked", activate: true});
     }
 })
 
@@ -140,17 +146,13 @@ function disableCorsCheck(win: BrowserWindow) {
     });
 }
 
-// Causes bundle warnings:
-// https://github.com/electron/electron/issues/32133 (doesn't seem to get fixed soon)
-// app.whenReady().then(() => {
-//     installExtension(VUEJS3_DEVTOOLS, {
-//         loadExtensionOptions: {
-//             allowFileAccess: true,
-//         },
-//     })
-//         .then((name) => console.log(`Added Extension:  ${name}`))
-//         .catch((err) => console.log('An error occurred: ', err));
-// });
+// // Causes bundle warnings:
+// // https://github.com/electron/electron/issues/32133 (doesn't seem to get fixed soon)
+app.whenReady().then(() => {
+    installExtension(VUEJS3_DEVTOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err));
+});
 
 // Below you can include the rest of your app's specific main process code.
 // You can also put them in separate files and require them here.
