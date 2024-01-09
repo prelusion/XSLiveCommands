@@ -14,10 +14,10 @@ export class Paths {
     private _scenarioFile = "ThisIsANewRoom.xsdat";
 
     public async initPaths() {
-        const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
-        const listResult = await regedit.list([key])
-        const accountId = listResult[key]["values"]["ActiveUser"]["value"]
-        this.steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
+        // const key = 'HKCU\\Software\\Valve\\Steam\\ActiveProcess';
+        // const listResult = await regedit.list([key])
+        // const accountId = listResult[key]["values"]["ActiveUser"]["value"]
+        // this.steamID = SteamID.fromIndividualAccountID(accountId).getSteamID64();
 
         this.PATH_WRITE_TO = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.commandFile}`
         this.PATH_READ_FROM = `${this.userProfile}\\${this.afterProfileFolder}\\${this.steamID}\\${this.steamProfile}\\${this.scenarioFile}`
