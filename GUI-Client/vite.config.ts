@@ -6,8 +6,7 @@ import {
     type UserConfig,
     defineConfig,
 } from 'vite'
-import electron from 'vite-plugin-electron'
-import pkg from './package.json'
+import electron from 'vite-plugin-electron/simple'
 import {fileURLToPath} from "url";
 
 rmSync('dist', { recursive: true, force: true }) // v14.14.0
@@ -53,8 +52,8 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: process.env.VITE_DEV_SERVER_HOST || 'default_host',
-        port: parseInt(process.env.VITE_DEV_SERVER_PORT) || 3001,
+        host: process.env.VITE_DEV_SERVER_HOST,
+        port: parseInt(process.env.VITE_DEV_SERVER_PORT),
 
         headers: {
             'Access-Control-Allow-Origin': '*'
