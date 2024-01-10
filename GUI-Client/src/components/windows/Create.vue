@@ -15,7 +15,6 @@
 
                 <span class="small-text">
                     This password is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
-                    <br/>
                     (it may be blank, but that is not recommended)
                 </span>
             </div>
@@ -34,7 +33,6 @@
                 </div>
                 <span class="small-text">
                     For a map to be detected, a JSON file with the same name as the map containing information about supported commands must be present in the same folder as the map.
-                    <br/>
                     This list will not auto refresh after entering this screen.
                     </span>
                 <div>

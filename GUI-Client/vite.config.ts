@@ -12,6 +12,9 @@ import {fileURLToPath} from "url";
 
 rmSync('dist', { recursive: true, force: true }) // v14.14.0
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -50,8 +53,8 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: pkg.env.VITE_DEV_SERVER_HOST,
-        port: pkg.env.VITE_DEV_SERVER_PORT,
+        host: process.env.VITE_DEV_SERVER_HOST || 'default_host',
+        port: parseInt(process.env.VITE_DEV_SERVER_PORT) || 3001,
 
         headers: {
             'Access-Control-Allow-Origin': '*'
