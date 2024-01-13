@@ -181,9 +181,6 @@ function disableCorsCheck(win: BrowserWindow): void {
 // Native-reg - Handling registry requests
 import("./libs/native-reg");
 
-// dialog - Handling electron dialog
-import("./libs/dialog");
-
 // fs - Handling file system calls
 import("./libs/fs");
 
