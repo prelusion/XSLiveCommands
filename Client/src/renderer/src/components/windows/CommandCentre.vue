@@ -38,7 +38,7 @@
                     </div>
 
                     <div id="params">
-                        <div class="header">
+                        <div class="header" v-if="commandParams?.length > 0">
                             Arguments:
                         </div>
                         <table>
