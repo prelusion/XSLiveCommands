@@ -101,7 +101,7 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.sendRoomNewCommand(roomId, command);
         });
 
-        socket.on("executionCyclePrediction", (callback: (number) => number) => {
+        socket.on("executionCyclePrediction", (callback: (cycle: number) => void): void => {
             const roomId = roomIdFromSocket(socket);
             if (roomId === undefined || !callback)
                 return;
