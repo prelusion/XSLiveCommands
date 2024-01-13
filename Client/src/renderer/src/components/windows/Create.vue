@@ -97,8 +97,6 @@ export default defineComponent({
             const scenarioExists = await window.fs.exists(filepath);
             const commandFileExists = await window.fs.exists(this.getCommandFilepath(filepath));
 
-            console.log(filepath, scenarioExists, commandFileExists);
-
             if (scenarioExists && commandFileExists) {
                 this.selectFile(filepath).then(() => this.errors = []);
             }
