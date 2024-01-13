@@ -138,7 +138,7 @@ export default defineComponent({
     },
     methods: {
         getCommandFilepath(filepath: string): string {
-            return filepath.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json");
+            return filepath.replace(/.(?:aoe2scenario|rms|rms2)$/, ".commands.json");
         },
         async selectFile(filepath: string) {
             const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
