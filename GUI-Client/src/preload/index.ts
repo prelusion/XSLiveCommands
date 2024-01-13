@@ -12,10 +12,6 @@ contextBridge.exposeInMainWorld('registry', {
     getSteamId: () => ipcRenderer.invoke('registry:getSteamId'),
 });
 
-contextBridge.exposeInMainWorld('dialog', {
-    select: (steamId: string) => ipcRenderer.invoke('dialog:select', steamId),
-});
-
 contextBridge.exposeInMainWorld('fs', {
     deleteXsDataFiles: (steamId: string, map: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, map),
     readCycle: (steamId: string, map: string) => ipcRenderer.invoke('fs:readCycle', steamId, map),
