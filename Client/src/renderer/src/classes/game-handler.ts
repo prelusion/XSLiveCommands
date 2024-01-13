@@ -15,6 +15,7 @@ export class GameHandler {
     private coreInterval = -1;
     private lastCommandCycle = -1;
     private _steamId = "";
+    private _steamName = "";
 
     static get instance(): GameHandler {
         if (this._instance === null) {
@@ -77,5 +78,13 @@ export class GameHandler {
 
     set steamId(value: string) {
         this._steamId = value;
+    }
+
+    get steamName(): string {
+        return this._steamName;
+    }
+
+    set steamName(value: string) {
+        this._steamName = value;
     }
 }
