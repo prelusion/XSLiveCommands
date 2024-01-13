@@ -14,7 +14,7 @@ export function toRoomMessage(room: Room): RoomMessage {
 export function createRoom(
     id: string,
     host: string,
-    scenario: string,
+    map: string,
     commands: Commands,
     password: string,
     connections: Array<string>,
@@ -22,7 +22,7 @@ export function createRoom(
     return {
         id: id,
         host: host,
-        map: scenario,
+        map: map,
         connections: connections,
         tyrants: [],
         events: [],
