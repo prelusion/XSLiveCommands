@@ -106,8 +106,9 @@ export function getCompatibleMaps(steamId: string, modFolderPath: string): Recor
         return {};
 
     filePaths = filePaths.filter(
-        filename => filename.match(/.(?:aoe2scenario|rms|rms2)$/)
-                    && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".json")),
+        filename =>
+            RegExp(/.(?:aoe2scenario|rms|rms2)$/).exec(filename)
+            && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".commands.json")),
     );
     const maps: Record<string, string> = {};
     for(const filePath of filePaths) {
