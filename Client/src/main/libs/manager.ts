@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {app, ipcMain} from "electron";
 import {win} from "../index";
 
 export function resize(width: number, height: number): void {
@@ -7,6 +7,11 @@ export function resize(width: number, height: number): void {
 
 export function getEnvVar(str: string): string | undefined {
     return process.env[str];
+}
+
+export function restart(): void {
+    app.relaunch();
+    app.exit();
 }
 
 
@@ -21,3 +26,5 @@ ipcMain.handle('manager:resize', (_, width: number, height: number): void => {
 ipcMain.handle('manager:getEnvVar', (_, str: string): string | undefined => {
     return getEnvVar(str);
 });
+
+ipcMain.handle('manager:restart', () => restart());
