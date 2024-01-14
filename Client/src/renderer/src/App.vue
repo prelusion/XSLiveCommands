@@ -14,10 +14,10 @@
 
 import CommandCentre from "./components/windows/CommandCentre.vue";
 import Create from "./components/windows/Create.vue";
-import JoinPlayer from "./components/windows/JoinPlayer.vue";
-import JoinTyrant from "./components/windows/JoinTyrant.vue";
+import Join from "./components/windows/Join.vue";
+import Tyrant from "./components/windows/Tyrant.vue";
 import Loading from "./components/windows/Loading.vue";
-import MainWindow from "./components/windows/MainRoom.vue";
+import MainRoom from "./components/windows/MainRoom.vue";
 import Room from "./components/windows/Room.vue";
 import {defineComponent} from "vue";
 
@@ -25,11 +25,11 @@ export default defineComponent({
     name: "App",
     components: {
         Loading,
-        MainWindow,
+        MainRoom,
         Create,
         Room,
-        JoinPlayer,
-        JoinTyrant,
+        Join,
+        Tyrant,
         CommandCentre,
     },
     computed: {},

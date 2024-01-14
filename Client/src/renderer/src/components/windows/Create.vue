@@ -76,16 +76,16 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Cancel",
-                },
-                {
                     text: "Create",
                     callback: () => {
                         this.createRoom();
                     },
                     disabled: () => !this.filepath,
                 },
+                {
+                    window: "MainRoom",
+                    text: "Cancel",
+                }
             ] as Array<ButtonConfig>,
         };
     },
@@ -181,6 +181,7 @@ export default defineComponent({
         enteredFilename(): void {
             this.errors = [];
             const filepath = this.scenarios[this.enteredFilename] ?? "";
+
             if (filepath) {
                 this.selectFile(filepath);
             } else

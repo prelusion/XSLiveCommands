@@ -1,4 +1,5 @@
 <template>
+    <disconnect-button @disconnect="disconnect"/>
     <div id="view">
         <div id="info">
             <table>
@@ -22,13 +23,21 @@
         <div id="command-centre">
             <div id="command">
                 <div id="command-selection">
-                    <div>
-                        <input v-model="selectedCommand" list="commands" placeholder="Select Command">
-                        <button @click="selectedCommand = ''"
+                    <div id="command-top-order">
+                        <div>
+                            <input v-model="selectedCommand" list="commands" placeholder="Select Command">
+                            <button @click="selectedCommand = ''"
+                                    id="clear-command-button"
+                                    title="Clear the command selection text box"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                        <button class="return-button" @click="joinRoom()"
                                 id="clear-command-button"
-                                title="Clear the command selection text box"
+                                title="Return as a tyrant"
                         >
-                            Clear
+                            Stop the Tyranny
                         </button>
 
                         <datalist id="commands">
@@ -99,17 +108,25 @@
 import {GameHandler} from "../../classes/game-handler";
 import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
-import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} from "../../../../shared/src/types/command";
+import {
+    CommandEvent,
+    CommandParamConfig,
+    CommandTemplates,
+    Param,
+    ParamType
+} from "../../../../shared/src/types/command";
 import {changeTitle, zeroLead} from "../../util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "../../classes/queue-handler";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
+import DisconnectButton from "../DisconnectButton.vue";
+
 const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
-    components: {Buttons},
+    components: {DisconnectButton, Buttons},
     props: {},
     data() {
         return {
@@ -134,14 +151,6 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Disconnect",
-                    callback: async () => {
-                        await SocketHandler.instance.leaveRoom();
-                        await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
-                    },
-                },
-                {
                     text: "Send",
                     callback: () => {
                         this.sendCommand();
@@ -159,7 +168,7 @@ export default defineComponent({
 
         const data = this.$store.state.data;
         if (data) {
-            this.numberOfConnectedClients = (data as {numberOfConnections: number}).numberOfConnections;
+            this.numberOfConnectedClients = (data as { numberOfConnections: number }).numberOfConnections;
         }
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
@@ -274,6 +283,21 @@ export default defineComponent({
             console.log(commandEvent);
             QueueHandler.instance.enqueue(commandEvent);
         },
+        joinRoom() {
+            SocketHandler.instance.joinRoomAsPlayer(ensure(SocketHandler.instance.room).id)
+                .then(() => {
+                    this.$store.commit("changeWindow", "Room");
+                })
+                .catch((reason) => {
+                    console.log(reason)
+                });
+        },
+        async disconnect() {
+            await SocketHandler.instance.leaveRoom();
+            await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
+            this.$store.commit("changeWindow", "MainRoom");
+
+        },
         sendCommand(): void {
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
@@ -356,10 +380,14 @@ export default defineComponent({
         margin-top: 15px;
 
         #command {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            gap: 50px;
+            width: 100%;
+
+
+            #command-top-order {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
 
             #clear-command-button {
                 margin-left: 4px;

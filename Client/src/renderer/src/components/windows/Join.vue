@@ -6,18 +6,6 @@
         <div>
             <input placeholder="Room Code" v-model="roomId">
         </div>
-
-        <div id="password-field">
-            <div>
-                <input placeholder="Password"  v-model="roomPassword" v-bind:type="passwordType">
-            </div>
-            <div id="show-password">
-                <label>
-                    <input v-model="showPassword" type="checkbox"> Show password
-                </label>
-            </div>
-        </div>
-
         <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
 
         <Buttons :buttonConfig="buttonConfig"></Buttons>
@@ -25,51 +13,47 @@
 </template>
 
 <script lang="ts">
-import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../interfaces/buttons";
+import {SocketHandler} from "../../classes/socket-handler";
 
 export default defineComponent({
-    name: "JoinTyrant",
+    name: "Join",
     components: {Buttons},
     props: {},
     data() {
         return {
             roomId: "",
-            roomPassword: "",
-            showPassword: false,
             joiningInProgress: false,
             errorMsg: "",
             buttonConfig: [
-                {
-                    window: "MainWindow",
-                    text: "Cancel",
-                },
                 {
                     text: "Join",
                     callback: () => {
                         this.joinRoom();
                     },
                 },
+                {
+                    window: "MainRoom",
+                    text: "Cancel",
+                },
             ] as Array<ButtonConfig>,
         };
     },
     mounted() {
-        changeTitle(`Join as Tyrant...`);
+        // Execute on creation
+
+        changeTitle(`Join as Player...`);
     },
-    computed: {
-        passwordType(): string {
-            return this.showPassword ? "text" : "password";
-        }
-    },
+    computed: {},
     methods: {
         joinRoom() {
             this.joiningInProgress = true;
-            SocketHandler.instance.joinRoomAsTyrant(this.roomId, this.roomPassword)
+            SocketHandler.instance.joinRoomAsPlayer(this.roomId)
                 .then(() => {
-                    this.$store.commit("changeWindow", "CommandCentre");
+                    this.$store.commit("changeWindow", "Room");
                 })
                 .catch((reason) => {
                     this.joiningInProgress = false;
@@ -89,22 +73,8 @@ export default defineComponent({
 }
 
 #error-msg {
-    margin-top: 10px;
+    margin-top: 3px;
     color: red;
-}
-
-#password-field {
-    display: flex;
-    margin-top: 5px;
-    align-items: center;
-
-    div {
-        margin-top: 5px;
-    }
-
-    #show-password {
-        user-select: none;
-    }
 }
 
 input {

@@ -80,7 +80,7 @@ export default defineComponent({
     methods: {
         checkIfLoadingComplete() {
             if (this.connectedToServer && this.retrievedSteamId && this.loadedSettings) {
-                setTimeout(() => this.$store.commit("changeWindow", "MainWindow"), 200);
+                setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
     },

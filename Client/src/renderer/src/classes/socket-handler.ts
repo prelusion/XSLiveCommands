@@ -111,7 +111,7 @@ export class SocketHandler {
             await SocketHandler.instance.leaveRoom();
 
             $store.commit("changeWindow", {
-                window: "MainWindow",
+                window: "MainRoom",
                 data: {
                     'message': 'The server does not recognize the room anymore, please join or create a new one.'
                 }

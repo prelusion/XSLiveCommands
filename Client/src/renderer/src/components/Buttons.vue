@@ -1,5 +1,5 @@
 <template>
-    <div id="buttons">
+    <div id="buttons" :class="{ 'row-reverse': reverse }">
         <button
             v-for="(config, index) in buttonConfig"
             v-bind:key="index"
@@ -24,6 +24,10 @@ export default defineComponent({
             default: () => [],
             required: true,
         },
+        reverse: {
+            type: Boolean,
+            default: false
+        }
     },
     mounted() {
         // Runs
@@ -64,4 +68,9 @@ $padding: 20px - 10;
         margin: 10px;
     }
 }
+
+#buttons.row-reverse {
+    flex-direction: row-reverse;
+}
+
 </style>
