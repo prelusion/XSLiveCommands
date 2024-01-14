@@ -1,4 +1,4 @@
-# ExtSourceToXS
+# XSLiveCommands
 
 This application allows its users to externally run custom commands and effects in a live AoE2:DE game.
 
@@ -6,7 +6,7 @@ This application allows its users to externally run custom commands and effects 
 
 ## Installation
 
-Head over to the [releases](https://github.com/prelusion/ExtSourceToXS/releases) page and download the `exe` with the following name:
+Head over to the [releases](https://github.com/prelusion/XSLiveCommands/releases) page and download the `exe` with the following name:
 
 > XS.Live.Commands_0.2.0.exe
 
