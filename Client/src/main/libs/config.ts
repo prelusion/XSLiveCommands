@@ -16,7 +16,7 @@ const XS_SYNC_FILE_PATH = `${USER_PROFILE_PATH}\\.xs-sync\\`
 /**
  * Verify if all folders exist (so we don't get an error) when trying to read/write to them
  */
-function verifyFolders() {
+function verifyFolders(): void {
     if (!fs.existsSync(XS_SYNC_FILE_PATH)) fs.mkdirSync(XS_SYNC_FILE_PATH);
     for (const folder of XS_SYNC_SUBFOLDERS) {
         const path = `${XS_SYNC_FILE_PATH}\\${folder}\\`
@@ -64,7 +64,7 @@ function writeJsonFile(name: string, value: unknown): boolean {
 /**
  * Upgrade the config file if necessary
  */
-function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number) {
+function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number): ConfigFileCoreFormat {
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }

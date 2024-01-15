@@ -2,6 +2,7 @@ import {Server, Socket} from "socket.io";
 import {Command, Commands, Room, RoomMessage} from "../interfaces";
 import {toRoomMessage} from "../scripts/rooms";
 import {RoomHandler} from "./room-handler";
+import {SteamPlayerSummeryResponse} from "../types/steam";
 
 function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
@@ -100,13 +101,32 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.sendRoomNewCommand(roomId, command);
         });
 
-        socket.on("executionCyclePrediction", (callback: (number) => number) => {
+        socket.on("executionCyclePrediction", (callback: (cycle: number) => void): void => {
             const roomId = roomIdFromSocket(socket);
             if (roomId === undefined || !callback)
                 return;
 
             const c = RoomHandler.instance.getExecutionCycleForNewCommand(roomId);
             callback(c);
+        });
+
+        socket.on("retrieveSteamUsername", (steamId: string, callback: (data) => void): void => {
+            const key = process.env.STEAM_DEVELOPER_API_KEY;
+
+            // Create steam URL
+            const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
+            const url = baseUrl + new URLSearchParams({
+                key: key,
+                steamids: steamId,
+            });
+
+            fetch(url)
+                .then(response => response.json())
+                .then((data: SteamPlayerSummeryResponse) => {
+                    const profile = data.response.players[0];
+
+                    callback(profile.personaname);
+                });
         });
     });
 }
