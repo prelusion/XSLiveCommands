@@ -44,8 +44,8 @@ export default defineComponent({
 .modal-content {
     padding: 20px;
     background: white;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #777;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     min-width: 300px;
     z-index: 1001;
     cursor: default;

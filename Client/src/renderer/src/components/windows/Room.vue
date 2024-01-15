@@ -20,7 +20,7 @@
         </table>
         <Buttons :buttonConfig="buttonConfig" :reverse="true"></Buttons>
         <CustomModal ref="passwordModal">
-            <Password @submit="handlePassword" :errorMsg="errorMsg"/>
+            <Password @submit="handlePassword" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
         </CustomModal>
     </div>
 </template>
@@ -58,7 +58,7 @@ export default defineComponent({
             },
             buttonConfig: [
                 {
-                    text: "Join as Tyrant",
+                    text: "Begin Tyranny",
                     callback: async () => {
                         assert(SocketHandler.instance.room);
                         if (this.password) {
@@ -131,6 +131,9 @@ export default defineComponent({
         },
         showPasswordModal() {
             this.$refs.passwordModal.open();
+        },
+        closePasswordModal() {
+            this.$refs.passwordModal.close();
         },
         requestForTyrant(password: string) {
             SocketHandler.instance.joinRoomAsTyrant(this.roomId, password)

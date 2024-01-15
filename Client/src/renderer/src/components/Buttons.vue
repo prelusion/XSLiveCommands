@@ -1,5 +1,5 @@
 <template>
-    <div id="buttons" :class="{ 'row-reverse': reverse }">
+    <div id="buttons" :class="[{ 'row-reverse': reverse }, positionClass]">
         <button
             v-for="(config, index) in buttonConfig"
             v-bind:key="index"
@@ -27,12 +27,20 @@ export default defineComponent({
         reverse: {
             type: Boolean,
             default: false
-        }
+        },
+        position: {
+            type: String,
+            default: 'fixed'
+        },
     },
     mounted() {
         // Runs
     },
-    computed: {},
+    computed: {
+        positionClass() {
+            return this.position === 'fixed' ? 'fixed' : 'relative';
+        },
+    },
     methods: {
         async clickedButton(index: number) {
             const config = this.buttonConfig[index];
@@ -53,7 +61,6 @@ export default defineComponent({
 $padding: 20px - 10;
 
 #buttons {
-    position: fixed;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -67,6 +74,14 @@ $padding: 20px - 10;
         padding: 10px;
         margin: 10px;
     }
+}
+
+.fixed {
+    position: fixed;
+}
+
+.relative {
+    position: relative;
 }
 
 #buttons.row-reverse {

@@ -37,7 +37,7 @@
                                 id="clear-command-button"
                                 title="Return as a tyrant"
                         >
-                            Stop the Tyranny
+                            End Tyranny
                         </button>
 
                         <datalist id="commands">
