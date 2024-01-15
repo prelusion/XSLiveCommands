@@ -53,6 +53,7 @@ import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
+import {roomAuth} from "../../store/roomAuth";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -163,10 +164,11 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath});
+            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
 
             SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
+                    roomAuth.password = this.password;
                     this.$store.commit("changeWindow", {
                         window: 'Room',
                         data: {'asHost': true}

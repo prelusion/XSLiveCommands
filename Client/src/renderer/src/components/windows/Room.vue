@@ -73,6 +73,7 @@ export default defineComponent({
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
+        roomAuth.roomId = room.id;
         this.numberOfConnectedClients = room.numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
