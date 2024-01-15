@@ -288,8 +288,8 @@ export default defineComponent({
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })
-                .catch((reason) => {
-                    console.log(reason)
+                .catch(() => {
+                    this.$store.commit("changeWindow", "MainRoom");
                 });
         },
         async disconnect() {

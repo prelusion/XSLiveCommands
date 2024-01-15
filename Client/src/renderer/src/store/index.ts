@@ -13,7 +13,6 @@ export default createStore({
         connectionOk: false,
         config: null,
     } as State,
-
     getters: {},
     mutations: {
         changeWindow(state: State, payload: string | { window: string; data: unknown }) {

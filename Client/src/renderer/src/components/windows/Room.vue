@@ -38,6 +38,8 @@ import CustomModal from "../modal/CustomModal.vue";
 import Password from "../modal/content/Password.vue";
 import {GameHandler} from "../../classes/game-handler";
 import DisconnectButton from "../DisconnectButton.vue";
+import {roomAuth, updateRoomPassword} from '../../store/roomAuth';
+
 
 export default defineComponent({
     name: "Room",
@@ -46,7 +48,6 @@ export default defineComponent({
     data() {
         return {
             roomId: ensure(SocketHandler.instance.room).id,
-            password: "",
             errorMsg: "",
             numberOfConnectedClients: 0,
             asHost: false,
@@ -61,7 +62,7 @@ export default defineComponent({
                     callback: async () => {
                         assert(SocketHandler.instance.room);
                         if (this.password) {
-                            this.requestForTyrant()
+                            this.requestForTyrant(this.password)
                         }
 
                         this.showPasswordModal();
@@ -97,6 +98,15 @@ export default defineComponent({
         }
     },
     computed: {
+        password: () => {
+            const roomId = ensure(SocketHandler.instance.room).id;
+            if(roomAuth.roomId === roomId) {
+                return roomAuth.password
+            } else {
+                roomAuth.roomId = roomId
+                return ""
+            }
+        },
         SocketHandler() {
             return SocketHandler.instance;
         },
@@ -115,21 +125,21 @@ export default defineComponent({
             QueueHandler.instance.enqueue(commandEvent);
         },
         handlePassword(password: string) {
-            this.password = password;
-            this.requestForTyrant()
+            this.requestForTyrant(password)
 
         },
         showPasswordModal() {
             this.$refs.passwordModal.open();
         },
-        requestForTyrant() {
-            SocketHandler.instance.joinRoomAsTyrant(this.roomId, this.password)
+        requestForTyrant(password: string) {
+            SocketHandler.instance.joinRoomAsTyrant(this.roomId, password)
                 .then(() => {
+                    updateRoomPassword(password);
                     this.$store.commit("changeWindow", "CommandCentre");
                 })
                 .catch((reason) => {
                     this.errorMsg = reason;
-                    this.password = "";
+                    updateRoomPassword("");
                 });
         },
         async disconnect() {
