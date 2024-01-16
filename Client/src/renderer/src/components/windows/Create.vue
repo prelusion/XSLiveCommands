@@ -6,15 +6,15 @@
         <div>
             <div id="password">
                 <div id="show-password">
-                    <input v-model="password" placeholder="Password for Tyrants" v-bind:type="passwordType">
+                    <input v-model="password" placeholder="Launch Code for Tyrants" v-bind:type="passwordType">
 
                     <label>
-                        <input v-model="showPassword" type="checkbox"> Show password
+                        <input v-model="showPassword" type="checkbox"> Show Launch Code
                     </label>
                 </div>
 
                 <span class="small-text">
-                    This password is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
+                    This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
                     (it may be blank, but that is not recommended)
                 </span>
             </div>

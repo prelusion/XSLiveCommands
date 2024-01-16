@@ -15,7 +15,6 @@
 import CommandCentre from "./components/windows/CommandCentre.vue";
 import Create from "./components/windows/Create.vue";
 import Join from "./components/windows/Join.vue";
-import Tyrant from "./components/windows/Tyrant.vue";
 import Loading from "./components/windows/Loading.vue";
 import MainRoom from "./components/windows/MainRoom.vue";
 import Room from "./components/windows/Room.vue";
@@ -29,7 +28,6 @@ export default defineComponent({
         Create,
         Room,
         Join,
-        Tyrant,
         CommandCentre,
     },
     computed: {},

@@ -87,19 +87,20 @@ export default defineComponent({
     width: 100%;
     box-sizing: border-box;
     font-size: 16px;
+    border-radius: 2px;
 }
 
 .submit-button {
     padding: 6px 20px;
-    background-color: #ddd;
+    background-color: #eee;
     border: 1px solid #111;
-    cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s;
+    border-radius: 2px;
 }
 
 .submit-button:hover {
-    background-color: #999;
+    background-color: #ddd;
     border-radius: 0;
 }
 

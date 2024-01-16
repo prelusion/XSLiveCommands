@@ -31,6 +31,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 2px;
 }
 
 .disconnect-button:hover {

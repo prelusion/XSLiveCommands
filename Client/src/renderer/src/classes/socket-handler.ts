@@ -50,8 +50,6 @@ export class SocketHandler {
                         return;
                     }
 
-                    console.log(room.events)
-
                     if (room.map) {
                         this.room = room;
                         await GameHandler.instance.resetState(room.map);
