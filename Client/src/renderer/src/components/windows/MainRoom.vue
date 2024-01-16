@@ -1,6 +1,9 @@
 <template>
     <div class="main-wrapper">
         <div class="">
+            Name: {{ steamName }}
+        </div>
+        <div class="">
             SteamID: {{ steamId }}
         </div>
         <div id="displayMessage">
@@ -23,6 +26,8 @@ export default defineComponent({
     props: {},
     data() {
         return {
+            steamId: '' as string,
+            steamName: '' as string,
             buttonConfig: [
                 {
                     window: "Create",
@@ -46,12 +51,11 @@ export default defineComponent({
             this.message = data.message;
             this.$store.state.data = null;
         }
+
+        this.steamId = GameHandler.instance.steamId;
+        this.steamName = GameHandler.instance.steamName;
     },
-    computed: {
-        steamId(): string {
-            return GameHandler.instance.steamId;
-        },
-    },
+    computed: {},
     methods: {},
     watch: {},
 });

@@ -21,8 +21,9 @@ export default defineComponent({
         return {
             timeout: -1,
             connectedToServer: false,
-            retrievedSteamId: false,
             loadedSettings: false,
+            retrievedSteamId: false,
+            retrievedSteamName: false,
             error: [] as Array<string>,
         };
     },
@@ -49,6 +50,13 @@ export default defineComponent({
         const fallback = 'https://xssync.aoe2.se/';
 
         const socket = io(customUrl || serverUrl || fallback);
+
+        // Request steam name
+        socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (name: string) => {
+            GameHandler.instance.steamName = name;
+            this.retrievedSteamName = true;
+        });
+
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
 
@@ -69,6 +77,7 @@ export default defineComponent({
                 (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully!"),
                 (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully!"),
                 (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully!"),
+                (!this.retrievedSteamName ? "Retrieving Steam name..." : "Steam name loaded successfully!"),
             ];
 
             if (this.error.length > 0)
@@ -79,7 +88,12 @@ export default defineComponent({
     },
     methods: {
         checkIfLoadingComplete() {
-            if (this.connectedToServer && this.retrievedSteamId && this.loadedSettings) {
+            if (
+                this.connectedToServer
+                && this.loadedSettings
+                && this.retrievedSteamId
+                && this.retrievedSteamName
+            ) {
                 setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
@@ -89,6 +103,9 @@ export default defineComponent({
             this.checkIfLoadingComplete();
         },
         retrievedSteamId() {
+            this.checkIfLoadingComplete();
+        },
+        retrievedSteamName() {
             this.checkIfLoadingComplete();
         },
     },

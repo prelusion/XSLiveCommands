@@ -14,8 +14,8 @@
                 </div>
 
                 <span class="small-text">
-                    This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
-                    (it may be blank, but that is not recommended)
+                    This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.<br>
+                    <i>It may be left empty, but is not recommended</i>
                 </span>
             </div>
 
@@ -32,9 +32,11 @@
                     <span id="file-selection-text">{{ mapName || 'No map selected' }}</span>
                 </div>
                 <span class="small-text">
-                    For a map to be detected, a JSON file with the same name as the map containing information about supported commands must be present in the same folder as the map.
-                    This list will not auto refresh after entering this screen.
-                    </span>
+                    For a map to be detected, a json file with the following format:
+                    <i>&lt;mapname&gt;.commands.json</i> containing information about supported commands must be
+                    present in the same folder as the map.<br>
+                    <i>This list will <b>not</b> refresh automatically</i>.
+                </span>
                 <div>
                     <span id="error" v-html="errors.join('<br>')"></span>
                 </div>
