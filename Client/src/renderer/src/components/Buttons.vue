@@ -1,5 +1,12 @@
 <template>
-    <div id="buttons">
+    <div
+        :style="{
+            position: positionClass,
+            flexDirection: direction,
+            ...styles,
+        }"
+        id="buttons"
+    >
         <button
             v-for="(config, index) in buttonConfig"
             v-bind:key="index"
@@ -12,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import {defineComponent, PropType, StyleValue} from "vue";
 import {ButtonConfig} from "../interfaces/buttons";
 
 export default defineComponent({
@@ -24,11 +31,32 @@ export default defineComponent({
             default: () => [],
             required: true,
         },
+        reverse: {
+            type: Boolean,
+            default: false
+        },
+        direction: {
+            type: String as PropType<StyleValue>,
+            default: 'row'
+        },
+        position: {
+            type: String,
+            default: 'fixed'
+        },
+        styles: {
+            type: Object,
+            default: () => {},
+        }
     },
-    mounted() {
-        // Runs
+    // data() {
+    // },
+    // mounted() {
+    // },
+    computed: {
+        positionClass() {
+            return this.position === 'fixed' ? 'fixed' : 'relative';
+        },
     },
-    computed: {},
     methods: {
         async clickedButton(index: number) {
             const config = this.buttonConfig[index];
@@ -49,9 +77,8 @@ export default defineComponent({
 $padding: 20px - 10;
 
 #buttons {
-    position: fixed;
     display: flex;
-    flex-direction: row;
+    //flex-direction: row;
     justify-content: space-between;
     width: 100%;
     bottom: 0;

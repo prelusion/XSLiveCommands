@@ -23,8 +23,9 @@ export default defineComponent({
         return {
             timeout: -1,
             connectedToServer: false,
-            retrievedSteamId: false,
             loadedSettings: false,
+            retrievedSteamId: false,
+            retrievedSteamName: false,
             error: [] as Array<string>,
         };
     },
@@ -59,6 +60,13 @@ export default defineComponent({
         const fallback = 'https://xssync.aoe2.se/';
 
         const socket = io(customUrl || serverUrl || fallback);
+
+        // Request steam name
+        socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (name: string) => {
+            GameHandler.instance.steamName = name;
+            this.retrievedSteamName = true;
+        });
+
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
 
@@ -76,7 +84,9 @@ export default defineComponent({
     computed: {
         text() {
             let lines = [
-                this.loadedSettings ? "Settings loaded successfully!": "Loading settings..."
+                (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully!"),
+                (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully!"),
+                (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully!"),
             ];
 
             if (this.loadedSettings) {
@@ -92,8 +102,13 @@ export default defineComponent({
     },
     methods: {
         checkIfLoadingComplete() {
-            if (this.connectedToServer && this.retrievedSteamId && this.loadedSettings) {
-                setTimeout(() => this.$store.commit("changeWindow", "MainWindow"), 200);
+            if (
+                this.connectedToServer
+                && this.loadedSettings
+                && this.retrievedSteamId
+                && this.retrievedSteamName
+            ) {
+                setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
         handleConfigError(error: MainError, version: number) {
@@ -114,6 +129,9 @@ export default defineComponent({
             this.checkIfLoadingComplete();
         },
         retrievedSteamId() {
+            this.checkIfLoadingComplete();
+        },
+        retrievedSteamName() {
             this.checkIfLoadingComplete();
         },
     },

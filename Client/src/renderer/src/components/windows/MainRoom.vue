@@ -1,12 +1,24 @@
 <template>
     <div class="main-wrapper">
         <div class="">
+            Name: {{ steamName }}
+        </div>
+        <div class="">
             SteamID: {{ steamId }}
         </div>
         <div id="displayMessage">
             {{ message }}
         </div>
-        <Buttons :buttonConfig="buttonConfig"></Buttons>
+        <div id="centered">
+            <div class="buttons-wrapper">
+                <Buttons
+                    direction="column"
+                    position="relative"
+                    :styles="{ alignItems: 'center' }"
+                    :buttonConfig="buttonConfig"
+                ></Buttons>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -23,18 +35,16 @@ export default defineComponent({
     props: {},
     data() {
         return {
+            steamId: '' as string,
+            steamName: '' as string,
             buttonConfig: [
+                {
+                    window: "Join",
+                    text: "Join a Room",
+                },
                 {
                     window: "Create",
                     text: "Create a Room",
-                },
-                {
-                    window: "JoinPlayer",
-                    text: "Join as Player / Spectator",
-                },
-                {
-                    window: "JoinTyrant",
-                    text: "Join as Tyrant",
                 },
             ] as Array<ButtonConfig>,
             message: "",
@@ -42,20 +52,19 @@ export default defineComponent({
     },
     mounted() {
         changeTitle('');
-        window.manager.resize(600, 325);
+        window.manager.resize(900, 600);
 
         // this.$store.commit("changeWindow", "Create");
-        const data = this.$store.state.data as {message: string} | null;
+        const data = this.$store.state.data as { message: string } | null;
         if (data !== null) {
             this.message = data.message;
             this.$store.state.data = null;
         }
+
+        this.steamId = GameHandler.instance.steamId;
+        this.steamName = GameHandler.instance.steamName;
     },
-    computed: {
-        steamId(): string {
-            return GameHandler.instance.steamId;
-        },
-    },
+    computed: {},
     methods: {},
     watch: {},
 });
@@ -77,6 +86,9 @@ export default defineComponent({
         top: 0;
         right: 0;
     }
-}
 
+    #centered {
+        margin-top: 150px;
+    }
+}
 </style>

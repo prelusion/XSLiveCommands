@@ -6,16 +6,16 @@
         <div>
             <div id="password">
                 <div id="show-password">
-                    <input v-model="password" placeholder="Password for Tyrants" v-bind:type="passwordType">
+                    <input v-model="password" placeholder="Launch Code for Tyrants" v-bind:type="passwordType">
 
                     <label>
-                        <input v-model="showPassword" type="checkbox"> Show password
+                        <input v-model="showPassword" type="checkbox"> Show Launch Code
                     </label>
                 </div>
 
                 <span class="small-text">
-                    This password is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.
-                    (it may be blank, but that is not recommended)
+                    This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.<br>
+                    <i>It may be left empty, but is not recommended</i>
                 </span>
             </div>
 
@@ -32,9 +32,11 @@
                     <span id="file-selection-text">{{ mapName || 'No map selected' }}</span>
                 </div>
                 <span class="small-text">
-                    For a map to be detected, a JSON file with the same name as the map containing information about supported commands must be present in the same folder as the map.
-                    This list will not auto refresh after entering this screen.
-                    </span>
+                    For a map to be detected, a json file with the following format:
+                    <i>&lt;mapname&gt;.commands.json</i> containing information about supported commands must be
+                    present in the same folder as the map.<br>
+                    <i>This list will <b>not</b> refresh automatically</i>.
+                </span>
                 <div>
                     <span id="error" v-html="errors.join('<br>')"></span>
                 </div>
@@ -76,16 +78,16 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Cancel",
-                },
-                {
                     text: "Create",
                     callback: () => {
                         this.createRoom();
                     },
                     disabled: () => !this.filepath,
                 },
+                {
+                    window: "MainRoom",
+                    text: "Cancel",
+                }
             ] as Array<ButtonConfig>,
         };
     },
@@ -163,10 +165,13 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath});
+            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
 
             SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
+                    this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
+                    this.$store.state.tyrantRequest.code = this.password;
+
                     this.$store.commit("changeWindow", {
                         window: 'Room',
                         data: {'asHost': true}
@@ -181,6 +186,7 @@ export default defineComponent({
         enteredFilename(): void {
             this.errors = [];
             const filepath = this.scenarios[this.enteredFilename] ?? "";
+
             if (filepath) {
                 this.selectFile(filepath);
             } else

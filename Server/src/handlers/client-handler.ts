@@ -2,6 +2,7 @@ import {Server, Socket} from "socket.io";
 import {Command, Commands, Room, RoomMessage} from "../interfaces";
 import {toRoomMessage} from "../scripts/rooms";
 import {RoomHandler} from "./room-handler";
+import {SteamPlayerSummeryResponse} from "../types/steam";
 
 function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
@@ -59,15 +60,28 @@ export function startIoServer(io: Server) {
             }
         });
 
-        socket.on("joinRoomAsTyrant", (roomId: string, password: string, callback: joinCallback) => {
+        socket.on("becomeTyrant", (roomId: string, password: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
                     return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
                 }
                 if (room.password !== password) {
-                    return callback ? callback(null, `Wrong password`) : null;
+                    return callback ? callback(null, `Incorrect launch code`) : null;
                 }
-                RoomHandler.instance.joinRoom(roomId, socket, true);
+                RoomHandler.instance.becomeTyrant(roomId, socket);
+
+                if (callback) {
+                    return callback(toRoomMessage(room), null);
+                }
+            },
+        );
+
+        socket.on("loseTyrant", (roomId: string, callback: joinCallback) => {
+                const room = RoomHandler.instance.getRoomByID(roomId);
+                if (room === undefined) {
+                    return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
+                }
+                RoomHandler.instance.loseTyrant(roomId, socket);
 
                 if (callback) {
                     return callback(toRoomMessage(room), null);
@@ -100,13 +114,32 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.sendRoomNewCommand(roomId, command);
         });
 
-        socket.on("executionCyclePrediction", (callback: (number) => number) => {
+        socket.on("executionCyclePrediction", (callback: (cycle: number) => void): void => {
             const roomId = roomIdFromSocket(socket);
             if (roomId === undefined || !callback)
                 return;
 
             const c = RoomHandler.instance.getExecutionCycleForNewCommand(roomId);
             callback(c);
+        });
+
+        socket.on("retrieveSteamUsername", (steamId: string, callback: (data) => void): void => {
+            const key = process.env.STEAM_DEVELOPER_API_KEY;
+
+            // Create steam URL
+            const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
+            const url = baseUrl + new URLSearchParams({
+                key: key,
+                steamids: steamId,
+            });
+
+            fetch(url)
+                .then(response => response.json())
+                .then((data: SteamPlayerSummeryResponse) => {
+                    const profile = data.response.players[0];
+
+                    callback(profile.personaname);
+                });
         });
     });
 }
