@@ -7,15 +7,18 @@
     </button>
 </template>
 
-<script>
-export default {
-    name: 'DisconnectButton',
+<script lang="ts">
+import {defineComponent} from "vue";
+
+export default defineComponent({
+    name: "DisconnectButton",
+    components: {},
     methods: {
-        emitDisconnect() {
+        emitDisconnect(): void {
             this.$emit('disconnect');
         }
     }
-};
+});
 </script>
 
 <style scoped>
