@@ -12,14 +12,10 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import Buttons from "../../Buttons.vue";
-import {assert} from "../../../../../shared/src/util/general";
-import {SocketHandler} from "../../../classes/socket-handler";
-import {ButtonConfig} from "../../../interfaces/buttons";
 
 export default defineComponent({
     name: "Password",
-    components: {Buttons},
+    components: {},
     props: {
         errorMsg: {
             type: String,
@@ -28,32 +24,6 @@ export default defineComponent({
     data() {
         return {
             password: '',
-
-
-            buttonConfig: [
-                {
-                    text: "Begin Tyranny",
-                    callback: async () => {
-                        assert(SocketHandler.instance.room);
-                        if (this.password) {
-                            this.requestForTyrant(this.password)
-                        }
-
-                        this.showPasswordModal();
-                    },
-                },
-                {
-                    text: "Begin Tyranny",
-                    callback: async () => {
-                        assert(SocketHandler.instance.room);
-                        if (this.password) {
-                            this.requestForTyrant(this.password)
-                        }
-
-                        this.showPasswordModal();
-                    },
-                }
-            ] as Array<ButtonConfig>,
         };
     },
     methods: {
