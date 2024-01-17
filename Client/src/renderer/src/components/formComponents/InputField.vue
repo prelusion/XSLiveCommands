@@ -46,8 +46,8 @@ export default defineComponent({
         }
     },
     methods: {
-        checkValidity(value) {
-            const conditionsMet = validateRules(this.rules, value);
+        checkValidity() {
+            const conditionsMet = validateRules(this.rules, this.inputValue);
             console.log(conditionsMet);
 
         },

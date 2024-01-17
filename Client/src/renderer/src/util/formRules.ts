@@ -1,4 +1,4 @@
-export function validateRules(rules: string[], value: unknown): boolean {
+export function validateRules(rules: string[], value: unknown): any {
     const validators = {
         'required': (val: string): boolean => val !== null && val !== undefined && val !== '',
         'max': (val: string, max: string): boolean => val.length <= parseInt(max, 10),
