@@ -6,15 +6,15 @@
         <div>
             <div id="password">
                 <div id="show-password">
-                    <input v-model="password" placeholder="Password for Tyrants" v-bind:type="passwordType">
+                    <input v-model="password" placeholder="Launch Code for Tyrants" v-bind:type="passwordType">
 
                     <label>
-                        <input v-model="showPassword" type="checkbox"> Show password
+                        <input v-model="showPassword" type="checkbox"> Show Launch Code
                     </label>
                 </div>
 
                 <span class="small-text">
-                    This password is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.<br>
+                    This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.<br>
                     <i>It may be left empty, but is not recommended</i>
                 </span>
             </div>
@@ -78,16 +78,16 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Cancel",
-                },
-                {
                     text: "Create",
                     callback: () => {
                         this.createRoom();
                     },
                     disabled: () => !this.filepath,
                 },
+                {
+                    window: "MainRoom",
+                    text: "Cancel",
+                }
             ] as Array<ButtonConfig>,
         };
     },
@@ -165,10 +165,13 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath});
+            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
 
             SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
+                    this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
+                    this.$store.state.tyrantRequest.code = this.password;
+
                     this.$store.commit("changeWindow", {
                         window: 'Room',
                         data: {'asHost': true}
@@ -183,6 +186,7 @@ export default defineComponent({
         enteredFilename(): void {
             this.errors = [];
             const filepath = this.scenarios[this.enteredFilename] ?? "";
+
             if (filepath) {
                 this.selectFile(filepath);
             } else

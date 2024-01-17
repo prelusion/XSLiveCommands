@@ -20,7 +20,7 @@ import {ButtonConfig} from "../../interfaces/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
 
 export default defineComponent({
-    name: "JoinPlayer",
+    name: "Join",
     components: {Buttons},
     props: {},
     data() {
@@ -30,14 +30,14 @@ export default defineComponent({
             errorMsg: "",
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Cancel",
-                },
-                {
                     text: "Join",
                     callback: () => {
                         this.joinRoom();
                     },
+                },
+                {
+                    window: "MainRoom",
+                    text: "Cancel",
                 },
             ] as Array<ButtonConfig>,
         };
