@@ -1,5 +1,9 @@
 <template>
     <div id="loading" v-html="text"></div>
+
+    <CustomModal ref="configResetModal" :outside-click-close="false">
+        <ConfigReset @submit=""/>
+    </CustomModal>
 </template>
 
 <script lang="ts">
@@ -12,12 +16,14 @@ import {changeTitle, handle} from "../../util/general";
 import {ConfigFileFormatNewest} from "../../../../shared/src/types/config";
 import {MainErrorTypes} from "../../../../shared/src/util/errors";
 import {MainError} from "../../../../shared/src/types/errors";
+import CustomModal from "../modal/CustomModal.vue";
+import ConfigReset from "../modal/content/ConfigReset.vue";
 
 const {setTimeout} = window;
 
 export default defineComponent({
     name: "Loading",
-    components: {},
+    components: {ConfigReset, CustomModal},
     props: {},
     data() {
         return {
@@ -37,7 +43,7 @@ export default defineComponent({
         /* Read config file */
         const result = await handle(window.config.readConfig(version));
         if (result.isError) {
-            this.handleConfigError(result.value, version);
+            this.handleConfigError(result.value);
             return;
         }
 
@@ -84,14 +90,20 @@ export default defineComponent({
     computed: {
         text() {
             let lines = [
-                (!this.loadedSettings ? "Loading settings..." : "Settings loaded successfully!"),
-                (!this.retrievedSteamId ? "Loading Steam ID..." : "Steam ID loaded successfully!"),
-                (!this.connectedToServer ? "Connecting to server..." : "Connected to server successfully!"),
+                this.loadedSettings ? "Settings loaded successfully!": "Loading settings..."
             ];
 
             if (this.loadedSettings) {
                 lines.push(this.retrievedSteamId ? "Steam ID loaded successfully!" : "Loading Steam ID...")
                 lines.push(this.connectedToServer ? "Connected to server successfully!": "Connecting to server...")
+            } else {
+                return lines.join("<br>");
+            }
+
+            if (this.connectedToServer) {
+                lines.push(this.retrievedSteamName ? "Steam name loaded successfully!" : "Retrieving Steam name...")
+            } else {
+                return lines.join("<br>");
             }
 
             if (this.error.length > 0)
@@ -111,14 +123,12 @@ export default defineComponent({
                 setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
-        handleConfigError(error: MainError, version: number) {
+        handleConfigError(error: MainError) {
             if (error.type === MainErrorTypes.INVALID_CONFIG) {
-                if (confirm("The JSON configuration file cannot be read, do you want to reset it?")) {
-                    window.config.resetConfig(version);
-                    window.manager.restart();
-                } else {
-                    this.error.push("Please fix the configuration file and restart the app")
-                }
+                const modal = this.$refs.configResetModal as CustomModal;
+
+                modal.open();
+                this.error.push("Please fix the configuration file and restart the app")
             } else {
                 this.error.push(error.reason)
             }

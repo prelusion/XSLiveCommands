@@ -1,12 +1,10 @@
 <template>
-    <div class="password-container">
-        <label for="password">Tyranny Launch Code</label>
-        <input id="password" class="password-input" type="password" v-model="password" placeholder="Launch Code..."/>
+    <div class="container">
+        <p>The JSON configuration file cannot be read, do you want to reset it?</p>
         <div class="input-container">
-            <button class="submit-button" @click="submit">Begin Tyranny!</button>
-            <button class="submit-button" @click="close()">Abort Mission</button>
+            <button class="submit-button" @click="reset">Reset</button>
+            <button class="submit-button" @click="exit">Exit</button>
         </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
     </div>
 </template>
 
@@ -14,32 +12,23 @@
 import {defineComponent} from "vue";
 
 export default defineComponent({
-    name: "Password",
-    components: {},
-    props: {
-        errorMsg: {
-            type: String,
-        }
-    },
-    data() {
-        return {
-            password: '',
-        };
+    name: "ConfigReset",
+    computed: {
     },
     methods: {
-        submit() {
-            this.$emit('submit', this.password);
+        reset() {
+            window.config.resetConfig();
+            window.manager.restart();
         },
-        close() {
-            this.$emit('closeModal');
-        }
+        exit() {
+            window.manager.exit();
+        },
     }
 });
 </script>
 
-
 <style>
-.password-container {
+.container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -48,6 +37,7 @@ export default defineComponent({
 .input-container {
     display: flex;
     flex-direction: row;
+    align-content: space-between;
     gap: 10px;
 }
 
@@ -59,24 +49,4 @@ export default defineComponent({
     font-size: 16px;
     border-radius: 2px;
 }
-
-.submit-button {
-    padding: 6px 20px;
-    background-color: #eee;
-    border: 1px solid #111;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    border-radius: 2px;
-}
-
-.submit-button:hover {
-    background-color: #ddd;
-    border-radius: 0;
-}
-
-#error-msg {
-    margin-top: 3px;
-    color: red;
-}
-
 </style>

@@ -1,7 +1,7 @@
 <template>
-    <div class="modal-overlay" v-if="visible" @click.self="close">
+    <div class="modal-overlay" v-if="visible" @click.self="attemptClose">
         <div class="modal-content">
-            <slot></slot> <!-- Custom content -->
+            <slot @closeModal="close"></slot> <!-- Custom content -->
         </div>
     </div>
 </template>
@@ -10,6 +10,12 @@ import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "CustomModal",
+    props: {
+        outsideClickClose: {
+            type: Boolean,
+            default: true,
+        }
+    },
     data() {
         return {
             visible: false,
@@ -21,6 +27,11 @@ export default defineComponent({
         },
         close() {
             this.visible = false;
+        },
+        attemptClose() {
+            if (this.outsideClickClose) {
+                this.close();
+            }
         }
     }
 });

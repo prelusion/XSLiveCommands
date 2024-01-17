@@ -30,10 +30,11 @@ contextBridge.exposeInMainWorld('manager', {
     resize: (width: number, height: number) => ipcRenderer.invoke('manager:resize', width, height),
     getEnvVar: (str: string) => ipcRenderer.invoke('manager:getEnvVar', str),
     restart: () => ipcRenderer.invoke('manager:restart'),
+    exit: () => ipcRenderer.invoke('manager:exit'),
 });
 
 contextBridge.exposeInMainWorld('config', {
     readConfig: (version: number) => ipcRenderer.invoke('config:readConfig', version),
     writeConfig: (config: ConfigFileCoreFormat, version: number) => ipcRenderer.invoke('config:writeConfig', config, version),
-    resetConfig: (version: number) => ipcRenderer.invoke('config:resetConfig', version),
+    resetConfig: (version: number | null = null) => ipcRenderer.invoke('config:resetConfig', version),
 });

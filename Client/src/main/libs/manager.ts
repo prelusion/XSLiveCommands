@@ -14,6 +14,10 @@ export function restart(): void {
     app.exit();
 }
 
+export function exit(): void {
+    app.exit();
+}
+
 
 /** ========================================================================================
  *                        Handlers for wrapping the above functions                      
@@ -28,3 +32,4 @@ ipcMain.handle('manager:getEnvVar', (_, str: string): string | undefined => {
 });
 
 ipcMain.handle('manager:restart', () => restart());
+ipcMain.handle('manager:exit', () => exit());

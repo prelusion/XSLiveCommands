@@ -4,7 +4,7 @@
         <input id="password" class="password-input" type="password" v-model="password" placeholder="Launch Code..."/>
         <div class="input-container">
             <button class="submit-button" @click="submit">Begin Tyranny!</button>
-            <button class="submit-button" @click="close()">Abort Mission</button>
+            <button class="submit-button" @click="($parent as CustomModal).close()">Abort Mission</button>
         </div>
         <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
     </div>
@@ -12,9 +12,15 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
+import CustomModal from "../CustomModal.vue";
 
 export default defineComponent({
     name: "Password",
+    computed: {
+        CustomModal() {
+            return CustomModal
+        }
+    },
     components: {},
     props: {
         errorMsg: {
@@ -29,9 +35,6 @@ export default defineComponent({
     methods: {
         submit() {
             this.$emit('submit', this.password);
-        },
-        close() {
-            this.$emit('closeModal');
         }
     }
 });

@@ -5,6 +5,7 @@ import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../
 import {MainError} from "../../shared/src/types/errors";
 import {createError} from "../util/errors";
 import {MainErrorTypes} from "../../shared/src/util/errors";
+import {ensure} from "../../shared/src/util/general";
 
 // windows specific:
 const USER_PROFILE_PATH = process.env.USERPROFILE;
@@ -88,7 +89,11 @@ function configFileExists(): boolean {
 /**
  *  Write the configuration file
  */
-export function resetConfig(version: number): boolean {
+export function resetConfig(version: number | null = null): boolean {
+    if (version === null) {
+        version = parseFloat(ensure(Object.keys(configDefaults).pop()));
+    }
+
     const defaultConfig = configDefaults[version.toString() as ConfigDefaultsKey];
     if (!defaultConfig) {
         return false;
@@ -106,6 +111,11 @@ export function readConfig(version: number): ConfigFileCoreFormat|MainError {
 
     try {
         const configFile = readJsonFile('config') as ConfigFileCoreFormat;
+
+        if (!configFile.version) {
+            return createError("Missing config version", MainErrorTypes.INVALID_CONFIG)
+        }
+
         return upgradeConfigFile(configFile, version);
     } catch (e) {
         if (e instanceof SyntaxError) {
@@ -136,6 +146,6 @@ ipcMain.handle("config:writeConfig", (_, config: ConfigFileCoreFormat, version: 
     return writeConfig(config, version);
 });
 
-ipcMain.handle("config:resetConfig", (_, version: number) => {
+ipcMain.handle("config:resetConfig", (_, version: number | null = null) => {
     return resetConfig(version);
 });

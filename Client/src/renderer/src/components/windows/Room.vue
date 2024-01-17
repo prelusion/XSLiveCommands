@@ -122,7 +122,6 @@ export default defineComponent({
 
             modal.close();
         },
-
         startRequestTyrant(): void {
             assert(SocketHandler.instance.room);
 
