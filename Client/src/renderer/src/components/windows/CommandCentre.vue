@@ -33,12 +33,6 @@
                                 Clear
                             </button>
                         </div>
-                        <button class="return-button" @click="exitTyrantView()"
-                                id="clear-command-button"
-                                title="Return as a tyrant"
-                        >
-                            End Tyranny
-                        </button>
 
                         <datalist id="commands">
                             <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
@@ -125,6 +119,12 @@ export default defineComponent({
                     text: "Send",
                     callback: (): void => {
                         this.sendCommand();
+                    },
+                },
+                {
+                    text: "Return as a tyrant",
+                    callback: (): void => {
+                        this.exitTyrantView();
                     },
                 },
             ] as Array<ButtonConfig>,
@@ -305,13 +305,6 @@ export default defineComponent({
 
         #command {
             width: 100%;
-
-
-            #command-top-order {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-            }
 
             #clear-command-button {
                 margin-left: 4px;

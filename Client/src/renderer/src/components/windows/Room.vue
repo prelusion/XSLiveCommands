@@ -18,7 +18,7 @@
                 <td> {{ numberOfConnectedClients }}</td>
             </tr>
         </table>
-        <Buttons :buttonConfig="buttonConfig" :reverse="true"></Buttons>
+        <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
         <CustomModal ref="passwordModal">
             <Password @submit="handlePassword" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
         </CustomModal>

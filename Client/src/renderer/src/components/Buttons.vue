@@ -1,5 +1,12 @@
 <template>
-    <div id="buttons" :class="[{ 'row-reverse': reverse }, positionClass]">
+    <div
+        :style="{
+            position: positionClass,
+            flexDirection: direction,
+            ...styles,
+        }"
+        id="buttons"
+    >
         <button
             v-for="(config, index) in buttonConfig"
             v-bind:key="index"
@@ -12,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import {defineComponent, PropType, StyleValue} from "vue";
 import {ButtonConfig} from "../interfaces/buttons";
 
 export default defineComponent({
@@ -28,14 +35,23 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
+        direction: {
+            type: String as PropType<StyleValue>,
+            default: 'row'
+        },
         position: {
             type: String,
             default: 'fixed'
         },
+        styles: {
+            type: Object,
+            default: () => {},
+        }
     },
-    mounted() {
-        // Runs
-    },
+    // data() {
+    // },
+    // mounted() {
+    // },
     computed: {
         positionClass() {
             return this.position === 'fixed' ? 'fixed' : 'relative';
@@ -62,7 +78,7 @@ $padding: 20px - 10;
 
 #buttons {
     display: flex;
-    flex-direction: row;
+    //flex-direction: row;
     justify-content: space-between;
     width: 100%;
     bottom: 0;
@@ -75,17 +91,4 @@ $padding: 20px - 10;
         margin: 10px;
     }
 }
-
-.fixed {
-    position: fixed;
-}
-
-.relative {
-    position: relative;
-}
-
-#buttons.row-reverse {
-    flex-direction: row-reverse;
-}
-
 </style>

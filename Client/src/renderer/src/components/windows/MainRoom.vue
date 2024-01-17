@@ -9,7 +9,16 @@
         <div id="displayMessage">
             {{ message }}
         </div>
-        <Buttons :buttonConfig="buttonConfig"></Buttons>
+        <div id="centered">
+            <div class="buttons-wrapper">
+                <Buttons
+                    direction="column"
+                    position="relative"
+                    :styles="{ alignItems: 'center' }"
+                    :buttonConfig="buttonConfig"
+                ></Buttons>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -30,12 +39,12 @@ export default defineComponent({
             steamName: '' as string,
             buttonConfig: [
                 {
-                    window: "Create",
-                    text: "Create a Room",
-                },
-                {
                     window: "Join",
                     text: "Join a Room",
+                },
+                {
+                    window: "Create",
+                    text: "Create a Room",
                 },
             ] as Array<ButtonConfig>,
             message: "",
@@ -77,6 +86,9 @@ export default defineComponent({
         top: 0;
         right: 0;
     }
-}
 
+    #centered {
+        margin-top: 150px;
+    }
+}
 </style>
