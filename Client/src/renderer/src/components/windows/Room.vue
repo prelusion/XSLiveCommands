@@ -59,7 +59,7 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Begin Tyranny",
-                    callback: async () => {
+                    callback: async (): Promise<void> => {
                         assert(SocketHandler.instance.room);
                         if (this.password) {
                             this.requestForTyrant(this.password)
@@ -129,10 +129,14 @@ export default defineComponent({
             this.requestForTyrant(password)
         },
         showPasswordModal() {
-            this.$refs.passwordModal.open();
+            const modal = this.$refs.passwordModal as CustomModal;
+
+            modal.open();
         },
         closePasswordModal() {
-            this.$refs.passwordModal.close();
+            const modal = this.$refs.passwordModal as CustomModal;
+
+            modal.close();
         },
         requestForTyrant(password: string) {
             SocketHandler.instance.becomeTyrant(this.roomId, password)
