@@ -12,6 +12,10 @@ export default createStore({
         data: null,
         connectionOk: false,
         config: null,
+        tyrantRequest: {
+            roomId: '',
+            code: '',
+        },
     } as State,
     getters: {},
     mutations: {

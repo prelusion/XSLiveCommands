@@ -55,7 +55,6 @@ import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
-import {roomAuth} from "../../store/roomAuth";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -170,7 +169,9 @@ export default defineComponent({
 
             SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
-                    roomAuth.password = this.password;
+                    this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
+                    this.$store.state.tyrantRequest.code = this.password;
+
                     this.$store.commit("changeWindow", {
                         window: 'Room',
                         data: {'asHost': true}

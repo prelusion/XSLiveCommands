@@ -38,7 +38,6 @@ import CustomModal from "../modal/CustomModal.vue";
 import Password from "../modal/content/Password.vue";
 import {GameHandler} from "../../classes/game-handler";
 import DisconnectButton from "../DisconnectButton.vue";
-import {roomAuth, updateRoomPassword} from '../../store/roomAuth';
 
 
 export default defineComponent({
@@ -47,7 +46,7 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            roomId: ensure(SocketHandler.instance.room).id,
+            roomId: '',
             errorMsg: "",
             numberOfConnectedClients: 0,
             asHost: false,
@@ -59,25 +58,19 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Begin Tyranny",
-                    callback: async (): Promise<void> => {
-                        assert(SocketHandler.instance.room);
-                        if (this.password) {
-                            this.requestForTyrant(this.password)
-                        }
-
-                        this.showPasswordModal();
-                    },
+                    callback: this.startRequestTyrant,
                 }
             ] as Array<ButtonConfig>,
         };
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
-        roomAuth.roomId = room.id;
+        this.roomId = room.id;
+
         this.numberOfConnectedClients = room.numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
-        const data = this.$store.state.data as { 'asHost': boolean };
+        const data = this.$store.state.data as { 'asHost'?: boolean };
         this.asHost = data?.asHost ?? false;
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
@@ -99,15 +92,6 @@ export default defineComponent({
         }
     },
     computed: {
-        password: () => {
-            const roomId = ensure(SocketHandler.instance.room).id;
-            if(roomAuth.roomId === roomId) {
-                return roomAuth.password
-            } else {
-                roomAuth.roomId = roomId
-                return ""
-            }
-        },
         SocketHandler() {
             return SocketHandler.instance;
         },
@@ -126,7 +110,7 @@ export default defineComponent({
             QueueHandler.instance.enqueue(commandEvent);
         },
         handlePassword(password: string) {
-            this.requestForTyrant(password)
+            this.requestTyrant(password)
         },
         showPasswordModal() {
             const modal = this.$refs.passwordModal as CustomModal;
@@ -138,15 +122,30 @@ export default defineComponent({
 
             modal.close();
         },
-        requestForTyrant(password: string) {
+
+        startRequestTyrant(): void {
+            assert(SocketHandler.instance.room);
+
+            /* If this room has already had a login */
+            if (this.$store.state.tyrantRequest.roomId as string === this.roomId) {
+                this.requestTyrant(this.$store.state.tyrantRequest.code);
+                return;
+            }
+
+            this.showPasswordModal();
+        },
+        requestTyrant(password: string) {
+            /* Make sure the current room ID is saved upon each request */
+            this.$store.state.tyrantRequest.roomId = this.roomId;
+
             SocketHandler.instance.becomeTyrant(this.roomId, password)
                 .then(() => {
-                    updateRoomPassword(password);
+                    this.$store.state.tyrantRequest.code = password;
                     this.$store.commit("changeWindow", "CommandCentre");
                 })
                 .catch((reason) => {
+                    this.$store.state.tyrantRequest.code = '';
                     this.errorMsg = reason;
-                    updateRoomPassword("");
                 });
         },
         async disconnect() {
