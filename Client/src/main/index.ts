@@ -35,8 +35,8 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html')
 
 async function createWindow(): Promise<void> {
     win = new BrowserWindow({
-        width: 600,
-        height: 300,
+        width: 900,
+        height: 600,
         // Shown in first part of starting the app
         title: 'XS Live Commands is starting...',
         // icon: join(ROOT_PATH.public, 'favicon.ico'),

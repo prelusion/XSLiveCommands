@@ -1,4 +1,5 @@
 <template>
+    <disconnect-button @disconnect="disconnect"/>
     <div>
         <table>
             <tr>
@@ -17,12 +18,14 @@
                 <td> {{ numberOfConnectedClients }}</td>
             </tr>
         </table>
-        <Buttons :buttonConfig="buttonConfig"></Buttons>
+        <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
+        <CustomModal ref="passwordModal">
+            <Password @submit="handlePassword" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
+        </CustomModal>
     </div>
 </template>
 
 <script lang="ts">
-import {GameHandler} from "../../classes/game-handler";
 import {QueueHandler} from "../../classes/queue-handler";
 import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
@@ -31,13 +34,20 @@ import {defineComponent} from "vue";
 import {CommandEvent} from "../../../../shared/src/types/command";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {assert, ensure} from "../../../../shared/src/util/general";
+import CustomModal from "../modal/CustomModal.vue";
+import Password from "../modal/content/Password.vue";
+import {GameHandler} from "../../classes/game-handler";
+import DisconnectButton from "../DisconnectButton.vue";
+
 
 export default defineComponent({
     name: "Room",
-    components: {Buttons},
+    components: {DisconnectButton, Password, CustomModal, Buttons},
     props: {},
     data() {
         return {
+            roomId: '',
+            errorMsg: "",
             numberOfConnectedClients: 0,
             asHost: false,
             tyrantMode: {
@@ -47,24 +57,20 @@ export default defineComponent({
             },
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Disconnect",
-                    callback: async () => {
-                        assert(SocketHandler.instance.room);
-
-                        await SocketHandler.instance.leaveRoom();
-                        await GameHandler.instance.resetState(SocketHandler.instance.room.map);
-                    },
-                },
+                    text: "Begin Tyranny",
+                    callback: this.startRequestTyrant,
+                }
             ] as Array<ButtonConfig>,
         };
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
+        this.roomId = room.id;
+
         this.numberOfConnectedClients = room.numberOfConnections;
         const socket = ensure(SocketHandler.instance.socket);
 
-        const data = this.$store.state.data as { 'asHost': boolean };
+        const data = this.$store.state.data as { 'asHost'?: boolean };
         this.asHost = data?.asHost ?? false;
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
@@ -102,6 +108,52 @@ export default defineComponent({
             console.log("Event registered!");
             console.log(commandEvent);
             QueueHandler.instance.enqueue(commandEvent);
+        },
+        handlePassword(password: string) {
+            this.requestTyrant(password)
+        },
+        showPasswordModal() {
+            const modal = this.$refs.passwordModal as CustomModal;
+
+            modal.open();
+        },
+        closePasswordModal() {
+            const modal = this.$refs.passwordModal as CustomModal;
+
+            modal.close();
+        },
+
+        startRequestTyrant(): void {
+            assert(SocketHandler.instance.room);
+
+            /* If this room has already had a login */
+            if (this.$store.state.tyrantRequest.roomId as string === this.roomId) {
+                this.requestTyrant(this.$store.state.tyrantRequest.code);
+                return;
+            }
+
+            this.showPasswordModal();
+        },
+        requestTyrant(password: string) {
+            /* Make sure the current room ID is saved upon each request */
+            this.$store.state.tyrantRequest.roomId = this.roomId;
+
+            SocketHandler.instance.becomeTyrant(this.roomId, password)
+                .then(() => {
+                    this.$store.state.tyrantRequest.code = password;
+                    this.$store.commit("changeWindow", "CommandCentre");
+                })
+                .catch((reason) => {
+                    this.$store.state.tyrantRequest.code = '';
+                    this.errorMsg = reason;
+                });
+        },
+        async disconnect() {
+            assert(SocketHandler.instance.room);
+
+            await SocketHandler.instance.leaveRoom();
+            await GameHandler.instance.resetState(SocketHandler.instance.room.map);
+            this.$store.commit("changeWindow", "MainRoom");
         },
         enableTyrantModeControls(keyEvent: KeyboardEvent) {
             if (['Shift', 'Control', 'Alt'].includes(keyEvent.key))

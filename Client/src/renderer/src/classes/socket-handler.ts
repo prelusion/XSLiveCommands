@@ -50,8 +50,6 @@ export class SocketHandler {
                         return;
                     }
 
-                    console.log(room.events)
-
                     if (room.map) {
                         this.room = room;
                         await GameHandler.instance.resetState(room.map);
@@ -72,11 +70,11 @@ export class SocketHandler {
         });
     }
 
-    public joinRoomAsTyrant(roomId: string, password: string): Promise<void> {
+    public becomeTyrant(roomId: string, password: string): Promise<void> {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
-            this.socket.emit("joinRoomAsTyrant", roomId, password,
+            this.socket.emit("becomeTyrant", roomId, password,
                 async (room: Room | null, error: string | null) => {
                     if (room === null) {
                         setTimeout(() => reject(error), 200);
@@ -85,15 +83,33 @@ export class SocketHandler {
 
                     if (room.map) {
                         this.room = room;
-                        await GameHandler.instance.resetState(room.map);
-                        GameHandler.instance.startCoreLoop(room.map);
-
                         resolve();
                     } else {
                         reject(`An unknown error occurred. Please try again.`);
                     }
 
                     return;
+                });
+        });
+    }
+
+    public loseTyrant(roomId: string): Promise<void> {
+        return new Promise((resolve, reject): void => {
+            assert(this.socket);
+
+            this.socket.emit("loseTyrant", roomId,
+                async (room: Room | null, error: string | null) => {
+                    if (room === null) {
+                        setTimeout(() => reject(error), 200);
+                        return;
+                    }
+
+                    if (room.map) {
+                        this.room = room;
+                        resolve();
+                    } else {
+                        reject(`An unknown error occurred. Please try again.`);
+                    }
                 });
         });
     }
@@ -111,7 +127,7 @@ export class SocketHandler {
             await SocketHandler.instance.leaveRoom();
 
             $store.commit("changeWindow", {
-                window: "MainWindow",
+                window: "MainRoom",
                 data: {
                     'message': 'The server does not recognize the room anymore, please join or create a new one.'
                 }

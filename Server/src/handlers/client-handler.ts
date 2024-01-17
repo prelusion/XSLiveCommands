@@ -60,15 +60,28 @@ export function startIoServer(io: Server) {
             }
         });
 
-        socket.on("joinRoomAsTyrant", (roomId: string, password: string, callback: joinCallback) => {
+        socket.on("becomeTyrant", (roomId: string, password: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
                     return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
                 }
                 if (room.password !== password) {
-                    return callback ? callback(null, `Wrong password`) : null;
+                    return callback ? callback(null, `Incorrect launch code`) : null;
                 }
-                RoomHandler.instance.joinRoom(roomId, socket, true);
+                RoomHandler.instance.becomeTyrant(roomId, socket);
+
+                if (callback) {
+                    return callback(toRoomMessage(room), null);
+                }
+            },
+        );
+
+        socket.on("loseTyrant", (roomId: string, callback: joinCallback) => {
+                const room = RoomHandler.instance.getRoomByID(roomId);
+                if (room === undefined) {
+                    return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
+                }
+                RoomHandler.instance.loseTyrant(roomId, socket);
 
                 if (callback) {
                     return callback(toRoomMessage(room), null);
