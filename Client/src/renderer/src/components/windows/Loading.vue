@@ -94,7 +94,7 @@ export default defineComponent({
                 && this.retrievedSteamId
                 && this.retrievedSteamName
             ) {
-                setTimeout(() => this.$store.commit("changeWindow", "MainWindow"), 200);
+                setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
     },

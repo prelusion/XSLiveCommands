@@ -9,6 +9,10 @@ declare module '@vue/runtime-core' {
         window: string;
         connectionOk: boolean;
         config: ConfigFileFormatNewest | null;
+        tyrantRequest: {
+            roomId: string;
+            code: string;
+        };
     }
 
     interface ComponentCustomProperties {

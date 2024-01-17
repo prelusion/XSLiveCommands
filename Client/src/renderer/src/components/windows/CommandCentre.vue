@@ -1,4 +1,5 @@
 <template>
+    <disconnect-button @disconnect="disconnect"/>
     <div id="view">
         <div id="info">
             <table>
@@ -22,14 +23,16 @@
         <div id="command-centre">
             <div id="command">
                 <div id="command-selection">
-                    <div>
-                        <input v-model="selectedCommand" list="commands" placeholder="Select Command">
-                        <button @click="selectedCommand = ''"
-                                id="clear-command-button"
-                                title="Clear the command selection text box"
-                        >
-                            Clear
-                        </button>
+                    <div id="command-top-order">
+                        <div>
+                            <input v-model="selectedCommand" list="commands" placeholder="Select Command">
+                            <button @click="selectedCommand = ''"
+                                    id="clear-command-button"
+                                    title="Clear the command selection text box"
+                            >
+                                Clear
+                            </button>
+                        </div>
 
                         <datalist id="commands">
                             <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
@@ -53,33 +56,6 @@
                         </table>
                     </div>
                 </div>
-                <div id="plan-command">
-                    <!--<div>-->
-                    <!--    <input v-model="planCommand" type="checkbox" id="plan-check">-->
-                    <!--    <label for="plan-check">Plan command</label>-->
-                    <!--</div>-->
-
-                    <!--<div v-if="planCommand">-->
-                    <!--    <table>-->
-                    <!--        <tr>-->
-                    <!--            <td>Minute</td>-->
-                    <!--            <td><input type="number" placeholder="Default to: 0" v-model="planMinute"></td>-->
-                    <!--        </tr>-->
-                    <!--        <tr>-->
-                    <!--            <td>Second</td>-->
-                    <!--            <td><input type="number" placeholder="Default to: 0" v-model="planSecond"></td>-->
-                    <!--        </tr>-->
-                    <!--    </table>-->
-                    <!--</div>-->
-                    <!--     Todo: Temporarily disabled due to datalist bug -->
-                    <!--<p class="expected-execution-time">-->
-                    <!--    Execute at: {{ planInTime }}. <br/>-->
-                    <!--    Cycle: {{ expectedCycle }}-->
-                    <!--</p>-->
-                    <!--<p v-if="expectedCycle < SocketHandler.currentCycle" id="plan-cycle-warning">-->
-                    <!--    This time has already passed. The given time will be ignored.-->
-                    <!--</p>-->
-                </div>
             </div>
 
             <div id="text">
@@ -99,17 +75,25 @@
 import {GameHandler} from "../../classes/game-handler";
 import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
-import {CommandEvent, CommandParamConfig, CommandTemplates, Param, ParamType} from "../../../../shared/src/types/command";
-import {changeTitle, zeroLead} from "../../util/general";
+import {
+    CommandEvent,
+    CommandParamConfig,
+    CommandTemplates,
+    Param,
+    ParamType
+} from "../../../../shared/src/types/command";
+import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "../../classes/queue-handler";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
+import DisconnectButton from "../DisconnectButton.vue";
+
 const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
-    components: {Buttons},
+    components: {DisconnectButton, Buttons},
     props: {},
     data() {
         return {
@@ -124,8 +108,6 @@ export default defineComponent({
             planCommand: false,
             expectedCycle: -1,
             cycleTime: 2,
-            // planMinute: undefined as number | undefined,
-            // planSecond: undefined as number | undefined,
 
             text: [] as Array<string>,
             error: true,
@@ -134,17 +116,15 @@ export default defineComponent({
 
             buttonConfig: [
                 {
-                    window: "MainWindow",
-                    text: "Disconnect",
-                    callback: async () => {
-                        await SocketHandler.instance.leaveRoom();
-                        await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
+                    text: "Send",
+                    callback: (): void => {
+                        this.sendCommand();
                     },
                 },
                 {
-                    text: "Send",
-                    callback: () => {
-                        this.sendCommand();
+                    text: "Return as a tyrant",
+                    callback: (): void => {
+                        this.exitTyrantView();
                     },
                 },
             ] as Array<ButtonConfig>,
@@ -159,7 +139,7 @@ export default defineComponent({
 
         const data = this.$store.state.data;
         if (data) {
-            this.numberOfConnectedClients = (data as {numberOfConnections: number}).numberOfConnections;
+            this.numberOfConnectedClients = (data as { numberOfConnections: number }).numberOfConnections;
         }
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
@@ -183,34 +163,12 @@ export default defineComponent({
         SocketHandler() {
             return SocketHandler.instance;
         },
-        // planCycle(): number {
-        //     return (this.planMinute ?? 0) * 12 + Math.ceil((this.planSecond ?? 0) / 5)
-        // },
-        // plannedOrCurrentCycle(): number {
-        //     return Math.max(this.planCycle, this.SocketHandler.currentCycle);
-        // },
-        planInTime(): string {
-            // Cycle 0 = 0:0<cycleTime>. Cycle 1 = 0:0:0<cycleTime>*2 (hence the +cycleTime)
-            let seconds = this.expectedCycle * this.cycleTime + this.cycleTime;
-            let minutes = Math.floor(seconds / 60);
-            seconds = seconds % 60;
-
-            const hours = Math.floor((minutes || 0) / 60);
-            minutes = (minutes || 0) % 60;
-
-            return `${zeroLead(hours)}:${zeroLead(minutes)}:${zeroLead(seconds)}`;
-        },
         commandId(): string | undefined {
             return this.commands[this.selectedCommand]?.funcName;
         },
         commandParams(): Array<CommandParamConfig> {
             return this.commands[this.selectedCommand]?.params ?? [];
         },
-        paramNames(): Array<string> {
-            return Object.values(this.commandParams).map((e): string => {
-                return e.name;
-            });
-        }
     },
     methods: {
         ensure,
@@ -274,6 +232,21 @@ export default defineComponent({
             console.log(commandEvent);
             QueueHandler.instance.enqueue(commandEvent);
         },
+        exitTyrantView() {
+            SocketHandler.instance.loseTyrant(ensure(SocketHandler.instance.room).id)
+                .then(() => {
+                    this.$store.commit("changeWindow", "Room");
+                })
+                .catch(() => {
+                    this.$store.commit("changeWindow", "MainRoom");
+                });
+        },
+        async disconnect() {
+            await SocketHandler.instance.leaveRoom();
+            await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
+            this.$store.commit("changeWindow", "MainRoom");
+
+        },
         sendCommand(): void {
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
@@ -316,31 +289,6 @@ export default defineComponent({
             this.text = [];
             this.inputParams = [];
         },
-        // planSecond(current: number | undefined | '') {
-        //     if (current === '' || current === undefined)
-        //         return this.planSecond = undefined;
-        //
-        //     if (Math.round(current) !== current) {
-        //         this.planSecond = Math.floor(current);
-        //     }
-        //     if (current > 59) {
-        //         this.planSecond = 59;
-        //     }
-        //     if (current < 0) {
-        //         this.planSecond = 0;
-        //     }
-        // },
-        // planMinute(current: number | undefined | '') {
-        //     if (current === '' || current === undefined)
-        //         return this.planMinute = undefined;
-        //
-        //     if (Math.round(current) !== current) {
-        //         this.planMinute = Math.floor(current);
-        //     }
-        //     if (current < 0) {
-        //         this.planMinute = 0;
-        //     }
-        // }
     },
 });
 
@@ -356,10 +304,7 @@ export default defineComponent({
         margin-top: 15px;
 
         #command {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            gap: 50px;
+            width: 100%;
 
             #clear-command-button {
                 margin-left: 4px;
