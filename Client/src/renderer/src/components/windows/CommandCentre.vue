@@ -33,7 +33,7 @@
                                 Clear
                             </button>
                         </div>
-                        <button class="return-button" @click="joinRoom()"
+                        <button class="return-button" @click="exitTyrantView()"
                                 id="clear-command-button"
                                 title="Return as a tyrant"
                         >
@@ -283,8 +283,8 @@ export default defineComponent({
             console.log(commandEvent);
             QueueHandler.instance.enqueue(commandEvent);
         },
-        joinRoom() {
-            SocketHandler.instance.joinRoomAsPlayer(ensure(SocketHandler.instance.room).id)
+        exitTyrantView() {
+            SocketHandler.instance.loseTyrant(ensure(SocketHandler.instance.room).id)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })

@@ -36,7 +36,7 @@ export class RoomHandler {
         return room;
     }
 
-    public joinRoom(roomId: string, socket: Socket, asTyrant = false) {
+    public joinRoom(roomId: string, socket: Socket) {
         socket.join(roomId);
 
         const room = this.getRoomByID(roomId);
@@ -44,13 +44,34 @@ export class RoomHandler {
         if (room !== undefined) {
             room.connections.push(socket.id);
 
-            if (asTyrant)
-                room.tyrants.push(socket.id);
-
             console.log(`[Room ${roomId}] >> Socket joined room (current: ${room.connections.length})`);
 
             this.sendRoomConnectionCountUpdate(roomId, room.connections.length);
         }
+    }
+
+    public becomeTyrant(roomId: string, socket: Socket): void {
+        const room = this.getRoomByID(roomId);
+
+        if (!room.connections.includes(socket.id)) {
+            return;
+        }
+
+        room.tyrants.push(socket.id);
+
+        console.log(`[Room ${roomId}] >> Socket switched to tyrant mode. Rate: ${room.tyrants.length}/${room.connections.length}`);
+    }
+
+    public loseTyrant(roomId: string, socket: Socket): void {
+        const room = this.getRoomByID(roomId);
+
+        if (!room.connections.includes(socket.id)) {
+            return;
+        }
+
+        room.tyrants = room.tyrants.filter(id => id !== socket.id);
+
+        console.log(`[Room ${roomId}] >> Socket switched to normal mode. Rate: ${room.tyrants.length}/${room.connections.length}`);
     }
 
     public leaveRoom(roomId: string, socket: Socket) {

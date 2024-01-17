@@ -127,7 +127,6 @@ export default defineComponent({
         },
         handlePassword(password: string) {
             this.requestForTyrant(password)
-
         },
         showPasswordModal() {
             this.$refs.passwordModal.open();
@@ -136,7 +135,7 @@ export default defineComponent({
             this.$refs.passwordModal.close();
         },
         requestForTyrant(password: string) {
-            SocketHandler.instance.joinRoomAsTyrant(this.roomId, password)
+            SocketHandler.instance.becomeTyrant(this.roomId, password)
                 .then(() => {
                     updateRoomPassword(password);
                     this.$store.commit("changeWindow", "CommandCentre");

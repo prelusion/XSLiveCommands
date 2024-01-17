@@ -10,7 +10,6 @@ export const roomAuth: roomAuth = reactive({
     password: null,
 });
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function updateRoomPassword(newPassword: string) {
+export function updateRoomPassword(newPassword: string): void {
     roomAuth.password = newPassword;
 }
