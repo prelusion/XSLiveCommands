@@ -6,11 +6,20 @@
         <div>
             <div id="password">
                 <div id="show-password">
-                    <input v-model="password" placeholder="Launch Code for Tyrants" v-bind:type="passwordType">
+                    <InputField
+                        :label="'Launch Code'"
+                        :type="passwordType"
+                        :placeholder="'Launch Code for Tyrants'"
+                        :rules="['required']"
+                        @updateValue="password = $event"
+                        @validationStatus="validationStatus = $event"
+                    />
 
-                    <label>
-                        <input v-model="showPassword" type="checkbox"> Show Launch Code
-                    </label>
+                    <InputField
+                        :label="'Show password'"
+                        :type="'checkbox'"
+                        @updateValue="showPassword = $event"
+                      />
                 </div>
 
                 <span class="small-text">
@@ -55,10 +64,11 @@ import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
+import InputField from "../formComponents/InputField.vue";
 
 export default defineComponent({
     name: "CreateRoom",
-    components: {Buttons},
+    components: {InputField, Buttons},
     props: {},
     data() {
         return {
@@ -70,6 +80,7 @@ export default defineComponent({
             mapName: "",
             commands: {} as CommandTemplates | undefined,
             scenarios: {} as Record<string, string>,
+
 
             showPassword: false,
             creationInProgress: false,
@@ -215,7 +226,7 @@ export default defineComponent({
 
 #password {
     input {
-        padding: 5px;
+        padding: 6px;
     }
 
     #show-password {

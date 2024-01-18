@@ -1,7 +1,7 @@
 <template>
-    <div class="input-container">
+    <div class="custom-input-container">
         <label :for="inputId">{{ label }}</label>
-        <input :id="inputId" class="input" :type="type" :placeholder="placeholder" v-model="inputValue"
+        <input :id="inputId" class="custom-input" :type="type" :placeholder="placeholder" v-model="inputValue"
                @input="checkValidity"/>
         <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
     </div>
@@ -16,7 +16,6 @@ export default defineComponent({
     props: {
         label: {
             type: String,
-            required: true
         },
         type: {
             type: String,
@@ -48,25 +47,31 @@ export default defineComponent({
     methods: {
         checkValidity() {
             const conditionsMet = validateRules(this.rules, this.inputValue);
-            console.log(conditionsMet);
+            this.$emit('updateValue', this.inputValue);
+            this.$emit('validationStatus', conditionsMet);
 
         },
-    }
+    },
+    watch: {
+        inputValue() {
+            this.checkValidity();
+        }
+    },
 });
 </script>
 
 <style>
-.input-container {
+.custom-input-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.input {
-    padding: 6px;
+.custom-input {
     border: 1px solid #111;
-    border-radius: 5px;
+    border-radius: 2px;
     width: 100%;
+    padding: 5px;
     box-sizing: border-box;
     font-size: 16px;
 }
