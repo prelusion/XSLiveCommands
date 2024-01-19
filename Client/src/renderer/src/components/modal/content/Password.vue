@@ -1,21 +1,31 @@
 <template>
     <div class="password-container">
-        <label for="password">Tyranny Launch Code</label>
-        <input id="password" class="password-input" type="password" v-model="password" placeholder="Launch Code..."/>
+
+        <InputField
+            :label="'Tyranny Launch Code'"
+            :type="password"
+            :placeholder="'Launch Code...'"
+            :rules="['max:30']"
+            :errorMsg="[errorMsg]"
+            @updateValue="password = $event"
+            @validationStatus="validationStatus = $event"
+        />
         <div class="input-container">
             <button class="submit-button" @click="submit">Begin Tyranny!</button>
             <button class="submit-button" @click="close()">Abort Mission</button>
         </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
+
+
     </div>
 </template>
 
 <script lang="ts">
 import {defineComponent} from "vue";
+import InputField from "../../formComponents/InputField.vue";
 
 export default defineComponent({
     name: "Password",
-    components: {},
+    components: {InputField},
     props: {
         errorMsg: {
             type: String,
@@ -24,11 +34,15 @@ export default defineComponent({
     data() {
         return {
             password: '',
+            validationStatus: true
         };
     },
     methods: {
         submit() {
-            this.$emit('submit', this.password);
+            console.log(this.validationStatus)
+            if (this.validationStatus) {
+                this.$emit('submit', this.password);
+            }
         },
         close() {
             this.$emit('closeModal');

@@ -2,13 +2,17 @@
     <div class="custom-input-container">
         <label :for="inputId">{{ label }}</label>
         <input :id="inputId" class="custom-input" :type="type" :placeholder="placeholder" v-model="inputValue"
+               :class="errorMessages.length === 1 ? 'custom-input-error' : ''"
                @input="checkValidity"/>
-        <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+         <div v-for="(error, index) in errorMessages" :key="index" class="error-msg">
+            {{ error }}
+        </div>
+        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
     </div>
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import {defineComponent, getCurrentInstance, PropType} from "vue";
 import {validateRules} from "../../util/formRules";
 
 export default defineComponent({
@@ -26,8 +30,8 @@ export default defineComponent({
             default: ''
         },
         errorMsg: {
-            type: String,
-            default: ''
+            type: Array as PropType<Array<string>>,
+            default: () => [],
         },
         rules: {
             type: Array as PropType<Array<string>>,
@@ -36,19 +40,22 @@ export default defineComponent({
     },
     data() {
         return {
-            inputValue: ''
+            inputValue: '',
+            errorMessages: [] as Array<string>
         };
     },
     computed: {
         inputId() {
-            return `input-${this._uid}`;
+            const instance = getCurrentInstance();
+            return `input-${instance?.uid}`;
         }
     },
     methods: {
         checkValidity() {
-            const conditionsMet = validateRules(this.rules, this.inputValue);
+            const [conditionsMet, errors] = validateRules(this.rules, this.inputValue);
             this.$emit('updateValue', this.inputValue);
             this.$emit('validationStatus', conditionsMet);
+            this.errorMessages = errors;
 
         },
     },
@@ -64,7 +71,7 @@ export default defineComponent({
 .custom-input-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
 }
 
 .custom-input {
@@ -74,6 +81,10 @@ export default defineComponent({
     padding: 5px;
     box-sizing: border-box;
     font-size: 16px;
+}
+
+.custom-input-error {
+    border: 1px solid red;
 }
 
 .error-msg {

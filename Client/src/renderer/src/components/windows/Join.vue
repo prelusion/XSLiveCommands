@@ -3,10 +3,16 @@
         Joining room...
     </div>
     <div v-else>
-        <div>
-            <input placeholder="Room Code" v-model="roomId">
+        <div class="join-input">
+            <InputField
+                :type="'text'"
+                :placeholder="'Room Code'"
+                :rules="['max:30']"
+                :errorMsg="[errorMsg]"
+                @updateValue="roomId = $event"
+                @validationStatus="validationStatus = $event"
+            />
         </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
 
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
@@ -18,21 +24,25 @@ import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
+import InputField from "../formComponents/InputField.vue";
 
 export default defineComponent({
     name: "Join",
-    components: {Buttons},
+    components: {InputField, Buttons},
     props: {},
     data() {
         return {
             roomId: "",
             joiningInProgress: false,
             errorMsg: "",
+            validationStatus: true,
             buttonConfig: [
                 {
                     text: "Join",
                     callback: () => {
-                        this.joinRoom();
+                        if (this.validationStatus) {
+                            this.joinRoom();
+                        }
                     },
                 },
                 {
@@ -75,6 +85,10 @@ export default defineComponent({
 #error-msg {
     margin-top: 3px;
     color: red;
+}
+
+.join-input {
+    width: 40%;
 }
 
 input {

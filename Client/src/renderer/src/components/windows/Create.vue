@@ -10,7 +10,7 @@
                         :label="'Launch Code'"
                         :type="passwordType"
                         :placeholder="'Launch Code for Tyrants'"
-                        :rules="['required']"
+                        :rules="['max:30']"
                         @updateValue="password = $event"
                         @validationStatus="validationStatus = $event"
                     />
@@ -76,6 +76,7 @@ export default defineComponent({
 
             filepath: "",
             password: "",
+            validationStatus: true,
             enteredFilename: "",
             mapName: "",
             commands: {} as CommandTemplates | undefined,
@@ -91,7 +92,9 @@ export default defineComponent({
                 {
                     text: "Create",
                     callback: () => {
-                        this.createRoom();
+                        if(this.validationStatus) {
+                            this.createRoom();
+                        }
                     },
                     disabled: () => !this.filepath,
                 },
@@ -231,7 +234,7 @@ export default defineComponent({
 
     #show-password {
         display: flex;
-        align-items: center;
+        flex-direction: row;
     }
 }
 

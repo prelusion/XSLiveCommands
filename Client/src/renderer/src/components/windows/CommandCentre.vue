@@ -47,10 +47,14 @@
                         <table>
                             <tr class="param-entry" v-bind:key="index" v-for="(_, index) in commandParams?.length ?? 0">
                                 <td>
-                                    <input v-bind:type="commandInputType(index)"
-                                           v-bind:placeholder="getCommandParameterPlaceholderText(index)"
-                                           v-model="inputParams[index]"
-                                    >
+                                    <!-- This rule is an example and only works for numbers (send resources) -->
+                                    <InputField
+                                        :type="commandInputType(index)"
+                                        :placeholder="getCommandParameterPlaceholderText(index)"
+                                        :rules="['max-n:1000']"
+                                        @updateValue="inputParams[index] = $event"
+                                        @validationStatus="validationStatus[index] = $event"
+                                    />
                                 </td>
                             </tr>
                         </table>
@@ -88,12 +92,13 @@ import {QueueHandler} from "../../classes/queue-handler";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {ensure} from "../../../../shared/src/util/general";
 import DisconnectButton from "../DisconnectButton.vue";
+import InputField from "../formComponents/InputField.vue";
 
 const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
-    components: {DisconnectButton, Buttons},
+    components: {InputField, DisconnectButton, Buttons},
     props: {},
     data() {
         return {
@@ -103,6 +108,7 @@ export default defineComponent({
             numberOfConnectedClients: 0,
 
             inputParams: [] as Array<number | string | boolean | undefined>,
+            validationStatus: [] as Array<boolean>,
             selectedCommand: "",
 
             planCommand: false,
@@ -118,6 +124,10 @@ export default defineComponent({
                 {
                     text: "Send",
                     callback: (): void => {
+                        if (Array.isArray(this.validationStatus) && this.validationStatus.some(status => status === false)) {
+                            return;
+                        }
+
                         this.sendCommand();
                     },
                 },
