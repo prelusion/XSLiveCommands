@@ -18,6 +18,7 @@ import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../interfaces/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
+import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",
@@ -31,7 +32,7 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Join",
-                    callback: () => {
+                    callback: (): void => {
                         this.joinRoom();
                     },
                 },
@@ -43,15 +44,16 @@ export default defineComponent({
         };
     },
     mounted() {
-        // Execute on creation
-
         changeTitle(`Join as Player...`);
     },
     computed: {},
     methods: {
         joinRoom() {
+            const name = GameHandler.instance.steamName;
+
             this.joiningInProgress = true;
-            SocketHandler.instance.joinRoomAsPlayer(this.roomId)
+
+            SocketHandler.instance.joinRoom(this.roomId, name)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })

@@ -1,8 +1,7 @@
-export interface ServerEvent {
-    commandId: number;
-    params: Array<number>;
-    password: string,
-    // inGameTime?: number
+export type Commands = Record<string, Command>;
+export interface Command {
+    funcName: string;
+    params: Array<string | number | boolean>;
 }
 
 export interface ClientEvent {
@@ -11,29 +10,27 @@ export interface ClientEvent {
     executeCycleNumber: number;
 }
 
-export type Commands = Record<string, Command>;
+export interface RoomPlayer {
+    id: string,  /* Steam ID / MS store ID */
+    name: string,  /* Steam name / MS store name / Unauthenticated name */
+
+    authenticated?: boolean, /* unused (for now?) */
+}
+
+export type PlayerConnections = Record<string /* Socket ID */ , RoomPlayer>
 
 interface CoreRoom {
     id: string;
-    host: string;
+    host: string;  /* Socket ID */
     map: string;
     commands: Commands;
     events: Array<ClientEvent>;
+    connections: PlayerConnections;
 }
 
 export interface Room extends CoreRoom {
-    connections: Array<string>;
-    tyrants: Array<string>;
+    tyrants: Array<string>;  /* Socket IDs */
     password: string | null;
     last_execution_cycle: number;
     current_cycle: number;
-}
-
-export interface RoomMessage extends CoreRoom {
-    numberOfConnections: number;
-}
-
-export interface Command {
-    funcName: string;
-    params: Array<string | number | boolean>;
 }
