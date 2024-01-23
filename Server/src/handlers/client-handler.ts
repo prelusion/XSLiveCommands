@@ -125,20 +125,20 @@ export function startIoServer(io: Server) {
         socket.on("retrieveSteamUsername", (steamId: string, callback: (data) => void): void => {
             const key = process.env.STEAM_DEVELOPER_API_KEY;
 
-            // Create steam URL
             const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
-            const url = baseUrl + new URLSearchParams({
+            const params = new URLSearchParams({
                 key: key,
                 steamids: steamId,
             });
 
-            fetch(url)
+            fetch(baseUrl + params)
                 .then(response => response.json())
                 .then((data: SteamPlayerSummeryResponse) => {
                     const profile = data.response.players[0];
 
                     callback(profile.personaname);
-                });
+                })
+                .catch(() => callback(steamId));
         });
     });
 }
