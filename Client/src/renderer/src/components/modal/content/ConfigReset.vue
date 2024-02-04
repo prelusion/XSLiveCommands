@@ -18,7 +18,8 @@ export default defineComponent({
     methods: {
         reset() {
             window.config.resetConfig();
-            window.manager.restart();
+
+            this.$store.commit('reloadWindow');
         },
         exit() {
             window.manager.exit();

@@ -113,7 +113,7 @@ export default defineComponent({
         },
     },
     methods: {
-        checkIfLoadingComplete() {
+        checkIfLoadingComplete(): void {
             if (
                 this.connectedToServer
                 && this.loadedSettings
@@ -123,14 +123,13 @@ export default defineComponent({
                 setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
-        handleConfigError(error: MainError) {
+        handleConfigError(error: MainError): void {
             if (error.type === MainErrorTypes.INVALID_CONFIG) {
                 const modal = this.$refs.configResetModal as CustomModal;
 
                 modal.open();
-                this.error.push("Please fix the configuration file and restart the app")
             } else {
-                this.error.push(error.reason)
+                this.error.push(error.reason);
             }
         }
     },
