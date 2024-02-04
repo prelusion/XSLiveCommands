@@ -1,7 +1,9 @@
 import {Server, Socket} from "socket.io";
-import {ClientEvent, Command, Commands, Room} from "../interfaces";
 import {createRoomObject, createRoomPlayer} from "../scripts/rooms";
 import {EXECUTE_CYCLE_OFFSET} from "../index";
+import {Room} from "../types/room";
+import {ClientEvent} from "../types/client_event";
+import {Command, Commands} from "../types/command";
 
 export class RoomHandler {
     private static _instance = null;

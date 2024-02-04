@@ -1,7 +1,8 @@
 import {Server, Socket} from "socket.io";
-import {Command, Commands, Room} from "../interfaces";
 import {RoomHandler} from "./room-handler";
 import {SteamPlayerSummeryResponse} from "../types/steam";
+import {Room} from "../types/room";
+import {Command, Commands} from "../types/command";
 
 function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];

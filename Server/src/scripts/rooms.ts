@@ -1,9 +1,11 @@
-import {Commands, Room, RoomPlayer, PlayerConnections} from "../interfaces";
+import {Player, PlayerConnections} from "../types/player";
+import {Room} from "../types/room";
+import {Commands} from "../types/command";
 
 export function createRoomPlayer(
     id: string,
     name: string,
-): RoomPlayer {
+): Player {
     return {
         id: id,
         name: name,
