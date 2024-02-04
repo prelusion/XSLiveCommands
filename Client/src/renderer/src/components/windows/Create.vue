@@ -166,8 +166,9 @@ export default defineComponent({
             this.creationInProgress = true;
 
             this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
+            const name = GameHandler.instance.steamName;
 
-            SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
+            SocketHandler.instance.createRoom(this.plainMapName, name, ensure(this.commands), this.password)
                 .then(() => {
                     this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
                     this.$store.state.tyrantRequest.code = this.password;

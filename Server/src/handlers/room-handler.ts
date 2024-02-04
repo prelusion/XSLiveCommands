@@ -1,6 +1,6 @@
 import {Server, Socket} from "socket.io";
 import {ClientEvent, Command, Commands, Room} from "../interfaces";
-import {createRoom} from "../scripts/rooms";
+import {createRoomObject, createRoomPlayer} from "../scripts/rooms";
 import {EXECUTE_CYCLE_OFFSET} from "../index";
 
 export class RoomHandler {
@@ -24,54 +24,59 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, map: string, commands: Commands, password: string | null): Room {
+    public createRoom(roomId: string, socket: Socket, name: string, map: string, commands: Commands, password: string | null): Room {
         console.log(`[Room ${roomId}] >> Created`);
         socket.join(roomId);
 
         const socketId = socket.id;
 
-        const room: Room = createRoom(roomId, socketId, map, commands, password, [socketId]);
+        const room: Room = createRoomObject(roomId, socketId, name, map, commands, password);
         this.rooms.push(room);
 
         return room;
     }
 
-    public joinRoom(roomId: string, socket: Socket) {
+    public joinRoom(roomId: string, name: string, socket: Socket) {
         socket.join(roomId);
 
         const room = this.getRoomByID(roomId);
 
         if (room !== undefined) {
-            room.connections.push(socket.id);
+            room.connections[socket.id] = createRoomPlayer(socket.id, name);
+            const length = this.getNumberOfConnections(roomId);
 
-            console.log(`[Room ${roomId}] >> Socket joined room (current: ${room.connections.length})`);
+            console.log(`[Room ${roomId}] >> Socket joined room (current: ${length})`);
 
-            this.sendRoomConnectionCountUpdate(roomId, room.connections.length);
+            this.sendRoomConnectionCountUpdate(roomId, length);
         }
     }
 
     public becomeTyrant(roomId: string, socket: Socket): void {
         const room = this.getRoomByID(roomId);
 
-        if (!room.connections.includes(socket.id)) {
+        if (!(socket.id in room.connections)) {
             return;
         }
 
         room.tyrants.push(socket.id);
 
-        console.log(`[Room ${roomId}] >> Socket switched to tyrant mode. Rate: ${room.tyrants.length}/${room.connections.length}`);
+        const tyrantLen = room.tyrants.length;
+        const ConLen = this.getNumberOfConnections(roomId);
+        console.log(`[Room ${roomId}] >> Socket switched to tyrant mode. Rate: ${tyrantLen}/${ConLen}`);
     }
 
     public loseTyrant(roomId: string, socket: Socket): void {
         const room = this.getRoomByID(roomId);
 
-        if (!room.connections.includes(socket.id)) {
+        if (!(socket.id in room.connections)) {
             return;
         }
 
         room.tyrants = room.tyrants.filter(id => id !== socket.id);
 
-        console.log(`[Room ${roomId}] >> Socket switched to normal mode. Rate: ${room.tyrants.length}/${room.connections.length}`);
+        const tyrantLen = room.tyrants.length;
+        const ConLen = this.getNumberOfConnections(roomId);
+        console.log(`[Room ${roomId}] >> Socket switched to normal mode. Rate: ${tyrantLen}/${ConLen}`);
     }
 
     public leaveRoom(roomId: string, socket: Socket) {
@@ -79,17 +84,17 @@ export class RoomHandler {
 
         const room = this.getRoomByID(roomId);
         if (room) {
-            room.connections = room.connections.filter((connId) => {
-                return connId !== socket.id;
-            });
+            delete room.connections[socket.id];
+            const length = this.getNumberOfConnections(roomId);
 
-            console.log(`[Room ${roomId}] >> Socket left room (current: ${room.connections.length})`);
+            console.log(`[Room ${roomId}] >> Socket left room (current: ${length})`);
 
-            if (room.connections.length === 0) {
+            if (length === 0) {
                 this.removeRoom(roomId);
-            } else {
-                this.sendRoomConnectionCountUpdate(roomId, room.connections.length);
+                return;
             }
+
+            this.sendRoomConnectionCountUpdate(roomId, length);
         }
     }
 
@@ -131,7 +136,7 @@ export class RoomHandler {
         if (!room) {
             return -1;
         }
-        return room.connections.length;
+        return Object.keys(room.connections).length;
     }
 
     public getRoomByID(roomId: string): Room | undefined {

@@ -1,24 +1,26 @@
-import {Commands, Room, RoomMessage} from "../interfaces";
+import {Commands, Room, RoomPlayer, PlayerConnections} from "../interfaces";
 
-export function toRoomMessage(room: Room): RoomMessage {
+export function createRoomPlayer(
+    id: string,
+    name: string,
+): RoomPlayer {
     return {
-        id: room.id,
-        host: room.host,
-        map: room.map,
-        numberOfConnections: room.connections.length,
-        commands: room.commands,
-        events: room.events,
-    };
+        id: id,
+        name: name,
+    }
 }
 
-export function createRoom(
+export function createRoomObject(
     id: string,
     host: string,
+    name: string,
     map: string,
     commands: Commands,
     password: string,
-    connections: Array<string>,
 ): Room {
+    const connections: PlayerConnections = {};
+    connections[id] = {id: id, name: name};
+
     return {
         id: id,
         host: host,
