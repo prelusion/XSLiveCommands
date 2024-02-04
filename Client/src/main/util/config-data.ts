@@ -1,4 +1,4 @@
-import {ConfigFileCoreFormat, ConfigFileFormatV01} from "../../shared/src/types/config";
+import {ConfigFileCoreFormat, ConfigFileFormatNewest, ConfigFileFormatV01} from "../../shared/src/types/config";
 
 export const configDefaults = {
     '0.1': {
@@ -16,15 +16,15 @@ export type ConfigDefaultsKey = keyof typeof configDefaults;
  * @param config The config object
  * @param to The version to upgrade to
  */
-export function upgradeConfigFileToVersion(config: ConfigFileCoreFormat, to: number): ConfigFileCoreFormat {
+export function upgradeConfigFileToVersion(config: ConfigFileCoreFormat, to: number): ConfigFileFormatNewest {
     if (config.version > to) {
         throw Error("Unable to convert configuration to older version")
     } else if (config.version === to) {
-        return config;
+        return config as ConfigFileFormatNewest;
     }
 
     // Code to convert 0.1 to 0.2 to 0.3 etc.
     // Also loop so v0.1 can go through multiple versions to get to 0.3 for example
 
-    return config;
+    return config as ConfigFileFormatNewest;
 }

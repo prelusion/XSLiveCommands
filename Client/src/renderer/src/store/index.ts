@@ -19,6 +19,17 @@ export default createStore({
     } as State,
     getters: {},
     mutations: {
+        reloadWindow(state: State): void {
+            const window = state.window;
+            const data = state.data;
+
+            state.window = '';
+
+            setTimeout(() => {
+                state.window = window;
+                state.data = data;
+            }, 1);
+        },
         changeWindow(state: State, payload: string | { window: string; data: unknown }) {
             if (isString(payload)) {
                 state.window = payload;

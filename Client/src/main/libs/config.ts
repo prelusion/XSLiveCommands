@@ -1,7 +1,11 @@
 import fs from "fs";
 import {ipcMain} from "electron";
-import {ConfigFileCoreFormat} from "../../shared/src/types/config";
+import {ConfigFileCoreFormat, ConfigFileFormatNewest} from "../../shared/src/types/config";
 import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../util/config-data";
+import {MainError} from "../../shared/src/types/errors";
+import {createError} from "../util/errors";
+import {MainErrorTypes} from "../../shared/src/util/errors";
+import {ensure} from "../../shared/src/util/general";
 
 // windows specific:
 const USER_PROFILE_PATH = process.env.USERPROFILE;
@@ -64,11 +68,11 @@ function writeJsonFile(name: string, value: unknown): boolean {
 /**
  * Upgrade the config file if necessary
  */
-function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number): ConfigFileCoreFormat {
+function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number): ConfigFileFormatNewest {
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }
-    return configFile;
+    return configFile as ConfigFileFormatNewest;
 }
 
 /**
@@ -85,7 +89,11 @@ function configFileExists(): boolean {
 /**
  *  Write the configuration file
  */
-export function resetConfig(version: number): boolean {
+export function resetConfig(version: number | null = null): boolean {
+    if (version === null) {
+        version = parseFloat(ensure(Object.keys(configDefaults).pop()));
+    }
+
     const defaultConfig = configDefaults[version.toString() as ConfigDefaultsKey];
     if (!defaultConfig) {
         return false;
@@ -96,17 +104,22 @@ export function resetConfig(version: number): boolean {
 /**
  *  Read the configuration file
  */
-export function readConfig(version: number): ConfigFileCoreFormat {
+export function readConfig(version: number): ConfigFileCoreFormat|MainError {
     if (!configFileExists()) {
         resetConfig(version);
     }
 
     try {
         const configFile = readJsonFile('config') as ConfigFileCoreFormat;
+
+        if (!configFile.version) {
+            return createError("Missing config version", MainErrorTypes.INVALID_CONFIG)
+        }
+
         return upgradeConfigFile(configFile, version);
     } catch (e) {
         if (e instanceof SyntaxError) {
-            throw Error(`Unable to read configuration file (invalid JSON)`);
+            return createError("Invalid configuration file", MainErrorTypes.INVALID_CONFIG)
         } else {
             throw Error(`Unknown error occurred while trying to read the configuration file.`);
         }
@@ -117,9 +130,7 @@ export function readConfig(version: number): ConfigFileCoreFormat {
  *  Write the configuration file
  */
 export function writeConfig(config: ConfigFileCoreFormat, version: number): boolean {
-    console.log(config, version, 'here');
     const upgradedConfig = upgradeConfigFile(config, version);
-    console.log(upgradedConfig);
     return writeJsonFile('config', upgradedConfig);
 }
 
@@ -135,6 +146,6 @@ ipcMain.handle("config:writeConfig", (_, config: ConfigFileCoreFormat, version: 
     return writeConfig(config, version);
 });
 
-ipcMain.handle("config:resetConfig", (_, version: number) => {
+ipcMain.handle("config:resetConfig", (_, version: number | null = null) => {
     return resetConfig(version);
 });
