@@ -1,1 +1,0 @@
-C:/Users/k/Documents/Projects/Electron/ExtSourceToXS/Server/src/types/player.ts
