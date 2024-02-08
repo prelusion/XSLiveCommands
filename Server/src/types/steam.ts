@@ -17,7 +17,7 @@ export interface SteamPlayerSummary {
     timecreated: number;
 }
 
-export interface SteamPlayerSummeryResponse {
+export interface SteamPlayerSummaryResponse {
     response: {
         players: SteamPlayerSummary[]
     }

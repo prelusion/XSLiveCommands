@@ -85,7 +85,7 @@ import {
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "../../classes/queue-handler";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {ensure} from "../../../../shared/src/util/general";
 import DisconnectButton from "../DisconnectButton.vue";
 

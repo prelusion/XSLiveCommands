@@ -1,13 +1,13 @@
-import {PlayerConnections} from "./player";
+import {PlayerConnections, SocketId} from "./player";
 import {ClientEvent} from "./client_event";
 import {Commands} from "./command";
 
 
-interface BaseRoom {
+export interface Room {
     /** The room ID */
     id: string;
     /** The socket ID of the host of the room */
-    host: string;  /* Socket ID */
+    host: SocketId;
 
     // Todo: Move `commands` and `events` into an interface together with the map name
     /** The selected map of the room */
@@ -18,9 +18,6 @@ interface BaseRoom {
     events: Array<ClientEvent>;  // Todo: Move (See above)
     /** The players that have connected */
     connections: PlayerConnections;
-}
-
-export interface Room extends BaseRoom {
     // Todo: Move tyrant permission into `Player` interface
     /** The players that have tyrant permissions */
     tyrants: Array<string>;  /* Socket IDs */

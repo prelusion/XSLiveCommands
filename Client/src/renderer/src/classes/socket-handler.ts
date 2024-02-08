@@ -1,11 +1,11 @@
 import {GameHandler} from "./game-handler";
 import {Command, CommandTemplates} from "../../../shared/src/types/command";
-import {Room} from "../interfaces/general";
 import {Socket} from "socket.io-client";
 import {QueueHandler} from "./queue-handler";
 import {Store} from "vuex";
 import {assert, ensure} from "../../../shared/src/util/general";
 import {State} from "vue";
+import {Room} from "../types/general";
 
 export class SocketHandler {
     private constructor() {
@@ -39,7 +39,7 @@ export class SocketHandler {
         }
     }
 
-    public joinRoom(roomId: string, name: string): Promise<void> {
+    public joinRoom(roomId: string): Promise<void> {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
@@ -67,7 +67,7 @@ export class SocketHandler {
                 return;
             };
 
-            this.socket.emit("joinRoom", roomId, name, handleJoin);
+            this.socket.emit("joinRoom", roomId, handleJoin);
         });
     }
 
@@ -156,11 +156,12 @@ export class SocketHandler {
         });
     }
 
-    public createRoom(filename: string, name: string, commands: CommandTemplates, password = ""): Promise<void> {
+    public createRoom(filename: string, commands: CommandTemplates, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
-            this.socket.emit("createRoom", filename, name, commands, password, async (room: Room) => {
+            this.socket.emit("createRoom", filename, commands, password, async (room: Room, ...args) => {
+                console.log(room, args)
                 this.room = room;
 
                 if (room.map && room.commands) {

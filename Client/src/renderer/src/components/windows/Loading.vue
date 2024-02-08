@@ -18,6 +18,7 @@ import {MainErrorTypes} from "../../../../shared/src/util/errors";
 import {MainError} from "../../../../shared/src/types/errors";
 import CustomModal from "../modal/CustomModal.vue";
 import ConfigReset from "../modal/content/ConfigReset.vue";
+import {Player} from "../../types/player";
 
 const {setTimeout} = window;
 
@@ -65,13 +66,7 @@ export default defineComponent({
         const serverUrl = await window.manager.getEnvVar('SERVER_URL') as string;
         const fallback = 'https://xssync.aoe2.se/';
 
-        const socket = io(customUrl || serverUrl || fallback);
-
-        // Request steam name
-        socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (name: string) => {
-            GameHandler.instance.steamName = name;
-            this.retrievedSteamName = true;
-        });
+        const socket = io(customUrl || serverUrl || fallback, );
 
         socket.on("connect", () => {
             this.$store.state.connectionOk = true;
@@ -81,10 +76,16 @@ export default defineComponent({
             sh.verifyRoomExistsOnReconnect(this.$store);
 
             this.connectedToServer = true;
+
+            socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (name: Player) => {
+                GameHandler.instance.steamName = name.name;
+                this.retrievedSteamName = true;
+            });
         });
 
         socket.on("disconnect", () => {
             this.$store.state.connectionOk = false;
+            this.retrievedSteamName = false;
         });
     },
     computed: {

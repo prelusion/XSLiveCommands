@@ -1,4 +1,5 @@
-/* ⚠️ COPIED TO Client/src/renderer/src/types/player.ts ⚠️ - Symlinks don't work yet */
+/* ⚠️ COPIED FROM Server/src/types/player.ts ⚠️ - Symlinks don't work yet */
+
 export interface PlayerId {
     value: string,
     platform: 'steam' | 'ms'

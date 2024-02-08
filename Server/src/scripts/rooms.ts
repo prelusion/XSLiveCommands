@@ -1,31 +1,22 @@
-import {Player, PlayerConnections} from "../types/player";
+import {Player, PlayerConnections, SocketId} from "../types/player";
 import {Room} from "../types/room";
 import {Commands} from "../types/command";
 
-export function createRoomPlayer(
-    id: string,
-    name: string,
-): Player {
-    return {
-        id: id,
-        name: name,
-    }
-}
-
 export function createRoomObject(
-    id: string,
-    host: string,
-    name: string,
+    roomId: string,
+    player: Player,
+    socketId: SocketId,
     map: string,
     commands: Commands,
     password: string,
 ): Room {
     const connections: PlayerConnections = {};
-    connections[id] = {id: id, name: name};
+
+    connections[socketId] = player;
 
     return {
-        id: id,
-        host: host,
+        id: roomId,
+        host: socketId,
         map: map,
         connections: connections,
         tyrants: [],

@@ -1,8 +1,9 @@
 import {Server, Socket} from "socket.io";
 import {RoomHandler} from "./room-handler";
-import {SteamPlayerSummeryResponse} from "../types/steam";
+import {SteamPlayerSummaryResponse} from "../types/steam";
 import {Room} from "../types/room";
 import {Command, Commands} from "../types/command";
+import {Player, PlayerId, UnauthenticatedPlayer} from "../types/player";
 
 function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
@@ -11,12 +12,20 @@ function roomIdFromSocket(socket: Socket): string {
 type joinCallback = (room: Room | null, error: string | null) => void;
 
 export function startIoServer(io: Server) {
-    let connectionAmount = 0;
+    const connections: Record<string, Player|UnauthenticatedPlayer> = {};
+
     RoomHandler.instance.registerIo(io);
 
+    function error(callback: joinCallback | null, error: string): void {
+        if (callback)
+            callback(null, error);
+    }
+
     io.on("connection", (socket: Socket) => {
-        connectionAmount++;
-        console.log(`[Server] >> Client connected.    Active connections: ${connectionAmount}`);
+        connections[socket.id] = { authenticated: false };
+
+        const connectionCount = Object.keys(connections).length;
+        console.log(`[Server] >> Client connected.    Active connections: ${connectionCount}`);
 
         socket.on("cycleUpdate", (cycle: number) => {
             const roomId = roomIdFromSocket(socket);
@@ -32,28 +41,44 @@ export function startIoServer(io: Server) {
         });
 
         socket.on("disconnecting", () => {
-            connectionAmount--;
+            /* Clear array when players disconnect */
+            if (socket.id in connections) {
+                delete connections[socket.id];
+            }
 
-            console.log(`[Server] >> Client disconnected. Active connections: ${connectionAmount}`);
+            const connectionCount = Object.keys(connections).length;
+
+            console.log(`[Server] >> Client disconnected. Active connections: ${connectionCount}`);
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
-        socket.on("createRoom", (map: string, name: string, commands: Commands, password: string | null = null, callback) => {
+        socket.on("createRoom", (map: string, commands: Commands, password: string | null = null, callback: (room: Room) => void) => {
             const roomId = Date.now().toString();
-            const room = RoomHandler.instance.createRoom(roomId, socket, name, map, commands, password);
+
+            const player = connections[socket.id];
+            if (!player.authenticated) {
+                return error(callback, `[Unauthenticated] Unable to create room`);
+            }
+
+            const room = RoomHandler.instance.createRoom(roomId, player,socket, map, commands, password);
 
             if (callback) {
                 return callback(room);
             }
         });
 
-        socket.on("joinRoom", (roomId: string, name: string, callback: joinCallback) => {
+        socket.on("joinRoom", (roomId: string, callback: joinCallback) => {
             const room = RoomHandler.instance.getRoomByID(roomId);
             if (room === undefined) {
-                return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
+                return error(callback, `Room '${roomId}' does not exist`);
             }
 
-            RoomHandler.instance.joinRoom(roomId, name, socket);
+            const player = connections[socket.id];
+            if (!player.authenticated) {
+                return error(callback, `[Unauthenticated] Unable to join room`);
+            }
+
+            RoomHandler.instance.joinRoom(roomId, player, socket);
 
             if (callback) {
                 return callback(room,null);
@@ -63,10 +88,10 @@ export function startIoServer(io: Server) {
         socket.on("becomeTyrant", (roomId: string, password: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
-                    return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
+                    return error(callback, `Could not find room with id '${roomId}'`);
                 }
                 if (room.password !== password) {
-                    return callback ? callback(null, `Incorrect launch code`) : null;
+                    return error(callback, `Incorrect launch code`);
                 }
                 RoomHandler.instance.becomeTyrant(roomId, socket);
 
@@ -79,7 +104,7 @@ export function startIoServer(io: Server) {
         socket.on("loseTyrant", (roomId: string, callback: joinCallback) => {
                 const room = RoomHandler.instance.getRoomByID(roomId);
                 if (room === undefined) {
-                    return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
+                    return error(callback, `Could not find room with id '${roomId}'`);
                 }
                 RoomHandler.instance.loseTyrant(roomId, socket);
 
@@ -123,23 +148,47 @@ export function startIoServer(io: Server) {
             callback(c);
         });
 
-        socket.on("retrieveSteamUsername", (steamId: string, callback: (data) => void): void => {
-            const key = process.env.STEAM_DEVELOPER_API_KEY;
-
+        socket.on("retrieveSteamUsername", async (steamId: string, callback: (player: Player) => void): Promise<void> => {
             const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
             const params = new URLSearchParams({
-                key: key,
+                key: process.env.STEAM_DEVELOPER_API_KEY,
                 steamids: steamId,
             });
 
-            fetch(baseUrl + params)
-                .then(response => response.json())
-                .then((data: SteamPlayerSummeryResponse) => {
-                    const profile = data.response.players[0];
+            const id: PlayerId = {
+                value: steamId,
+                platform: 'steam',
+            }
+            let name: string,
+                resolved: boolean;
 
-                    callback(profile.personaname);
-                })
-                .catch(() => callback(steamId));
+            try {
+                const response = await fetch(baseUrl + params);
+                const data = await response.json() as SteamPlayerSummaryResponse;
+
+                const profile = data.response.players[0];
+
+                name = profile.personaname;
+                resolved = true;
+                console.log(`[Server] >> Client name resolved: ${name}       [${id.value} on ${id.platform}].`);
+            } catch (e) {
+                /* If name retrieval fails, fall back on the Steam ID */
+                name = steamId;
+                resolved = false;
+                console.log(`[Server] >> Unable to resolve client name.      [${id.value} on ${id.platform}].`);
+            }
+
+            const player: Player = {
+                id,
+                name,
+                resolved,
+                authenticated: true
+            };
+
+            connections[socket.id] = player;
+
+
+            callback(player);
         });
     });
 }

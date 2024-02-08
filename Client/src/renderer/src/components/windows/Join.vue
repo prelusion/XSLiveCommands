@@ -16,9 +16,8 @@
 import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
-import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",
@@ -49,11 +48,9 @@ export default defineComponent({
     computed: {},
     methods: {
         joinRoom() {
-            const name = GameHandler.instance.steamName;
-
             this.joiningInProgress = true;
 
-            SocketHandler.instance.joinRoom(this.roomId, name)
+            SocketHandler.instance.joinRoom(this.roomId)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })

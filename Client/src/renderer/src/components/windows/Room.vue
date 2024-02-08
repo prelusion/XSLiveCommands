@@ -32,7 +32,7 @@ import Buttons from "../../components/Buttons.vue";
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {CommandEvent} from "../../../../shared/src/types/command";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {assert, ensure} from "../../../../shared/src/util/general";
 import CustomModal from "../modal/CustomModal.vue";
 import Password from "../modal/content/Password.vue";

@@ -1,9 +1,10 @@
 import {Server, Socket} from "socket.io";
-import {createRoomObject, createRoomPlayer} from "../scripts/rooms";
+import {createRoomObject} from "../scripts/rooms";
 import {EXECUTE_CYCLE_OFFSET} from "../index";
 import {Room} from "../types/room";
 import {ClientEvent} from "../types/client_event";
 import {Command, Commands} from "../types/command";
+import {Player} from "../types/player";
 
 export class RoomHandler {
     private static _instance = null;
@@ -26,25 +27,26 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, name: string, map: string, commands: Commands, password: string | null): Room {
+    public createRoom(roomId: string, player: Player, socket: Socket, map: string, commands: Commands, password: string | null): Room {
         console.log(`[Room ${roomId}] >> Created`);
         socket.join(roomId);
 
         const socketId = socket.id;
 
-        const room: Room = createRoomObject(roomId, socketId, name, map, commands, password);
+        const room: Room = createRoomObject(roomId, player, socketId, map, commands, password);
         this.rooms.push(room);
 
         return room;
     }
 
-    public joinRoom(roomId: string, name: string, socket: Socket) {
+    public joinRoom(roomId: string, player: Player, socket: Socket) {
         socket.join(roomId);
 
         const room = this.getRoomByID(roomId);
 
         if (room !== undefined) {
-            room.connections[socket.id] = createRoomPlayer(socket.id, name);
+            room.connections[socket.id] = player
+
             const length = this.getNumberOfConnections(roomId);
 
             console.log(`[Room ${roomId}] >> Socket joined room (current: ${length})`);
