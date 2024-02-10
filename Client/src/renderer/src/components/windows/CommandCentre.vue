@@ -47,10 +47,14 @@
                         <table>
                             <tr class="param-entry" v-bind:key="index" v-for="(_, index) in commandParams?.length ?? 0">
                                 <td>
-                                    <input v-bind:type="commandInputType(index)"
-                                           v-bind:placeholder="getCommandParameterPlaceholderText(index)"
-                                           v-model="inputParams[index]"
-                                    >
+                                    <InputField
+                                        ref="input"
+                                        :name="getCommandParameter(index).name"
+                                        :type="commandInputType(index)"
+                                        :placeholder="getCommandParameterPlaceholderText(index)"
+                                        :rules="getCommandRules(index)"
+                                        @onValueUpdated="inputParams[index] = $event"
+                                    />
                                 </td>
                             </tr>
                         </table>
@@ -85,15 +89,18 @@ import {
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "../../classes/queue-handler";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {ensure} from "../../../../shared/src/util/general";
 import DisconnectButton from "../DisconnectButton.vue";
+import InputField from "../forms/InputField.vue";
+import HasInputFields from "../../mixins/HasInputFields";
 
 const {setInterval} = window;
 
 export default defineComponent({
     name: "CommandCentre",
-    components: {DisconnectButton, Buttons},
+    mixins: [HasInputFields],
+    components: {InputField, DisconnectButton, Buttons},
     props: {},
     data() {
         return {
@@ -118,7 +125,12 @@ export default defineComponent({
                 {
                     text: "Send",
                     callback: (): void => {
+                        if (!this.validateInputs()) {
+                            return;
+                        }
+
                         this.sendCommand();
+                        this.clearInputs();
                     },
                 },
                 {
@@ -135,7 +147,7 @@ export default defineComponent({
         const socket = ensure(SocketHandler.instance.socket);
 
         this.commands = room.commands;
-        this.numberOfConnectedClients = room.numberOfConnections;
+        this.numberOfConnectedClients = Object.keys(room.connections).length;
 
         const data = this.$store.state.data;
         if (data) {
@@ -175,6 +187,18 @@ export default defineComponent({
         copyRoomId() {
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
         },
+        getCommandRules(index: number): Array<string> {
+            const rules: Array<string> = ['max:1000'];
+
+            const def = this.getCommandParameter(index)?.default;
+
+            /* Truthy won't work as '0' or '' could be valid defaults */
+            if (def === null || def === undefined) {
+                rules.push('required')
+            }
+
+            return rules;
+        },
         getCommandParameter(index: number): CommandParamConfig {
             return this.commandParams[index];
         },
@@ -182,9 +206,12 @@ export default defineComponent({
             return (this.getCommandParameter(index)?.default ?? '').toString();
         },
         getCommandParameterPlaceholderText(index: number): string {
-            const p = this.getCommandParameter(index);
-            const d = this.getCommandParameterDefault(index);
-            return `${p.name}${d ? ` (default: ${d})` : '*'}`;
+            const param = this.getCommandParameter(index);
+            const def = this.getCommandParameterDefault(index);
+
+            const defString = def ? ` (default: ${def})` : '*';
+
+            return param.name + defString;
         },
         getCommandParameterType(index: number): ParamType {
             const TYPES: Record<string, ParamType | undefined> = {
@@ -332,8 +359,11 @@ export default defineComponent({
                 margin: 4px 0;
 
                 td:first-child {
-                    text-transform: capitalize;
                     padding-right: 10px;
+                }
+
+                td {
+                    width: 250px;
                 }
             }
         }
@@ -342,8 +372,6 @@ export default defineComponent({
             #error {
                 color: red;
             }
-
-            // #msg {}
         }
 
         .header {

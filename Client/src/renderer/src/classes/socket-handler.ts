@@ -1,6 +1,6 @@
 import {GameHandler} from "./game-handler";
 import {Command, CommandTemplates} from "../../../shared/src/types/command";
-import {Room} from "../interfaces/general";
+import {Room} from "../types/general";
 import {Socket} from "socket.io-client";
 import {QueueHandler} from "./queue-handler";
 import {Store} from "vuex";

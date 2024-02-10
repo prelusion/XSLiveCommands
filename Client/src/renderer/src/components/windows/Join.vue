@@ -3,10 +3,16 @@
         Joining room...
     </div>
     <div v-else>
-        <div>
-            <input placeholder="Room Code" v-model="roomId">
+        <div class="join-input">
+            <InputField
+                type="text"
+                name="room-code"
+                placeholder="Room Code"
+                :rules="['max:30']"
+                :errorMsg="[errorMsg]"
+                @onValueUpdated="roomId = $event"
+            />
         </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
 
         <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
@@ -16,13 +22,16 @@
 import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
+import InputField from "../forms/InputField.vue";
+import HasInputFields from "../../mixins/HasInputFields";
 import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",
-    components: {Buttons},
+    mixins: [HasInputFields],
+    components: {InputField, Buttons},
     props: {},
     data() {
         return {
@@ -33,6 +42,10 @@ export default defineComponent({
                 {
                     text: "Join",
                     callback: (): void => {
+                        if (!this.validateInputs()) {
+                            return;
+                        }
+
                         this.joinRoom();
                     },
                 },
@@ -77,6 +90,10 @@ export default defineComponent({
 #error-msg {
     margin-top: 3px;
     color: red;
+}
+
+.join-input {
+    width: 40%;
 }
 
 input {
