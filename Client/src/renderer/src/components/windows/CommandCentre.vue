@@ -147,7 +147,7 @@ export default defineComponent({
         const socket = ensure(SocketHandler.instance.socket);
 
         this.commands = room.commands;
-        this.numberOfConnectedClients = room.numberOfConnections;
+        this.numberOfConnectedClients = Object.keys(room.connections).length;
 
         const data = this.$store.state.data;
         if (data) {

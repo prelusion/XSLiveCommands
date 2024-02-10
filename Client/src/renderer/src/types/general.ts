@@ -4,7 +4,8 @@ export interface Room {
     id: string;
     host: string;
     map: string;
-    numberOfConnections: number;
+    // numberOfConnections: number;  /* Temporary */
+    connections: Record<string, unknown>;  /* Temporary */
     commands: CommandTemplates;
     events: Array<CommandEvent>;
 }

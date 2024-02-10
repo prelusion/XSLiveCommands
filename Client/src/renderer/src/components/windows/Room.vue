@@ -69,7 +69,7 @@ export default defineComponent({
         const room = ensure(SocketHandler.instance.room);
         this.roomId = room.id;
 
-        this.numberOfConnectedClients = room.numberOfConnections;
+        this.numberOfConnectedClients = Object.keys(room.connections).length;
         const socket = ensure(SocketHandler.instance.socket);
 
         const data = this.$store.state.data as { 'asHost'?: boolean };

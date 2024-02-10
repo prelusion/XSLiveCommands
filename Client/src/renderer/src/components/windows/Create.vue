@@ -89,7 +89,6 @@ export default defineComponent({
             commands: {} as CommandTemplates | undefined,
             scenarios: {} as Record<string, string>,
 
-
             showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
