@@ -1,27 +1,38 @@
 <template>
     <div class="password-container">
-        <label for="password">Tyranny Launch Code</label>
-        <input id="password" class="password-input" type="password" v-model="password" placeholder="Launch Code..."/>
+
+        <InputField
+            ref="input-1"
+            name="Tyranny Launch Code"
+            placeholder="Launch Code"
+            :type="password"
+            :rules="['max:30']"
+            :errorMsg="[errorMsg]"
+            @onValueUpdated="password = $event"
+        />
+
         <div class="input-container">
             <button class="submit-button" @click="submit">Begin Tyranny!</button>
             <button class="submit-button" @click="($parent as CustomModal).close()">Abort Mission</button>
         </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
     </div>
 </template>
 
 <script lang="ts">
 import {defineComponent} from "vue";
 import CustomModal from "../CustomModal.vue";
+import InputField from "../../forms/InputField.vue";
+import HasInputFields from "../../../mixins/HasInputFields";
 
 export default defineComponent({
     name: "Password",
+    mixins: [HasInputFields],
     computed: {
         CustomModal() {
             return CustomModal
         }
     },
-    components: {},
+    components: {InputField},
     props: {
         errorMsg: {
             type: String,
@@ -34,7 +45,12 @@ export default defineComponent({
     },
     methods: {
         submit() {
-            this.$emit('submit', this.password);
+            if (this.validateInputs()) {
+                this.$emit('submit', this.password);
+            }
+        },
+        close() {
+            this.$emit('closeModal');
         }
     }
 });

@@ -58,7 +58,9 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Begin Tyranny",
-                    callback: this.startRequestTyrant,
+                    callback: (): void => {
+                        this.startRequestTyrant()
+                    }
                 }
             ] as Array<ButtonConfig>,
         };
@@ -67,7 +69,7 @@ export default defineComponent({
         const room = ensure(SocketHandler.instance.room);
         this.roomId = room.id;
 
-        this.numberOfConnectedClients = room.numberOfConnections;
+        this.numberOfConnectedClients = Object.keys(room.connections).length;
         const socket = ensure(SocketHandler.instance.socket);
 
         const data = this.$store.state.data as { 'asHost'?: boolean };
@@ -134,11 +136,9 @@ export default defineComponent({
             this.showPasswordModal();
         },
         requestTyrant(password: string) {
-            /* Make sure the current room ID is saved upon each request */
-            this.$store.state.tyrantRequest.roomId = this.roomId;
-
             SocketHandler.instance.becomeTyrant(this.roomId, password)
                 .then(() => {
+                    this.$store.state.tyrantRequest.roomId = this.roomId;
                     this.$store.state.tyrantRequest.code = password;
                     this.$store.commit("changeWindow", "CommandCentre");
                 })

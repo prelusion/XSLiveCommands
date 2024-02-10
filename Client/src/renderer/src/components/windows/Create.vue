@@ -6,11 +6,26 @@
         <div>
             <div id="password">
                 <div id="show-password">
-                    <input v-model="password" placeholder="Launch Code for Tyrants" v-bind:type="passwordType">
+                    <InputField
+                        ref="input-1"
+                        class="input-field"
+                        name="launch-code"
+                        label="Launch Code"
+                        placeholder="Launch Code for Tyrants"
+                        :type="passwordType"
+                        :rules="['max:30']"
+                        @onValueUpdated="password = $event"
+                    />
 
-                    <label>
-                        <input v-model="showPassword" type="checkbox"> Show Launch Code
-                    </label>
+                    <InputField
+                        ref="input-2"
+                        class="input-field show-password"
+                        name="show-password"
+                        label="Show password"
+                        type="checkbox"
+                        :debounce="0"
+                        @onValueUpdated="showPassword = $event"
+                    />
                 </div>
 
                 <span class="small-text">
@@ -55,10 +70,13 @@ import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {ensure} from "../../../../shared/src/util/general";
+import InputField from "../forms/InputField.vue";
+import HasInputFields from "../../mixins/HasInputFields";
 
 export default defineComponent({
     name: "CreateRoom",
-    components: {Buttons},
+    components: {InputField, Buttons},
+    mixins: [HasInputFields],
     props: {},
     data() {
         return {
@@ -79,10 +97,14 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Create",
-                    callback: () => {
+                    callback: (): void => {
+                        if (!this.validateInputs()) {
+                            return;
+                        }
+
                         this.createRoom();
                     },
-                    disabled: () => !this.filepath,
+                    disabled: (): boolean => !this.filepath,
                 },
                 {
                     window: "MainRoom",
@@ -198,6 +220,14 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+input, .input-field {
+    width: 250px;
+
+    &.show-password {
+        width: 120px;
+    }
+}
+
 .small-text {
     margin-top: 2px;
     font-size: 12px;
@@ -215,12 +245,12 @@ export default defineComponent({
 
 #password {
     input {
-        padding: 5px;
+        padding: 6px;
     }
 
     #show-password {
         display: flex;
-        align-items: center;
+        flex-direction: row;
     }
 }
 
@@ -228,7 +258,7 @@ export default defineComponent({
     margin-top: 20px;
 
     button {
-        height: 35px;
+        height: 30px;
         display: inline-block;
 
         span.small-text {
@@ -237,24 +267,17 @@ export default defineComponent({
         }
     }
 
-    #file-selection-text {
-        margin-left: 10px;
+    input {
+        height: 30px;
     }
 
-    #error {
-        display: inline-block;
-        color: red;
-        font-size: 14px;
-        line-height: 14px;
+    #file-selection-text {
+        margin-left: 10px;
     }
 }
 
 #loading {
     width: 100%;
     text-align: center;
-}
-
-input, button {
-    padding: 5px;
 }
 </style>
