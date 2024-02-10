@@ -5,12 +5,12 @@
     <div v-else>
         <div class="join-input">
             <InputField
-                :type="'text'"
-                :placeholder="'Room Code'"
+                type="text"
+                name="room-code"
+                placeholder="Room Code"
                 :rules="['max:30']"
                 :errorMsg="[errorMsg]"
-                @updateValue="roomId = $event"
-                @validationStatus="validationStatus = $event"
+                @onValueUpdated="roomId = $event"
             />
         </div>
 
@@ -22,12 +22,14 @@
 import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
-import {ButtonConfig} from "../../interfaces/buttons";
+import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
-import InputField from "../formComponents/InputField.vue";
+import InputField from "../forms/InputField.vue";
+import HasInputFields from "../../mixins/HasInputFields";
 
 export default defineComponent({
     name: "Join",
+    mixins: [HasInputFields],
     components: {InputField, Buttons},
     props: {},
     data() {
@@ -35,14 +37,15 @@ export default defineComponent({
             roomId: "",
             joiningInProgress: false,
             errorMsg: "",
-            validationStatus: true,
             buttonConfig: [
                 {
                     text: "Join",
-                    callback: () => {
-                        if (this.validationStatus) {
-                            this.joinRoom();
+                    callback: (): void => {
+                        if (!this.validateInputs()) {
+                            return;
                         }
+
+                        this.joinRoom();
                     },
                 },
                 {

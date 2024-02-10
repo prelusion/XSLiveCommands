@@ -2,29 +2,30 @@
     <div class="password-container">
 
         <InputField
-            :label="'Tyranny Launch Code'"
+            ref="input-1"
+            name="Tyranny Launch Code"
+            placeholder="Launch Code"
             :type="password"
-            :placeholder="'Launch Code...'"
             :rules="['max:30']"
             :errorMsg="[errorMsg]"
-            @updateValue="password = $event"
-            @validationStatus="validationStatus = $event"
+            @onValueUpdated="password = $event"
         />
+
         <div class="input-container">
             <button class="submit-button" @click="submit">Begin Tyranny!</button>
             <button class="submit-button" @click="close()">Abort Mission</button>
         </div>
-
-
     </div>
 </template>
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import InputField from "../../formComponents/InputField.vue";
+import InputField from "../../forms/InputField.vue";
+import HasInputFields from "../../../mixins/HasInputFields";
 
 export default defineComponent({
     name: "Password",
+    mixins: [HasInputFields],
     components: {InputField},
     props: {
         errorMsg: {
@@ -34,13 +35,11 @@ export default defineComponent({
     data() {
         return {
             password: '',
-            validationStatus: true
         };
     },
     methods: {
         submit() {
-            console.log(this.validationStatus)
-            if (this.validationStatus) {
+            if (this.validateInputs()) {
                 this.$emit('submit', this.password);
             }
         },

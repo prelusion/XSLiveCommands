@@ -1,8 +1,10 @@
-export function validateRules(rules: string[], value: unknown): [boolean, Array<string>] {
+import {FormResult} from "../types/form";
+
+export function validateRules(rules: string[], label: string, value: unknown): FormResult {
     const validators = {
         'required': (val: string): boolean => val !== null && val !== undefined && val !== '',
-        'max': (val: string, max: string): boolean => val.length <= parseInt(max, 10),
-        'min': (val: string, min: string): boolean => val.length >= parseInt(min, 10),
+        'max': (val: string, max: string): boolean => val.toString().length <= parseInt(max, 10),
+        'min': (val: string, min: string): boolean => val.toString().length >= parseInt(min, 10),
         'max-n': (val: number, max: string): boolean => val <= parseInt(max, 10),
         'min-n': (val: number, min: string): boolean => val >= parseInt(min, 10),
         'string': (val: string): boolean => typeof val === 'string',
@@ -10,24 +12,28 @@ export function validateRules(rules: string[], value: unknown): [boolean, Array<
     };
 
     const validatorErrors = {
-        'required': (): string => 'This field is required',
-        'max': (val: string, max: string): string => 'This field cannot contain more than `' + max + '` characters. `' + val.length + '` was given',
-        'min': (val: string, min: string): string => 'This field cannot contain less than `' + min + '` characters. `' + val.length + '` was given',
-        'max-n': (val: number, max: string): string => 'This field cannot be larger than`' + max + '`. The number `' + val + '` was given',
-        'min-n': (val: number, min: string): string => 'This field cannot be less than`' + min + '`. The number `' + val + '` was given',
-        'string': (val: string): string => 'This field must be a string `' + val + '` is not a correct input',
-        'number': (val: string): string => 'This field must be a number `' + val + '` is not a correct input',
+        'required': (): string => `The ${label} is required`,
+        'max': (max: string): string => `The ${label} may not be greater than ${max} characters.`,
+        'min': (min: string): string => `The ${label} must be at least ${min} characters.`,
+        'max-n': (max: string): string => `The ${label} may not be greater than ${max}.`,
+        'min-n': (min: string): string => `The ${label} must be at least ${min}.`,
+        'string': (): string => `The ${label} must be a string`,
+        'number': (): string => `The ${label} must be a number`,
     };
 
-    const errors = [] as Array<string>;
+    const errors: Array<string> = [];
+
     rules.forEach(rule => {
-        const [ruleName, ruleParam] = rule.includes(':') ? rule.split(':') : [rule];
+        const [ruleName, ruleParam] = rule.includes(':')
+            ? rule.split(':')
+            : [rule];
+
         if (validators[ruleName] && !validators[ruleName](value, ruleParam)) {
-            errors.push(validatorErrors[ruleName](value, ruleParam))
+            errors.push(validatorErrors[ruleName](ruleParam))
         }
     });
 
     return errors.length === 0
-        ? [true, []]
-        : [false, errors]
+        ? {valid: true, errors: []}
+        : {valid: false, errors: errors}
 }

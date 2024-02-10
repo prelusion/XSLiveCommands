@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import {defineComponent, PropType, StyleValue} from "vue";
-import {ButtonConfig} from "../interfaces/buttons";
+import {ButtonConfig} from "../types/buttons";
 
 export default defineComponent({
     name: "Buttons",
