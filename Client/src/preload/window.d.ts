@@ -10,7 +10,7 @@ import {
 import {getSteamId} from "../main/libs/native-reg";
 
 import {write} from "../main/libs/clipboard";
-import {getEnvVar, resize} from "../main/libs/manager";
+import {getEnvVar, resize, restart, exit} from "../main/libs/manager";
 import {readConfig, resetConfig, writeConfig} from "../main/libs/config";
 
 declare global {
@@ -33,6 +33,8 @@ declare global {
         manager: {
             resize: typeof resize;
             getEnvVar: typeof getEnvVar;
+            restart: typeof restart;
+            exit: typeof exit;
         };
         config: {
             readConfig: typeof readConfig;

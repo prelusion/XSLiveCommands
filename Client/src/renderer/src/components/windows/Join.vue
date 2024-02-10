@@ -26,6 +26,7 @@ import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
+import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",
@@ -56,15 +57,16 @@ export default defineComponent({
         };
     },
     mounted() {
-        // Execute on creation
-
         changeTitle(`Join as Player...`);
     },
     computed: {},
     methods: {
         joinRoom() {
+            const name = GameHandler.instance.steamName;
+
             this.joiningInProgress = true;
-            SocketHandler.instance.joinRoomAsPlayer(this.roomId)
+
+            SocketHandler.instance.joinRoom(this.roomId, name)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })

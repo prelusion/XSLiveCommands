@@ -25,13 +25,13 @@ export class SocketHandler {
         return this._instance;
     }
 
-    public disconnect() {
+    public disconnect(): void {
         if (this.socket) {
             this.socket.disconnect();
         }
     }
 
-    public sendCycle(cycle: number) {
+    public sendCycle(cycle: number): void {
         assert(this.socket);
 
         if (cycle !== undefined && cycle >= 0) {
@@ -39,34 +39,35 @@ export class SocketHandler {
         }
     }
 
-    public joinRoomAsPlayer(roomId: string): Promise<void> {
+    public joinRoom(roomId: string, name: string): Promise<void> {
         return new Promise((resolve, reject): void => {
             assert(this.socket);
 
-            this.socket.emit("joinRoomAsPlayer", roomId,
-                async (room: Room | null) => {
-                    if (room === null) {
-                        setTimeout(() => reject(`Unable to join room: '${roomId}'`), 200);
-                        return;
-                    }
-
-                    if (room.map) {
-                        this.room = room;
-                        await GameHandler.instance.resetState(room.map);
-
-                        // Set queue to whatever was received when joining the room
-                        if (room.events.length > 0) {
-                            QueueHandler.instance.overwrite(room.events);
-                        }
-
-                        GameHandler.instance.startCoreLoop(room.map);
-
-                        resolve();
-                    } else {
-                        reject(`An unknown error occurred. Please try again.`);
-                    }
+            const handleJoin = async (room: Room | null): Promise<void> => {
+                if (room === null) {
+                    setTimeout(() => reject(`Unable to join room: '${roomId}'`), 200);
                     return;
-                });
+                }
+
+                if (room.map) {
+                    this.room = room;
+                    await GameHandler.instance.resetState(room.map);
+
+                    // Set queue to whatever was received when joining the room
+                    if (room.events.length > 0) {
+                        QueueHandler.instance.overwrite(room.events);
+                    }
+
+                    GameHandler.instance.startCoreLoop(room.map);
+
+                    resolve();
+                } else {
+                    reject(`An unknown error occurred. Please try again.`);
+                }
+                return;
+            };
+
+            this.socket.emit("joinRoom", roomId, name, handleJoin);
         });
     }
 
@@ -155,11 +156,11 @@ export class SocketHandler {
         });
     }
 
-    public createRoom(filename: string, commands: CommandTemplates, password = ""): Promise<void> {
+    public createRoom(filename: string, name: string, commands: CommandTemplates, password = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
-            this.socket.emit("createRoom", filename, commands, password, async (room: Room) => {
+            this.socket.emit("createRoom", filename, name, commands, password, async (room: Room) => {
                 this.room = room;
 
                 if (room.map && room.commands) {

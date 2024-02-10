@@ -1,6 +1,5 @@
 import {Server, Socket} from "socket.io";
-import {Command, Commands, Room, RoomMessage} from "../interfaces";
-import {toRoomMessage} from "../scripts/rooms";
+import {Command, Commands, Room} from "../interfaces";
 import {RoomHandler} from "./room-handler";
 import {SteamPlayerSummeryResponse} from "../types/steam";
 
@@ -8,7 +7,7 @@ function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
 }
 
-type joinCallback = (room: RoomMessage | null, error: string | null) => void;
+type joinCallback = (room: Room | null, error: string | null) => void;
 
 export function startIoServer(io: Server) {
     let connectionAmount = 0;
@@ -38,25 +37,25 @@ export function startIoServer(io: Server) {
             RoomHandler.instance.leaveRoom(roomIdFromSocket(socket), socket);
         });
 
-        socket.on("createRoom", (map: string, commands: Commands, password: string | null = null, callback) => {
+        socket.on("createRoom", (map: string, name: string, commands: Commands, password: string | null = null, callback) => {
             const roomId = Date.now().toString();
-            const room = RoomHandler.instance.createRoom(roomId, socket, map, commands, password);
+            const room = RoomHandler.instance.createRoom(roomId, socket, name, map, commands, password);
 
             if (callback) {
-                return callback(toRoomMessage(room));
+                return callback(room);
             }
         });
 
-        socket.on("joinRoomAsPlayer", (roomId: string, callback: joinCallback) => {
+        socket.on("joinRoom", (roomId: string, name: string, callback: joinCallback) => {
             const room = RoomHandler.instance.getRoomByID(roomId);
             if (room === undefined) {
                 return callback ? callback(null, `Could not find room with id '${roomId}'`) : null;
             }
 
-            RoomHandler.instance.joinRoom(roomId, socket);
+            RoomHandler.instance.joinRoom(roomId, name, socket);
 
             if (callback) {
-                return callback(toRoomMessage(room),null);
+                return callback(room,null);
             }
         });
 
@@ -71,7 +70,7 @@ export function startIoServer(io: Server) {
                 RoomHandler.instance.becomeTyrant(roomId, socket);
 
                 if (callback) {
-                    return callback(toRoomMessage(room), null);
+                    return callback(room, null);
                 }
             },
         );
@@ -84,7 +83,7 @@ export function startIoServer(io: Server) {
                 RoomHandler.instance.loseTyrant(roomId, socket);
 
                 if (callback) {
-                    return callback(toRoomMessage(room), null);
+                    return callback(room, null);
                 }
             },
         );
@@ -126,20 +125,20 @@ export function startIoServer(io: Server) {
         socket.on("retrieveSteamUsername", (steamId: string, callback: (data) => void): void => {
             const key = process.env.STEAM_DEVELOPER_API_KEY;
 
-            // Create steam URL
             const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
-            const url = baseUrl + new URLSearchParams({
+            const params = new URLSearchParams({
                 key: key,
                 steamids: steamId,
             });
 
-            fetch(url)
+            fetch(baseUrl + params)
                 .then(response => response.json())
                 .then((data: SteamPlayerSummeryResponse) => {
                     const profile = data.response.players[0];
 
                     callback(profile.personaname);
-                });
+                })
+                .catch(() => callback(steamId));
         });
     });
 }

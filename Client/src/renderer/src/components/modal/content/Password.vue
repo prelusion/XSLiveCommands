@@ -13,19 +13,25 @@
 
         <div class="input-container">
             <button class="submit-button" @click="submit">Begin Tyranny!</button>
-            <button class="submit-button" @click="close()">Abort Mission</button>
+            <button class="submit-button" @click="($parent as CustomModal).close()">Abort Mission</button>
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import {defineComponent} from "vue";
+import CustomModal from "../CustomModal.vue";
 import InputField from "../../forms/InputField.vue";
 import HasInputFields from "../../../mixins/HasInputFields";
 
 export default defineComponent({
     name: "Password",
     mixins: [HasInputFields],
+    computed: {
+        CustomModal() {
+            return CustomModal
+        }
+    },
     components: {InputField},
     props: {
         errorMsg: {
