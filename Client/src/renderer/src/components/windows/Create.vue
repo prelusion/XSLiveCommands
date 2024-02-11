@@ -171,15 +171,16 @@ export default defineComponent({
                 this.commands = result.commands;
                 this.errors = [];
             } else {
-                this.mapName = "";
-                this.filepath = "";
+                this.mapName = '';
+                this.filepath = '';
+
                 if (result.reason === 'no-json') {
                     this.errors = [
-                        "Commands File Not Found",
+                        'Commands File Not Found',
                     ];
                 } else if (result.reason === 'invalid-json') {
                     this.errors = [
-                        "Invalid Commands File",
+                        'Invalid Commands File',
                     ];
                 }
             }
@@ -275,7 +276,11 @@ input, .input-field {
         margin-left: 10px;
     }
 }
-
+#error {
+    color: red;
+    margin-top: -3px;
+    font-size: 15px;
+}
 #loading {
     width: 100%;
     text-align: center;

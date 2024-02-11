@@ -11,7 +11,7 @@ export function createRoomObject(
     tyrantPassword: string,
 ): Room {
     const connections: Record<SocketId, RoomPlayer> = {
-        socketId: {tyrant: false, ...player}
+        [socketId]: {tyrant: false, ...player}
     };
 
     return {

@@ -47,18 +47,24 @@ export async function readCommands(path: string): Promise<{ commands?: CommandTe
     try {
         const commandsArray: JsonCommandFile = JSON.parse(fs.readFileSync(path).toString());
 
-        const commands = commandsArray.reduce((
-            commands: CommandTemplates,
-            command: JsonCommand
-        ) => {
-            commands[command.name] = {
-                function: command.function,
-                params: command.params,
-            };
-            return commands;
-        }, {});
+        const commands: CommandTemplates = commandsArray.reduce(
+            (
+                commands: CommandTemplates,
+                command: JsonCommand
+            ): CommandTemplates => {
+                if (!command.name || !command.function)
+                    throw new Error('error');
 
-        return {commands};
+                commands[command.name] = {
+                    function: command.function,
+                    params: command.params,
+                };
+
+                return commands;
+            }, {}
+        );
+
+        return {commands: commands};
     } catch {
         return {reason: 'invalid-json'};
     }
@@ -93,13 +99,13 @@ export function getCompatibleMaps(steamId: string, modFolderPath: string): Recor
     const scenarioFolder = path.join(
         modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "scenario"
     );
-    if(fs.existsSync(scenarioFolder))
+    if (fs.existsSync(scenarioFolder))
         filePaths.push(...recursiveReaddir(scenarioFolder, true));
 
     const rmsFolder = path.join(
         modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "random-map-scripts"
     );
-    if(fs.existsSync(rmsFolder))
+    if (fs.existsSync(rmsFolder))
         filePaths.push(...recursiveReaddir(rmsFolder, true));
 
     if (filePaths.length === 0)
@@ -111,7 +117,7 @@ export function getCompatibleMaps(steamId: string, modFolderPath: string): Recor
             && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".commands.json")),
     );
     const maps: Record<string, string> = {};
-    for(const filePath of filePaths) {
+    for (const filePath of filePaths) {
         const mapName = filePath
             .replaceAll("\\", "/")
             .split("/")
