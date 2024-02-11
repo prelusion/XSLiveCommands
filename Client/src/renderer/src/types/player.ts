@@ -5,12 +5,7 @@ export interface PlayerId {
     platform: 'steam' | 'ms'
 }
 
-interface BasePlayer {
-    /** If the name of the user was authenticated by the server */
-    authenticated: boolean,
-}
-
-export interface Player extends BasePlayer{
+export interface AuthenticatedPlayer {
     authenticated: true,
 
     /** Steam ID / MS store ID */
@@ -21,11 +16,16 @@ export interface Player extends BasePlayer{
     resolved: boolean,
 }
 
-export interface UnauthenticatedPlayer extends BasePlayer {
+export interface UnauthenticatedPlayer {
     authenticated: false
+}
+
+export type Player = UnauthenticatedPlayer | AuthenticatedPlayer;
+
+export interface RoomPlayer extends AuthenticatedPlayer {
+    /** If the player has tyrant permissions */
+    tyrant: boolean,
 }
 
 /* Alias for readability */
 export type SocketId = string;
-
-export type PlayerConnections = Record<SocketId, Player>

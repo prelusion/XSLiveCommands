@@ -5,7 +5,7 @@ import {QueueHandler} from "./queue-handler";
 import {Store} from "vuex";
 import {assert, ensure} from "../../../shared/src/util/general";
 import {State} from "vue";
-import {Room} from "../types/general";
+import {Room} from "../types/room";
 
 export class SocketHandler {
     private constructor() {
@@ -54,8 +54,8 @@ export class SocketHandler {
                     await GameHandler.instance.resetState(room.map);
 
                     // Set queue to whatever was received when joining the room
-                    if (room.events.length > 0) {
-                        QueueHandler.instance.overwrite(room.events);
+                    if (room.map.events.length > 0) {
+                        QueueHandler.instance.overwrite(room.map.events);
                     }
 
                     GameHandler.instance.startCoreLoop(room.map);
@@ -149,8 +149,12 @@ export class SocketHandler {
                 return resolve();
             }
 
-            const map = ensure(this.room).map;
             this.socket.emit("leaveRoom", async () => {
+                const map = ensure(this.room).map;
+                if (!map) {
+                    return resolve();
+                }
+
                 GameHandler.instance.resetState(map).then(resolve);
             });
         });
@@ -160,11 +164,10 @@ export class SocketHandler {
         return new Promise((resolve, reject) => {
             assert(this.socket);
 
-            this.socket.emit("createRoom", filename, commands, password, async (room: Room, ...args) => {
-                console.log(room, args)
+            this.socket.emit("createRoom", filename, commands, password, async (room: Room) => {
                 this.room = room;
 
-                if (room.map && room.commands) {
+                if (room.map && room.map.commands) {
                     await GameHandler.instance.resetState(room.map);
                     GameHandler.instance.startCoreLoop(room.map);
 

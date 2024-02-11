@@ -18,7 +18,7 @@ import {MainErrorTypes} from "../../../../shared/src/util/errors";
 import {MainError} from "../../../../shared/src/types/errors";
 import CustomModal from "../modal/CustomModal.vue";
 import ConfigReset from "../modal/content/ConfigReset.vue";
-import {Player} from "../../types/player";
+import {AuthenticatedPlayer} from "../../types/player";
 
 const {setTimeout} = window;
 
@@ -77,8 +77,8 @@ export default defineComponent({
 
             this.connectedToServer = true;
 
-            socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (name: Player) => {
-                GameHandler.instance.steamName = name.name;
+            socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (player: AuthenticatedPlayer) => {
+                GameHandler.instance.steamName = player.name;
                 this.retrievedSteamName = true;
             });
         });

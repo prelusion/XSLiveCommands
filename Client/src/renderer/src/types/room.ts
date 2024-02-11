@@ -1,7 +1,7 @@
-/* ⚠️ COPIED TO Client/src/renderer/src/types/room.ts ⚠️ - Symlinks don't work yet */
+/* ⚠️ COPIED FROM Server/src/types/room.ts ⚠️ - Symlinks don't work yet */
+
 import {RoomPlayer, SocketId} from "./player";
 import {MapContext} from "./map-context";
-
 
 export interface Room {
     /** The room ID */

@@ -26,7 +26,6 @@ import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
-import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",

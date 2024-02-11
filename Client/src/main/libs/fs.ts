@@ -52,7 +52,7 @@ export async function readCommands(path: string): Promise<{ commands?: CommandTe
             command: JsonCommand
         ) => {
             commands[command.name] = {
-                funcName: command.funcName,
+                function: command.function,
                 params: command.params,
             };
             return commands;
@@ -182,7 +182,7 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true): v
  *      |                  | ---- | ------ | ------ | --------------------------- | ---------- |
  *      | START            | >    |        |        |                             |            |
  *      |                  | 4    | 4      | int32  | Execution Cycle Number      |            |
- *      |                  | 4    | 8      | int32  | Length of <funcName> string | = F        |
+ *      |                  | 4    | 8      | int32  | Length of <function> string | = F        |
  *      |                  | F    | 8+F    | string | Name of the function        |            |
  *      |                  | 4    | 12+F   | int32  | Parameter Count             | = N        |
  *      | REPEAT <N>       | >    |        |        |                             |            |
@@ -203,7 +203,7 @@ export function writeEvent(steamId: string, _: string, event: CommandEvent): voi
     if (!event.params)
         event.params = [];
 
-    let bufferSize = 12 + event.funcName.length;
+    let bufferSize = 12 + event.function.length;
     for (let i = 0; i < event.params.length; i++) {
         const p = event.params[i];
         // Type & Value (or pre-string val if string)
@@ -222,7 +222,7 @@ export function writeEvent(steamId: string, _: string, event: CommandEvent): voi
     }
 
     addIntToBuff(bufferInfo, event.executeCycleNumber, false);
-    addStringToBuff(bufferInfo, event.funcName, false);
+    addStringToBuff(bufferInfo, event.function, false);
     addIntToBuff(bufferInfo, event.params.length, false);
 
     for (const param of event.params) {

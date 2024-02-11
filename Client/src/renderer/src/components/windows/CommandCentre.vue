@@ -12,7 +12,7 @@
                 </tr>
                 <tr>
                     <td>Map:</td>
-                    <td>{{ ensure(SocketHandler.room).map }}</td>
+                    <td>{{ ensure(SocketHandler.room).map?.name }}</td>
                 </tr>
                 <tr>
                     <td>Players:</td>
@@ -146,7 +146,7 @@ export default defineComponent({
         const room = ensure(SocketHandler.instance.room);
         const socket = ensure(SocketHandler.instance.socket);
 
-        this.commands = room.commands;
+        this.commands = ensure(room.map).commands;
         this.numberOfConnectedClients = Object.keys(room.connections).length;
 
         const data = this.$store.state.data;
@@ -176,7 +176,9 @@ export default defineComponent({
             return SocketHandler.instance;
         },
         commandId(): string | undefined {
-            return this.commands[this.selectedCommand]?.funcName;
+            console.log(this.commands[this.selectedCommand])
+
+            return this.commands[this.selectedCommand]?.function;
         },
         commandParams(): Array<CommandParamConfig> {
             return this.commands[this.selectedCommand]?.params ?? [];
@@ -270,11 +272,17 @@ export default defineComponent({
         },
         async disconnect() {
             await SocketHandler.instance.leaveRoom();
-            await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
+            const room = ensure(SocketHandler.instance.room);
+
+            if (room.map) {
+                await GameHandler.instance.resetState(room.map);
+            }
+
             this.$store.commit("changeWindow", "MainRoom");
 
         },
         sendCommand(): void {
+            console.log(this.commands, this.selectedCommand, this.commandId);
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
             }
@@ -306,7 +314,7 @@ export default defineComponent({
             this.inputParams = [];
 
             SocketHandler.instance.sendCommand({
-                funcName: this.commandId,
+                function: this.commandId,
                 params: values
             });
         },

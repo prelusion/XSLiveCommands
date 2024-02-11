@@ -5,7 +5,7 @@ export interface CommandParamConfig {
 }
 
 interface CommandCore {
-    funcName: string;
+    function: string;
 }
 
 // ------------------< Json >------------------ \\

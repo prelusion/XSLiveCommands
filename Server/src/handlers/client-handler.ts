@@ -3,7 +3,7 @@ import {RoomHandler} from "./room-handler";
 import {SteamPlayerSummaryResponse} from "../types/steam";
 import {Room} from "../types/room";
 import {Command, Commands} from "../types/command";
-import {Player, PlayerId, UnauthenticatedPlayer} from "../types/player";
+import {AuthenticatedPlayer, Player, PlayerId} from "../types/player";
 
 function roomIdFromSocket(socket: Socket): string {
     return Array.from(socket.rooms)[1];
@@ -12,7 +12,7 @@ function roomIdFromSocket(socket: Socket): string {
 type joinCallback = (room: Room | null, error: string | null) => void;
 
 export function startIoServer(io: Server) {
-    const connections: Record<string, Player|UnauthenticatedPlayer> = {};
+    const connections: Record<string, Player> = {};
 
     RoomHandler.instance.registerIo(io);
 
@@ -90,7 +90,7 @@ export function startIoServer(io: Server) {
                 if (room === undefined) {
                     return error(callback, `Could not find room with id '${roomId}'`);
                 }
-                if (room.password !== password) {
+                if (room.tyrantPassword !== password) {
                     return error(callback, `Incorrect launch code`);
                 }
                 RoomHandler.instance.becomeTyrant(roomId, socket);
@@ -132,8 +132,8 @@ export function startIoServer(io: Server) {
                 return;
 
             const room = RoomHandler.instance.getRoomByID(roomId) as Room;
-            // If socket is not in the tyrants list and socket is not the host, don't allow command
-            if (!(room.tyrants.includes(socket.id) || room.host === socket.id))
+
+            if (!room.connections[socket.id].tyrant)
                 return;
 
             RoomHandler.instance.sendRoomNewCommand(roomId, command);
@@ -148,7 +148,7 @@ export function startIoServer(io: Server) {
             callback(c);
         });
 
-        socket.on("retrieveSteamUsername", async (steamId: string, callback: (player: Player) => void): Promise<void> => {
+        socket.on("retrieveSteamUsername", async (steamId: string, callback: (player: AuthenticatedPlayer) => void): Promise<void> => {
             const baseUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?`;
             const params = new URLSearchParams({
                 key: process.env.STEAM_DEVELOPER_API_KEY,
@@ -178,7 +178,7 @@ export function startIoServer(io: Server) {
                 console.log(`[Server] >> Unable to resolve client name.      [${id.value} on ${id.platform}].`);
             }
 
-            const player: Player = {
+            const player: AuthenticatedPlayer = {
                 id,
                 name,
                 resolved,

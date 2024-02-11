@@ -11,7 +11,7 @@
             </tr>
             <tr>
                 <td>Map:</td>
-                <td>{{ ensure(SocketHandler.room).map }}</td>
+                <td>{{ ensure(SocketHandler.room).map?.name }}</td>
             </tr>
             <tr>
                 <td>Players:</td>
@@ -67,6 +67,7 @@ export default defineComponent({
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
+        console.log(room)
         this.roomId = room.id;
 
         this.numberOfConnectedClients = Object.keys(room.connections).length;
@@ -148,10 +149,13 @@ export default defineComponent({
                 });
         },
         async disconnect() {
-            assert(SocketHandler.instance.room);
+            const room = ensure(SocketHandler.instance.room);
 
             await SocketHandler.instance.leaveRoom();
-            await GameHandler.instance.resetState(SocketHandler.instance.room.map);
+            if (room.map) {
+                await GameHandler.instance.resetState(room.map);
+            }
+
             this.$store.commit("changeWindow", "MainRoom");
         },
         enableTyrantModeControls(keyEvent: KeyboardEvent) {
