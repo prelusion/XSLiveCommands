@@ -1,7 +1,7 @@
 [
     {
         "name": "Send Resources",
-        "funcName": "sendResources",
+        "function": "sendResources",
         "params": [
             {
                 "name": "food",
@@ -32,7 +32,7 @@
     },
     {
         "name": "Send Message",
-        "funcName": "sendMessage",
+        "function": "sendMessage",
         "params": [
             {
                 "name": "message",
