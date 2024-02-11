@@ -2,9 +2,14 @@ import InputField from '../components/forms/InputField.vue';
 
 import {defineComponent} from 'vue';
 
-function getAllInputs(refs: Record<string, unknown>): Array<typeof InputField> {
-    const refKeys = Object.keys(refs)
-        .filter((key: string) => key.startsWith('input'));
+function getAllInputs(
+    refs: Record<string, unknown>,
+    refKeys: Array<string> | null = null
+): Array<typeof InputField> {
+    if (!Array.isArray(refKeys) && refKeys === null) {
+        refKeys = Object.keys(refs)
+            .filter((key: string) => key.startsWith('input'));
+    }
 
     const inputs: Array<typeof InputField> = [];
 
@@ -33,8 +38,13 @@ export default defineComponent({
                 .every((c: typeof InputField) => c.validate());
         },
         clearInputs(): void {
-            return getAllInputs(this.$refs)
+            getAllInputs(this.$refs)
                 .forEach((c: typeof InputField) => c.clear())
+        },
+        focus(ref: string): void {
+            const c: typeof InputField = getAllInputs(this.$refs, [ref])[0];
+
+            c.focus();
         }
     },
 });

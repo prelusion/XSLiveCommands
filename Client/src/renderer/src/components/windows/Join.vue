@@ -5,6 +5,7 @@
     <div v-else>
         <div class="join-input">
             <InputField
+                ref="input-room-code"
                 type="text"
                 name="room-code"
                 placeholder="Room Code"
@@ -57,6 +58,8 @@ export default defineComponent({
     },
     mounted() {
         changeTitle(`Join as Player...`);
+
+        this.focus('input-room-code');
     },
     computed: {},
     methods: {

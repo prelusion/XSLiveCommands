@@ -3,6 +3,7 @@
         <label :for="inputId">{{ label }}</label>
         <div class="custom-input-wrapper">
             <input
+                ref="input-field"
                 class="custom-input"
                 v-model="inputValue"
                 :id="inputId"
@@ -95,6 +96,11 @@ export default defineComponent({
         },
         clear() {
             this.inputValue = '';
+        },
+        focus() {
+            const input = this.$refs['input-field'] as HTMLInputElement;
+
+            input.focus();
         }
     }
 });

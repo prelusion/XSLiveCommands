@@ -50,7 +50,7 @@ export class RoomHandler {
 
             console.log(`[Room ${roomId}] >> Socket joined room (current: ${length})`);
 
-            this.sendRoomConnectionCountUpdate(roomId, length);
+            this.sendRoomConnectionCountUpdate(roomId, room);
         }
     }
 
@@ -66,6 +66,8 @@ export class RoomHandler {
         const tyrantLen = Object.values(room.connections).filter((r) => r.tyrant).length;
         const ConLen = this.getNumberOfConnections(roomId);
         console.log(`[Room ${roomId}] >> Socket switched to tyrant mode. Rate: ${tyrantLen}/${ConLen}`);
+
+        this.sendRoomConnectionCountUpdate(roomId, room);
     }
 
     public loseTyrant(roomId: string, socket: Socket): void {
@@ -80,6 +82,8 @@ export class RoomHandler {
         const tyrantLen = Object.values(room.connections).filter((r) => r.tyrant).length;
         const ConLen = this.getNumberOfConnections(roomId);
         console.log(`[Room ${roomId}] >> Socket switched to normal mode. Rate: ${tyrantLen}/${ConLen}`);
+
+        this.sendRoomConnectionCountUpdate(roomId, room);
     }
 
     public leaveRoom(roomId: string, socket: Socket) {
@@ -97,12 +101,12 @@ export class RoomHandler {
                 return;
             }
 
-            this.sendRoomConnectionCountUpdate(roomId, length);
+            this.sendRoomConnectionCountUpdate(roomId, room);
         }
     }
 
-    public sendRoomConnectionCountUpdate(roomId: string, n: number) {
-        this.io.to(roomId).emit("room-connection-update", n);
+    public sendRoomConnectionCountUpdate(roomId: string, room: Room) {
+        this.io.to(roomId).emit("room-connection-update", room);
     }
 
     public sendRoomNewCommand(roomId: string, command: Command): void {

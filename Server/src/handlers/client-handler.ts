@@ -12,6 +12,7 @@ function roomIdFromSocket(socket: Socket): string {
 type joinCallback = (room: Room | null, error: string | null) => void;
 
 export function startIoServer(io: Server) {
+    /* Todo: Cache player names based on PlayerId (for at least ~5mins) */
     const connections: Record<string, Player> = {};
 
     RoomHandler.instance.registerIo(io);

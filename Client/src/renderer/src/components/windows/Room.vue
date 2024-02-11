@@ -4,18 +4,27 @@
         <table>
             <tr>
                 <td>Room Code:</td>
-                <td>{{ ensure(SocketHandler.room).id }}</td>
+                <td>{{ roomId }}</td>
                 <td>
                     <button @click="copyRoomId()">Copy</button>
                 </td>
             </tr>
             <tr>
                 <td>Map:</td>
-                <td>{{ ensure(SocketHandler.room).map?.name }}</td>
+                <td>{{ mapName }}</td>
             </tr>
-            <tr>
-                <td>Players:</td>
-                <td> {{ numberOfConnectedClients }}</td>
+        </table>
+        <table id="player-list">
+            <tr v-for="(connection, socketId) in room.connections" v-bind:key="socketId">
+                <td title="User is host">
+                    {{ room.host === socketId ? '👑' : ''}}
+                </td>
+                <td title="User is tyrant">
+                    {{ connection.tyrant ? '💪' : ''}}
+                </td>
+                <td :style="{ fontWeight: socketId === ownSocketId ? 'bold' : 'normal' }">
+                    {{ connection.name }}
+                </td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
@@ -38,6 +47,9 @@ import CustomModal from "../modal/CustomModal.vue";
 import Password from "../modal/content/Password.vue";
 import {GameHandler} from "../../classes/game-handler";
 import DisconnectButton from "../DisconnectButton.vue";
+import {Room} from "../../types/room";
+import {Socket} from "socket.io-client";
+import {RoomPlayer, SocketId} from "../../types/player";
 
 
 export default defineComponent({
@@ -46,15 +58,8 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            roomId: '',
+            room: {} as Room,
             errorMsg: "",
-            numberOfConnectedClients: 0,
-            asHost: false,
-            tyrantMode: {
-                enabled: false,
-                progress: 0,
-                word: ['t', 'y', 'r', 'a', 'n', 't']
-            },
             buttonConfig: [
                 {
                     text: "Begin Tyranny",
@@ -67,21 +72,13 @@ export default defineComponent({
     },
     mounted() {
         const room = ensure(SocketHandler.instance.room);
-        console.log(room)
-        this.roomId = room.id;
 
-        this.numberOfConnectedClients = Object.keys(room.connections).length;
+        this.room = room;
+
         const socket = ensure(SocketHandler.instance.socket);
-
-        const data = this.$store.state.data as { 'asHost'?: boolean };
-        this.asHost = data?.asHost ?? false;
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
-
-        if (this.asHost) {
-            document.addEventListener('keydown', this.enableTyrantModeControls);
-        }
 
         changeTitle(`Room ${room.id}`);
     },
@@ -90,22 +87,28 @@ export default defineComponent({
 
         socket.off("room-connection-update", this.roomConnectionUpdate);
         socket.off("event", this.eventRegistered);
-        if (this.asHost) {
-            document.removeEventListener('keydown', this.enableTyrantModeControls);
-        }
     },
     computed: {
-        SocketHandler() {
-            return SocketHandler.instance;
+        roomId() {
+            return ensure(SocketHandler.instance.room).id
         },
+        mapName() {
+            assert(SocketHandler.instance.room);
+
+            return ensure(SocketHandler.instance.room.map).name;
+        },
+        ownSocketId() {
+            const socket = ensure(SocketHandler.instance.socket);
+            return ensure(socket.id);
+        }
     },
     methods: {
         ensure,
         copyRoomId() {
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
         },
-        roomConnectionUpdate(n: number) {
-            this.numberOfConnectedClients = n;
+        roomConnectionUpdate(room: Room) {
+            this.room = room;
         },
         eventRegistered(commandEvent: CommandEvent) {
             console.log("Event registered!");
@@ -129,7 +132,7 @@ export default defineComponent({
             assert(SocketHandler.instance.room);
 
             /* If this room has already had a login */
-            if (this.$store.state.tyrantRequest.roomId as string === this.roomId) {
+            if (this.$store.state.tyrantRequest.roomId === this.room.id) {
                 this.requestTyrant(this.$store.state.tyrantRequest.code);
                 return;
             }
@@ -137,10 +140,11 @@ export default defineComponent({
             this.showPasswordModal();
         },
         requestTyrant(password: string) {
-            SocketHandler.instance.becomeTyrant(this.roomId, password)
+            SocketHandler.instance.becomeTyrant(this.room.id, password)
                 .then(() => {
-                    this.$store.state.tyrantRequest.roomId = this.roomId;
+                    this.$store.state.tyrantRequest.roomId = this.room.id;
                     this.$store.state.tyrantRequest.code = password;
+
                     this.$store.commit("changeWindow", "CommandCentre");
                 })
                 .catch((reason) => {
@@ -158,40 +162,6 @@ export default defineComponent({
 
             this.$store.commit("changeWindow", "MainRoom");
         },
-        enableTyrantModeControls(keyEvent: KeyboardEvent) {
-            if (['Shift', 'Control', 'Alt'].includes(keyEvent.key))
-                return;
-
-            if (keyEvent.key === "T" && keyEvent.ctrlKey && keyEvent.shiftKey && !keyEvent.altKey && !keyEvent.metaKey) {
-                this.tyrantMode.enabled = true;
-                this.tyrantMode.progress = 0;
-                return;
-            }
-            if (!this.tyrantMode.enabled) {
-                return;
-            }
-
-            if (
-                keyEvent.key === this.tyrantMode.word[this.tyrantMode.progress]
-                && !keyEvent.altKey
-                && !keyEvent.ctrlKey
-                && !keyEvent.shiftKey
-                && !keyEvent.metaKey
-            ) {
-                this.tyrantMode.progress++;
-
-                if (this.tyrantMode.progress === this.tyrantMode.word.length) {
-                    this.$store.commit('changeWindow', {
-                        window: 'CommandCentre',
-                        data: {
-                            numberOfConnections: this.numberOfConnectedClients
-                        }
-                    });
-                }
-                return;
-            }
-            this.tyrantMode.progress = 0;
-        }
     },
     watch: {},
 });
@@ -208,6 +178,15 @@ table {
         td:nth-child(2) {
             padding-left: 10px;
         }
+    }
+}
+
+#player-list {
+    margin-top: 10px;
+
+    th, td {
+        padding: 0;
+        min-width: 22px;
     }
 }
 </style>
