@@ -3,21 +3,17 @@
     <div id="view">
         <div id="info">
             <table>
-                <tr>
-                    <td>Room Code:</td>
-                    <td>{{ ensure(SocketHandler.room).id }}</td>
-                    <td>
-                        <button @click="copyRoomId()">Copy</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Map:</td>
-                    <td>{{ ensure(SocketHandler.room).map }}</td>
-                </tr>
-                <tr>
-                    <td>Players:</td>
-                    <td> {{ numberOfConnectedClients }}</td>
-                </tr>
+            <tr>
+                <td>Room Code:</td>
+                <td>{{ roomId }}</td>
+                <td>
+                    <button @click="copyRoomId()">Copy</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Map:</td>
+                <td>{{ mapName }}</td>
+            </tr>
             </table>
         </div>
         <div id="command-centre">
@@ -82,7 +78,6 @@ import Buttons from "../../components/Buttons.vue";
 import {
     CommandEvent,
     CommandParamConfig,
-    CommandTemplates,
     Param,
     ParamType
 } from "../../../../shared/src/types/command";
@@ -90,10 +85,11 @@ import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {QueueHandler} from "../../classes/queue-handler";
 import {ButtonConfig} from "../../types/buttons";
-import {ensure} from "../../../../shared/src/util/general";
+import {assert, ensure} from "../../../../shared/src/util/general";
 import DisconnectButton from "../DisconnectButton.vue";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
+import {Room} from "../../types/room";
 
 const {setInterval} = window;
 
@@ -106,8 +102,7 @@ export default defineComponent({
         return {
             ParamType,
 
-            commands: {} as CommandTemplates,
-            numberOfConnectedClients: 0,
+            room: {} as Room,
 
             inputParams: [] as Array<number | string | boolean | undefined>,
             selectedCommand: "",
@@ -143,22 +138,17 @@ export default defineComponent({
         };
     },
     mounted() {
+        const socketHandler = ensure(SocketHandler.instance);
         const room = ensure(SocketHandler.instance.room);
-        const socket = ensure(SocketHandler.instance.socket);
+        const socket = ensure(socketHandler.socket);
 
-        this.commands = room.commands;
-        this.numberOfConnectedClients = Object.keys(room.connections).length;
-
-        const data = this.$store.state.data;
-        if (data) {
-            this.numberOfConnectedClients = (data as { numberOfConnections: number }).numberOfConnections;
-        }
+        this.room = room;
 
         socket.on("room-connection-update", this.roomConnectionUpdate);
         socket.on("event", this.eventRegistered);
 
         this.interval = setInterval(() => {
-            this.SocketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
+            socketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
         }, 1000);
 
         changeTitle(`COMMAND CENTRE! (Room: ${room.id})`);
@@ -172,11 +162,23 @@ export default defineComponent({
         clearInterval(this.interval);
     },
     computed: {
-        SocketHandler() {
-            return SocketHandler.instance;
+        roomId() {
+            return ensure(SocketHandler.instance.room).id
+        },
+        mapName() {
+            assert(SocketHandler.instance.room);
+
+            return ensure(SocketHandler.instance.room.map).name;
+        },
+        commands() {
+            if (!this.room.map) {
+                return {};
+            }
+
+            return this.room.map.commands;
         },
         commandId(): string | undefined {
-            return this.commands[this.selectedCommand]?.funcName;
+            return this.commands[this.selectedCommand]?.function;
         },
         commandParams(): Array<CommandParamConfig> {
             return this.commands[this.selectedCommand]?.params ?? [];
@@ -243,8 +245,8 @@ export default defineComponent({
             }
             return type;
         },
-        roomConnectionUpdate(n: number) {
-            this.numberOfConnectedClients = n;
+        roomConnectionUpdate(room: Room) {
+            this.room = room;
         },
         setError(...strings: Array<string>): void {
             this.error = true;
@@ -270,7 +272,12 @@ export default defineComponent({
         },
         async disconnect() {
             await SocketHandler.instance.leaveRoom();
-            await GameHandler.instance.resetState(ensure(SocketHandler.instance.room).map);
+            const room = ensure(SocketHandler.instance.room);
+
+            if (room.map) {
+                await GameHandler.instance.resetState(room.map);
+            }
+
             this.$store.commit("changeWindow", "MainRoom");
 
         },
@@ -306,7 +313,7 @@ export default defineComponent({
             this.inputParams = [];
 
             SocketHandler.instance.sendCommand({
-                funcName: this.commandId,
+                function: this.commandId,
                 params: values
             });
         },

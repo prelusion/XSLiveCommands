@@ -1,44 +1,30 @@
-import {Commands, Room, RoomPlayer, PlayerConnections} from "../interfaces";
-
-export function createRoomPlayer(
-    id: string,
-    name: string,
-): RoomPlayer {
-    return {
-        id: id,
-        name: name,
-    }
-}
+import {AuthenticatedPlayer, RoomPlayer, SocketId} from "../types/player";
+import {Room} from "../types/room";
+import {Commands} from "../types/command";
 
 export function createRoomObject(
-    id: string,
-    host: string,
-    name: string,
+    roomId: string,
+    player: AuthenticatedPlayer,
+    socketId: SocketId,
     map: string,
     commands: Commands,
-    password: string,
+    tyrantPassword: string,
 ): Room {
-    const connections: PlayerConnections = {};
-    connections[id] = {id: id, name: name};
+    const connections: Record<SocketId, RoomPlayer> = {
+        [socketId]: {tyrant: false, ...player}
+    };
 
     return {
-        id: id,
-        host: host,
-        map: map,
+        id: roomId,
+        host: socketId,
+        map: {
+            name: map,
+            commands: commands,
+            events: [],
+            last_execution_cycle: -1,
+            current_cycle: -1,
+        },
         connections: connections,
-        tyrants: [],
-        events: [],
-        password: password,
-        commands: commands,
-        last_execution_cycle: -1,
-        current_cycle: -1,
-    };
-}
-
-export interface CommandData {
-    roomId: string,
-    commandId: number;
-    params: {
-        [name: string]: number
+        tyrantPassword: tyrantPassword,
     };
 }

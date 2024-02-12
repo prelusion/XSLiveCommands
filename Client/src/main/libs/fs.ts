@@ -47,18 +47,24 @@ export async function readCommands(path: string): Promise<{ commands?: CommandTe
     try {
         const commandsArray: JsonCommandFile = JSON.parse(fs.readFileSync(path).toString());
 
-        const commands = commandsArray.reduce((
-            commands: CommandTemplates,
-            command: JsonCommand
-        ) => {
-            commands[command.name] = {
-                funcName: command.funcName,
-                params: command.params,
-            };
-            return commands;
-        }, {});
+        const commands: CommandTemplates = commandsArray.reduce(
+            (
+                commands: CommandTemplates,
+                command: JsonCommand
+            ): CommandTemplates => {
+                if (!command.name || !command.function)
+                    throw new Error('error');
 
-        return {commands};
+                commands[command.name] = {
+                    function: command.function,
+                    params: command.params,
+                };
+
+                return commands;
+            }, {}
+        );
+
+        return {commands: commands};
     } catch {
         return {reason: 'invalid-json'};
     }
@@ -93,13 +99,13 @@ export function getCompatibleMaps(steamId: string, modFolderPath: string): Recor
     const scenarioFolder = path.join(
         modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "scenario"
     );
-    if(fs.existsSync(scenarioFolder))
+    if (fs.existsSync(scenarioFolder))
         filePaths.push(...recursiveReaddir(scenarioFolder, true));
 
     const rmsFolder = path.join(
         modsFolderPath(steamId), ...modFolderPath.split("//"), "resources", "_common", "random-map-scripts"
     );
-    if(fs.existsSync(rmsFolder))
+    if (fs.existsSync(rmsFolder))
         filePaths.push(...recursiveReaddir(rmsFolder, true));
 
     if (filePaths.length === 0)
@@ -111,7 +117,7 @@ export function getCompatibleMaps(steamId: string, modFolderPath: string): Recor
             && filePaths.includes(filename.replace(/.(?:aoe2scenario|rms|rms2)$/, ".commands.json")),
     );
     const maps: Record<string, string> = {};
-    for(const filePath of filePaths) {
+    for (const filePath of filePaths) {
         const mapName = filePath
             .replaceAll("\\", "/")
             .split("/")
@@ -182,7 +188,7 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true): v
  *      |                  | ---- | ------ | ------ | --------------------------- | ---------- |
  *      | START            | >    |        |        |                             |            |
  *      |                  | 4    | 4      | int32  | Execution Cycle Number      |            |
- *      |                  | 4    | 8      | int32  | Length of <funcName> string | = F        |
+ *      |                  | 4    | 8      | int32  | Length of <function> string | = F        |
  *      |                  | F    | 8+F    | string | Name of the function        |            |
  *      |                  | 4    | 12+F   | int32  | Parameter Count             | = N        |
  *      | REPEAT <N>       | >    |        |        |                             |            |
@@ -203,7 +209,7 @@ export function writeEvent(steamId: string, _: string, event: CommandEvent): voi
     if (!event.params)
         event.params = [];
 
-    let bufferSize = 12 + event.funcName.length;
+    let bufferSize = 12 + event.function.length;
     for (let i = 0; i < event.params.length; i++) {
         const p = event.params[i];
         // Type & Value (or pre-string val if string)
@@ -222,7 +228,7 @@ export function writeEvent(steamId: string, _: string, event: CommandEvent): voi
     }
 
     addIntToBuff(bufferInfo, event.executeCycleNumber, false);
-    addStringToBuff(bufferInfo, event.funcName, false);
+    addStringToBuff(bufferInfo, event.function, false);
     addIntToBuff(bufferInfo, event.params.length, false);
 
     for (const param of event.params) {

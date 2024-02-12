@@ -2,6 +2,7 @@ import {QueueHandler} from "./queue-handler";
 import {SocketHandler} from "./socket-handler";
 import {CommandEvent} from "../../../shared/src/types/command";
 import {ensure} from "../../../shared/src/util/general";
+import {MapContext} from "../types/map-context";
 
 const {setInterval, clearInterval} = window;
 
@@ -24,19 +25,19 @@ export class GameHandler {
         return this._instance;
     }
 
-    public async resetState(map: string): Promise<void> {
-        await window.fs.deleteXsDataFiles(this.steamId, map);
+    public async resetState(map: MapContext): Promise<void> {
+        await window.fs.deleteXsDataFiles(this.steamId, map.name);
         this.lastCommandCycle = -1;
         QueueHandler.instance.clear();
         this.stopCoreLoop();
     }
 
-    public startCoreLoop(map: string): void {
+    public startCoreLoop(map: MapContext): void {
         // Tick rate of highFrequency rule in XS
         const readSpeed = Math.round(1000 / 60);
 
         this.coreInterval = setInterval(async () => {
-            const cycle = await window.fs.readCycle(this.steamId, map);
+            const cycle = await window.fs.readCycle(this.steamId, map.name);
             if (cycle !== undefined) {
                 // Todo: Add & Test this
                 // if (SocketHandler.instance.currentCycle !== cycle) {
@@ -59,7 +60,7 @@ export class GameHandler {
                     console.log(event)
 
                     this.lastCommandCycle = event.executeCycleNumber;
-                    await window.fs.writeEvent(this.steamId, map, event);
+                    await window.fs.writeEvent(this.steamId, map.name, event);
                     console.log(`writing finished...`);
                 }
             }

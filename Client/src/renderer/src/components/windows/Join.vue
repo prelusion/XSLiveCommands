@@ -5,6 +5,7 @@
     <div v-else>
         <div class="join-input">
             <InputField
+                ref="input-room-code"
                 type="text"
                 name="room-code"
                 placeholder="Room Code"
@@ -26,7 +27,6 @@ import {ButtonConfig} from "../../types/buttons";
 import {SocketHandler} from "../../classes/socket-handler";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
-import {GameHandler} from "../../classes/game-handler";
 
 export default defineComponent({
     name: "Join",
@@ -58,15 +58,15 @@ export default defineComponent({
     },
     mounted() {
         changeTitle(`Join as Player...`);
+
+        this.focus('input-room-code');
     },
     computed: {},
     methods: {
         joinRoom() {
-            const name = GameHandler.instance.steamName;
-
             this.joiningInProgress = true;
 
-            SocketHandler.instance.joinRoom(this.roomId, name)
+            SocketHandler.instance.joinRoom(this.roomId)
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })

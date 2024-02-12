@@ -171,15 +171,16 @@ export default defineComponent({
                 this.commands = result.commands;
                 this.errors = [];
             } else {
-                this.mapName = "";
-                this.filepath = "";
+                this.mapName = '';
+                this.filepath = '';
+
                 if (result.reason === 'no-json') {
                     this.errors = [
-                        "Commands File Not Found",
+                        'Commands File Not Found',
                     ];
                 } else if (result.reason === 'invalid-json') {
                     this.errors = [
-                        "Invalid Commands File",
+                        'Invalid Commands File',
                     ];
                 }
             }
@@ -188,9 +189,8 @@ export default defineComponent({
             this.creationInProgress = true;
 
             this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
-            const name = GameHandler.instance.steamName;
 
-            SocketHandler.instance.createRoom(this.plainMapName, name, ensure(this.commands), this.password)
+            SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
                     this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
                     this.$store.state.tyrantRequest.code = this.password;
@@ -276,7 +276,11 @@ input, .input-field {
         margin-left: 10px;
     }
 }
-
+#error {
+    color: red;
+    margin-top: -3px;
+    font-size: 15px;
+}
 #loading {
     width: 100%;
     text-align: center;

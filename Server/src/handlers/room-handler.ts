@@ -1,7 +1,9 @@
 import {Server, Socket} from "socket.io";
-import {ClientEvent, Command, Commands, Room} from "../interfaces";
-import {createRoomObject, createRoomPlayer} from "../scripts/rooms";
+import {createRoomObject} from "../scripts/rooms";
 import {EXECUTE_CYCLE_OFFSET} from "../index";
+import {Room} from "../types/room";
+import {Command, Commands, ScheduledCommand} from "../types/command";
+import {AuthenticatedPlayer} from "../types/player";
 
 export class RoomHandler {
     private static _instance = null;
@@ -24,30 +26,31 @@ export class RoomHandler {
         this.io = io;
     }
 
-    public createRoom(roomId: string, socket: Socket, name: string, map: string, commands: Commands, password: string | null): Room {
+    public createRoom(roomId: string, player: AuthenticatedPlayer, socket: Socket, map: string, commands: Commands, password: string | null): Room {
         console.log(`[Room ${roomId}] >> Created`);
         socket.join(roomId);
 
         const socketId = socket.id;
 
-        const room: Room = createRoomObject(roomId, socketId, name, map, commands, password);
+        const room: Room = createRoomObject(roomId, player, socketId, map, commands, password);
         this.rooms.push(room);
 
         return room;
     }
 
-    public joinRoom(roomId: string, name: string, socket: Socket) {
+    public joinRoom(roomId: string, player: AuthenticatedPlayer, socket: Socket) {
         socket.join(roomId);
 
         const room = this.getRoomByID(roomId);
 
         if (room !== undefined) {
-            room.connections[socket.id] = createRoomPlayer(socket.id, name);
+            room.connections[socket.id] = {tyrant: false, ...player}
+
             const length = this.getNumberOfConnections(roomId);
 
             console.log(`[Room ${roomId}] >> Socket joined room (current: ${length})`);
 
-            this.sendRoomConnectionCountUpdate(roomId, length);
+            this.sendRoomConnectionCountUpdate(roomId, room);
         }
     }
 
@@ -58,11 +61,13 @@ export class RoomHandler {
             return;
         }
 
-        room.tyrants.push(socket.id);
+        room.connections[socket.id].tyrant = true;
 
-        const tyrantLen = room.tyrants.length;
+        const tyrantLen = Object.values(room.connections).filter((r) => r.tyrant).length;
         const ConLen = this.getNumberOfConnections(roomId);
         console.log(`[Room ${roomId}] >> Socket switched to tyrant mode. Rate: ${tyrantLen}/${ConLen}`);
+
+        this.sendRoomConnectionCountUpdate(roomId, room);
     }
 
     public loseTyrant(roomId: string, socket: Socket): void {
@@ -72,11 +77,13 @@ export class RoomHandler {
             return;
         }
 
-        room.tyrants = room.tyrants.filter(id => id !== socket.id);
+        room.connections[socket.id].tyrant = false;
 
-        const tyrantLen = room.tyrants.length;
+        const tyrantLen = Object.values(room.connections).filter((r) => r.tyrant).length;
         const ConLen = this.getNumberOfConnections(roomId);
         console.log(`[Room ${roomId}] >> Socket switched to normal mode. Rate: ${tyrantLen}/${ConLen}`);
+
+        this.sendRoomConnectionCountUpdate(roomId, room);
     }
 
     public leaveRoom(roomId: string, socket: Socket) {
@@ -94,12 +101,12 @@ export class RoomHandler {
                 return;
             }
 
-            this.sendRoomConnectionCountUpdate(roomId, length);
+            this.sendRoomConnectionCountUpdate(roomId, room);
         }
     }
 
-    public sendRoomConnectionCountUpdate(roomId: string, n: number) {
-        this.io.to(roomId).emit("room-connection-update", n);
+    public sendRoomConnectionCountUpdate(roomId: string, room: Room) {
+        this.io.to(roomId).emit("room-connection-update", room);
     }
 
     public sendRoomNewCommand(roomId: string, command: Command): void {
@@ -108,21 +115,23 @@ export class RoomHandler {
         if (room === undefined)
             return;
 
-        const clientEvent: ClientEvent = toClientEvent(command);
+        const cycle = this.getExecutionCycleForNewCommand(roomId);
+        const scheduled: ScheduledCommand = {
+            ...command,
+            executeCycleNumber: cycle,
+        }
+        room.map.last_execution_cycle = cycle;
 
-        // Making sure that the new event has 5 cycles to be executed after the last event or current cycle.
-        room.last_execution_cycle = clientEvent.executeCycleNumber =
-            this.getExecutionCycleForNewCommand(roomId);
 
-        console.log(`[Room ${roomId}] Command registered: ${clientEvent.funcName} executed at: ${clientEvent.executeCycleNumber}`);
+        console.log(`[Room ${roomId}] Command registered: ${scheduled.function} executed at: ${scheduled.executeCycleNumber}`);
 
-        this.io.to(roomId).emit("event", clientEvent);
-        room.events.push(clientEvent);
+        this.io.to(roomId).emit("event", scheduled);
+        room.map.events.push(scheduled);
     }
 
     public getExecutionCycleForNewCommand(roomId: string): number {
         const room = this.getRoomByID(roomId);
-        return Math.max(room.current_cycle, room.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
+        return Math.max(room.map.current_cycle, room.map.last_execution_cycle) + EXECUTE_CYCLE_OFFSET;
     }
 
     public removeRoom(roomId: string) {
@@ -148,12 +157,12 @@ export class RoomHandler {
         if (typeof cycle !== "number" || room === undefined)
             return;
 
-        console.log(`[Room ${roomId}] cycle update: ${cycle} ${cycle <= room.current_cycle ? '[Ignored]' : ''}`);
+        console.log(`[Room ${roomId}] cycle update: ${cycle} ${cycle <= room.map.current_cycle ? '[Ignored]' : ''}`);
 
-        if (cycle <= room.current_cycle)
+        if (cycle <= room.map.current_cycle)
             return;
 
-        room.current_cycle = cycle;
+        room.map.current_cycle = cycle;
     }
 
     get rooms(): Room[] {
@@ -163,12 +172,4 @@ export class RoomHandler {
     set rooms(value: Room[]) {
         this._rooms = value;
     }
-}
-
-function toClientEvent(command: Command): ClientEvent {
-    return {
-        funcName: command.funcName,
-        params: command.params,
-        executeCycleNumber: 0,
-    };
 }
