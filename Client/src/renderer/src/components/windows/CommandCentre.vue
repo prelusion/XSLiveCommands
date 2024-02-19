@@ -3,17 +3,17 @@
     <div id="view">
         <div id="info">
             <table>
-            <tr>
-                <td>Room Code:</td>
-                <td>{{ roomId }}</td>
-                <td>
-                    <button @click="copyRoomId()">Copy</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Map:</td>
-                <td>{{ mapName }}</td>
-            </tr>
+                <tr>
+                    <td>Room Code:</td>
+                    <td>{{ roomId }}</td>
+                    <td>
+                        <button @click="copyRoomId()">Copy</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Map:</td>
+                    <td>{{ mapName }}</td>
+                </tr>
             </table>
         </div>
         <div id="command-centre">
@@ -115,26 +115,7 @@ export default defineComponent({
             error: true,
 
             interval: -1,
-
-            buttonConfig: [
-                {
-                    text: "Send",
-                    callback: (): void => {
-                        if (!this.validateInputs()) {
-                            return;
-                        }
-
-                        this.sendCommand();
-                        this.clearInputs();
-                    },
-                },
-                {
-                    text: "Return as a tyrant",
-                    callback: (): void => {
-                        this.exitTyrantView();
-                    },
-                },
-            ] as Array<ButtonConfig>,
+            isClickable: true as boolean,
         };
     },
     mounted() {
@@ -162,6 +143,28 @@ export default defineComponent({
         clearInterval(this.interval);
     },
     computed: {
+        buttonConfig() {
+            return [
+                {
+                    text: "Send",
+                    callback: (): void => {
+                        this.commandDelay();
+                        if (!this.validateInputs()) {
+                            return;
+                        }
+                        this.sendCommand();
+                        this.clearInputs();
+                    },
+                    disabled: (): boolean => !this.isClickable,
+                },
+                {
+                    text: "Return as a tyrant",
+                    callback: (): void => {
+                        this.exitTyrantView();
+                    },
+                },
+            ];
+        },
         roomId() {
             return ensure(SocketHandler.instance.room).id
         },
@@ -188,6 +191,18 @@ export default defineComponent({
         ensure,
         copyRoomId() {
             window.clipboard.write(ensure(SocketHandler.instance.room).id);
+        },
+        commandDelay() {
+            if (!this.isClickable) {
+                return;
+            }
+            // Make the button non-clickable
+            this.isClickable = false;
+
+            // Set a timeout to re-enable the button after 3 seconds
+            setTimeout(() => {
+                this.isClickable = true;
+            }, 300);
         },
         getCommandRules(index: number): Array<string> {
             const rules: Array<string> = ['max:1000'];
