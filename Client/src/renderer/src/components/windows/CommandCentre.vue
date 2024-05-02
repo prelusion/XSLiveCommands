@@ -119,7 +119,7 @@ export default defineComponent({
                     },
                 },
                 {
-                    text: "Return as a tyrant",
+                    text: "Leave Tyranny",
                     callback: (): void => {
                         this.exitTyrantView();
                     },

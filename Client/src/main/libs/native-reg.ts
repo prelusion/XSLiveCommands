@@ -26,6 +26,6 @@ export function getSteamId(): string | null {
  *                        Handlers for wrapping the above functions                      
  *  ======================================================================================*/
 
-ipcMain.handle("registry:getSteamId", (): Promise<string | null> => {
+ipcMain.handle("registry:getSteamId", (): string | null => {
     return getSteamId();
 });

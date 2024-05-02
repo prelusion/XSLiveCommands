@@ -64,7 +64,7 @@ export function deleteXsDataFiles(platform: PlatformUser, map: string): void {
     });
 }
 
-export function readCycle(platform: PlatformUser, map: string): number | undefined {
+export function readTick(platform: PlatformUser, map: string): number | undefined {
     const profileFolder = profileFolderPath(platform);
 
     try {
@@ -256,7 +256,7 @@ function addStringToBuff(bufferInfo: BufferInfo, str: string, addType = true): v
  *      | ENDIF            | >    |        |        |                             |            |
  *      | END REPEAT       | >    |        |        |                             |            |
  */
-export function writeEvent(platform: PlatformUser, _: string, scheduledCommand: ScheduledCommand): void {
+export function writeCommand(platform: PlatformUser, _: string, scheduledCommand: ScheduledCommand): void {
     const commandFilePath = path.join(profileFolderPath(platform), "xslc.commands.xsdat");
 
     if (!scheduledCommand.params)
@@ -313,16 +313,16 @@ ipcMain.handle("fs:deleteXsDataFiles", (_, platform: PlatformUser, map: string) 
     return deleteXsDataFiles(platform, map);
 });
 
-ipcMain.handle("fs:readCycle", (_, platform: PlatformUser, map: string) => {
-    return readCycle(platform, map);
+ipcMain.handle("fs:readTick", (_, platform: PlatformUser, map: string) => {
+    return readTick(platform, map);
 });
 
 ipcMain.handle("fs:readCommands", (_, path: string) => {
     return readCommands(path);
 });
 
-ipcMain.handle("fs:writeEvent", (_, platform: PlatformUser, map: string, scheduledCommand: ScheduledCommand) => {
-    return writeEvent(platform, map, scheduledCommand);
+ipcMain.handle("fs:writeCommand", (_, platform: PlatformUser, map: string, scheduledCommand: ScheduledCommand) => {
+    return writeCommand(platform, map, scheduledCommand);
 });
 
 ipcMain.handle("fs:readModsJson", (_, platform: PlatformUser) => {

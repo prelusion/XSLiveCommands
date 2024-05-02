@@ -32,7 +32,7 @@ export class RwCoreLoop {
     }
 
     private static async coreLoop(): Promise<void> {
-        const currentTick = await window.fs.readCycle(ensure(UserServerAction.platform), this.mapName);
+        const currentTick = await window.fs.readTick(ensure(UserServerAction.platform), this.mapName);
         if(!currentTick) {
             return;
         }
@@ -44,7 +44,7 @@ export class RwCoreLoop {
         const event: ScheduledCommand = this.scheduledCommands[this.nextCmdIdx++];
         this.nextCmdExecTick = event.execTick;
 
-        await window.fs.writeEvent(ensure(UserServerAction.platform), this.mapName, event);
+        await window.fs.writeCommand(ensure(UserServerAction.platform), this.mapName, event);
     }
 
     private static get scheduledCommands(): Array<ScheduledCommand> {
