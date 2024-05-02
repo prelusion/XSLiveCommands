@@ -15,15 +15,15 @@
             </tr>
         </table>
         <table id="player-list">
-            <tr v-for="(connection, socketId) in room.connections" v-bind:key="socketId">
+            <tr v-for="userId in room.playerIds">
                 <td title="User is host">
-                    {{ room.host === socketId ? '👑' : ''}}
+                    {{ room.hostId === userId ? '👑' : ''}}
                 </td>
                 <td title="User is tyrant">
-                    {{ connection.tyrant ? '💪' : ''}}
+                    {{ room.isTyrant(userId) ? '💪' : ''}}
                 </td>
-                <td :style="{ fontWeight: socketId === ownSocketId ? 'bold' : 'normal' }">
-                    {{ connection.name }}
+                <td :style="{ fontWeight: userId === selfUserId ? 'bold' : 'normal' }">
+                    {{ room.getPlayerName(userId) }}
                 </td>
             </tr>
         </table>
@@ -35,21 +35,17 @@
 </template>
 
 <script lang="ts">
-import {QueueHandler} from "../../classes/queue-handler";
-import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
-import {CommandEvent} from "../../../../shared/src/types/command";
 import {ButtonConfig} from "../../types/buttons";
-import {assert, ensure} from "../../../../shared/src/util/general";
+import {ensure} from "../../../../shared/src/util/general";
 import CustomModal from "../modal/CustomModal.vue";
 import Password from "../modal/content/Password.vue";
-import {GameHandler} from "../../classes/game-handler";
 import DisconnectButton from "../DisconnectButton.vue";
-import {Room} from "../../types/room";
-import {Socket} from "socket.io-client";
-import {RoomPlayer, SocketId} from "../../types/player";
+import {UserServerAction} from "../../classes/user-server-action";
+import {SocketId} from "../../types/player";
+import {Room} from "../../../../shared/src/types/room";
 
 
 export default defineComponent({
@@ -58,7 +54,6 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            room: {} as Room,
             errorMsg: "",
             buttonConfig: [
                 {
@@ -68,52 +63,28 @@ export default defineComponent({
                     }
                 }
             ] as Array<ButtonConfig>,
+            get room(): Room {
+                return ensure(UserServerAction.room);
+            },
+            get selfUserId(): SocketId {
+                return ensure(UserServerAction.skt?.id);
+            }
         };
     },
     mounted() {
-        const room = ensure(SocketHandler.instance.room);
-
-        this.room = room;
-
-        const socket = ensure(SocketHandler.instance.socket);
-
-        socket.on("room-connection-update", this.roomConnectionUpdate);
-        socket.on("event", this.eventRegistered);
-
-        changeTitle(`Room ${room.id}`);
-    },
-    unmounted() {
-        const socket = ensure(SocketHandler.instance.socket);
-
-        socket.off("room-connection-update", this.roomConnectionUpdate);
-        socket.off("event", this.eventRegistered);
+        changeTitle(`Room ${this.room.id}`);
     },
     computed: {
         roomId() {
-            return ensure(SocketHandler.instance.room).id
+            return this.room.id;
         },
         mapName() {
-            assert(SocketHandler.instance.room);
-
-            return ensure(SocketHandler.instance.room.map).name;
+            return this.room.mapCtx.name;
         },
-        ownSocketId() {
-            const socket = ensure(SocketHandler.instance.socket);
-            return ensure(socket.id);
-        }
     },
     methods: {
-        ensure,
         copyRoomId() {
-            window.clipboard.write(ensure(SocketHandler.instance.room).id);
-        },
-        roomConnectionUpdate(room: Room) {
-            this.room = room;
-        },
-        eventRegistered(commandEvent: CommandEvent) {
-            console.log("Event registered!");
-            console.log(commandEvent);
-            QueueHandler.instance.enqueue(commandEvent);
+            window.clipboard.write(this.roomId);
         },
         handlePassword(password: string) {
             this.requestTyrant(password)
@@ -129,8 +100,6 @@ export default defineComponent({
             modal.close();
         },
         startRequestTyrant(): void {
-            assert(SocketHandler.instance.room);
-
             /* If this room has already had a login */
             if (this.$store.state.tyrantRequest.roomId === this.room.id) {
                 this.requestTyrant(this.$store.state.tyrantRequest.code);
@@ -140,7 +109,7 @@ export default defineComponent({
             this.showPasswordModal();
         },
         requestTyrant(password: string) {
-            SocketHandler.instance.becomeTyrant(this.room.id, password)
+            UserServerAction.joinTyrant(password)
                 .then(() => {
                     this.$store.state.tyrantRequest.roomId = this.room.id;
                     this.$store.state.tyrantRequest.code = password;
@@ -153,12 +122,7 @@ export default defineComponent({
                 });
         },
         async disconnect() {
-            const room = ensure(SocketHandler.instance.room);
-
-            await SocketHandler.instance.leaveRoom();
-            if (room.map) {
-                await GameHandler.instance.resetState(room.map);
-            }
+            await UserServerAction.leaveRoom();
 
             this.$store.commit("changeWindow", "MainRoom");
         },

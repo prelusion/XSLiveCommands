@@ -35,10 +35,10 @@
             </div>
 
             <div id="file-selection">
-                <div class="flex-row-center" v-if="loadedAvailableScenarios">
+                <div class="flex-row-center" v-if="loadedAvailableMaps">
                     <input v-model="enteredFilename" list="scenarios" placeholder="Select Map">
                     <datalist id="scenarios">
-                        <option v-for="(name) in Object.keys(scenarios)" v-bind:key="name">{{ name }}</option>
+                        <option v-for="(name) in Object.keys(maps)" v-bind:key="name">{{ name }}</option>
                     </datalist>
                     <button @click="enteredFilename = ''"
                             id="clear-map-button"
@@ -62,16 +62,16 @@
 </template>
 
 <script lang="ts">
-import {GameHandler} from "../../classes/game-handler";
-import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
-import {CommandTemplates} from "../../../../shared/src/types/command";
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {ensure} from "../../../../shared/src/util/general";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
+import {UserServerAction} from "../../classes/user-server-action";
+import {MapCommands, MapName, MapPath} from "../../../../shared/src/types/commands/structs";
+import {Mod} from "../../../../shared/src/types/mods";
 
 export default defineComponent({
     name: "CreateRoom",
@@ -86,13 +86,13 @@ export default defineComponent({
             password: "",
             enteredFilename: "",
             mapName: "",
-            commands: {} as CommandTemplates | undefined,
-            scenarios: {} as Record<string, string>,
+            commands: {} as MapCommands | undefined,
+            maps: {} as Record<MapName, MapPath>,
 
             showPassword: false,
             creationInProgress: false,
             selectInProgress: false,
-            loadedAvailableScenarios: false,
+            loadedAvailableMaps: false,
 
             buttonConfig: [
                 {
@@ -116,58 +116,50 @@ export default defineComponent({
     async mounted() {
         changeTitle("Create Room...");
         const config = ensure(this.$store.state.config);
-        const filepath = config["last-map-path"] ?? "";
+        const filepath: string = config["last-map-path"] ?? "";
+        const mapName: string = config["last-map-name"] ?? "";
         if (filepath) {
-            const scenarioExists = await window.fs.exists(filepath);
+            const mapExists = await window.fs.exists(filepath);
             const commandFileExists = await window.fs.exists(this.getCommandFilepath(filepath));
 
-            if (scenarioExists && commandFileExists) {
-                this.selectFile(filepath).then(() => this.errors = []);
+            if (mapExists && commandFileExists) {
+                this.mapName = mapName;
+                this.selectFile(filepath).then();
             }
         }
 
         // this list is already sorted in order of decreasing priority (increasing priority number) by the game
-        const mods = await window.fs.readModsJson(GameHandler.instance.steamId);
-        mods.push({
-            CheckSum: "",
-            Enabled: true,
-            LastUpdate: "",
-            Path: "..",
-            Priority: mods.length + 1, // profile folder's "mod" has the lowest priority
-            PublishID: -1,
-            Title: "",
-            WorkshopID: -1,
-        });
-
+        const mods: Array<Mod> = await window.fs.readModsJson(UserServerAction.platform!);
         for (const mod of mods) {
-            if (!mod.Enabled)
-                continue;
-            // previous scenarios (higher priority) get priority if same name (exactly how the game handles that too)
-            this.scenarios = {
-                ...await window.fs.getCompatibleMaps(GameHandler.instance.steamId, mod.Path), ...this.scenarios,
+            if (!mod.Enabled) {
+              continue;
+            }
+            // previous maps (higher priority) get priority if same name (exactly how the game handles that too)
+            this.maps = {
+                ...await window.fs.getCompatibleMaps(UserServerAction.platform!, mod.Path),
+                ...this.maps,
             };
         }
 
-        this.loadedAvailableScenarios = true;
+        this.loadedAvailableMaps = true;
     },
     computed: {
         passwordType(): string {
             return this.showPassword ? "text" : "password";
         },
         plainMapName(): string {
-            return this.mapName.replace(/.(?:aoe2scenario|rms|rms2)$/, "");
+            return this.mapName.replace(/.(?:aoe2scenario|rms2?)$/, "");
         }
     },
     methods: {
         getCommandFilepath(filepath: string): string {
-            return filepath.replace(/.(?:aoe2scenario|rms|rms2)$/, ".commands.json");
+            return filepath.replace(/.(?:aoe2scenario|rms2?)$/, ".commands.json");
         },
         async selectFile(filepath: string) {
             const result = await window.fs.readCommands(this.getCommandFilepath(filepath));
 
             if (result.commands) {
                 this.filepath = filepath;
-                this.mapName = filepath.replaceAll("\\", "/").split("/").slice(-1)[0];
                 this.commands = result.commands;
                 this.errors = [];
             } else {
@@ -188,11 +180,12 @@ export default defineComponent({
         createRoom() {
             this.creationInProgress = true;
 
-            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath})
+            this.$store.commit('patchConfig', {key: 'last-map-path', value: this.filepath});
+            this.$store.commit('patchConfig', {key: 'last-map-name', value: this.mapName});
 
-            SocketHandler.instance.createRoom(this.plainMapName, ensure(this.commands), this.password)
+            UserServerAction.createRoom(this.plainMapName, ensure(this.commands), this.password)
                 .then(() => {
-                    this.$store.state.tyrantRequest.roomId = ensure(SocketHandler.instance.room).id;
+                    this.$store.state.tyrantRequest.roomId = ensure(UserServerAction.room).id;
                     this.$store.state.tyrantRequest.code = this.password;
 
                     this.$store.commit("changeWindow", {
@@ -200,7 +193,7 @@ export default defineComponent({
                         data: {'asHost': true}
                     });
                 })
-                .catch(() => {
+                .catch((_) => {
                     this.creationInProgress = false;
                 });
         },
@@ -208,12 +201,14 @@ export default defineComponent({
     watch: {
         enteredFilename(): void {
             this.errors = [];
-            const filepath = this.scenarios[this.enteredFilename] ?? "";
+            const filepath = this.maps[this.enteredFilename] ?? "";
 
             if (filepath) {
+                this.mapName = this.enteredFilename;
                 this.selectFile(filepath);
-            } else
+            } else {
                 this.mapName = "";
+            }
         },
     },
 });

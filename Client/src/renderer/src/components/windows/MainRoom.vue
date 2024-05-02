@@ -23,11 +23,11 @@
 </template>
 
 <script lang="ts">
-import {GameHandler} from "../../classes/game-handler";
 import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
+import {UserServerAction} from "../../classes/user-server-action";
 
 export default defineComponent({
     name: "MainRoom",
@@ -35,8 +35,8 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            steamId: '' as string,
-            steamName: '' as string,
+            steamId: '',
+            steamName: '',
             buttonConfig: [
                 {
                     window: "Join",
@@ -50,20 +50,20 @@ export default defineComponent({
             message: "",
         };
     },
-    mounted() {
-        changeTitle('');
-        window.manager.resize(900, 600);
+  mounted: function () {
+    changeTitle('');
+    window.manager.resize(900, 600);
 
-        // this.$store.commit("changeWindow", "Create");
-        const data = this.$store.state.data as { message: string } | null;
-        if (data !== null) {
-            this.message = data.message;
-            this.$store.state.data = null;
-        }
+    // this.$store.commit("changeWindow", "Create");
+    const data = this.$store.state.data as { message: string } | null;
+    if (data !== null) {
+      this.message = data.message;
+      this.$store.state.data = null;
+    }
 
-        this.steamId = GameHandler.instance.steamId;
-        this.steamName = GameHandler.instance.steamName;
-    },
+    this.steamId = UserServerAction.platform!.userId;
+    this.steamName = UserServerAction.username!;
+  },
     computed: {},
     methods: {},
     watch: {},

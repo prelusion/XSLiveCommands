@@ -24,9 +24,9 @@ import Buttons from "../../components/Buttons.vue";
 import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
-import {SocketHandler} from "../../classes/socket-handler";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
+import {UserServerAction} from "../../classes/user-server-action";
 
 export default defineComponent({
     name: "Join",
@@ -66,8 +66,8 @@ export default defineComponent({
         joinRoom() {
             this.joiningInProgress = true;
 
-            SocketHandler.instance.joinRoom(this.roomId)
-                .then(() => {
+            UserServerAction.joinRoom(this.roomId)
+                .then((_) => {
                     this.$store.commit("changeWindow", "Room");
                 })
                 .catch((reason) => {

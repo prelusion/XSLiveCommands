@@ -1,12 +1,12 @@
 // for logging
 const bool verbose = false;
 
-// current execution cycle for synchronisation
-int cycle = 0;
+// current execution tick for synchronisation
+int tick = 0;
 
-// the cycle on which the command should run
-int cmdExecCycle = -1;
-string cmdFuncName = ""; // dangerious undefined behaviour
+// the tick on which the command should run
+int cmdExecTick = -1;
+string cmdFunction = ""; // dangerous undefined behaviour
 int paramCount = -1;
 
 // all of these are arrays
@@ -51,43 +51,45 @@ string getString(string name = "") {
 }
 
 // so vector arrays cannot be resized in xs atm, thx DE.
-// vector getVector(string name = "") {
-//     for(i = 0; < paramCount) {
-//         if(xsArrayGetString(paramNames, i) == name)
-//             return (xsArrayGetVector(vectorParams, xsArrayGetInt(paramPos, i)));
-//     }
-//     return (cInvalidVector);
-// }
-
-// writes the cycle to the file for the client to read, runs a queued command and loads the next command (if any)
-rule _ext_core__updateCycle
-    active
-    runImmediately
-    minInterval 2
-    maxInterval 2
-    priority 9
-{
-    if(verbose)
-        xsChatData(">>> Cycle: " + cycle);
-
-    if (cycle == cmdExecCycle) {
-        xsAddRuntimeEvent("Scenario Triggers", cmdFuncName, -1);
-        xsAddRuntimeEvent("Random Map", cmdFuncName, -1);
+vector getVector(string name = "") {
+    for(i = 0; < paramCount) {
+        if(xsArrayGetString(paramNames, i) == name)
+            return (xsArrayGetVector(vectorParams, xsArrayGetInt(paramPos, i)));
     }
-
-    cycle = cycle + 1;
+    return (cInvalidVector);
 }
 
-rule _ext_core__writeCycleToFile
+// increment tick, run loaded commands
+rule _ext_core__updateTick
     active
     runImmediately
-    minInterval 2
-    maxInterval 2
+    minInterval 3
+    maxInterval 3
     priority 8
 {
-    bool createSuccess = xsCreateFile(false);
+    if(verbose)
+        xsChatData(">>> Tick: " + tick);
+
+    if (tick == cmdExecTick) {
+        xsAddRuntimeEvent("Scenario Triggers", cmdFunction, -1);
+        xsAddRuntimeEvent("Random Map", cmdFunction, -1);
+    }
+
+    tick = tick + 1;
+}
+
+// writes the tick to the file for the client to read, runs a queued command and loads the next command (if any)
+rule _ext_core__writeTickToFile
+    active
+    runImmediately
+    minInterval 3
+    maxInterval 3
+    priority 10
+{
+    bool createSuccess = xsCreateFile(true);
     if (createSuccess) {
-        bool writeSuccess = xsWriteInt(cycle);
+        xsSetFilePosition(0);
+        bool writeSuccess = xsWriteInt(tick);
         xsCloseFile();
     }
 }
@@ -105,43 +107,43 @@ bool _ext_core__toBool(int integer = 0) {
 }
 
 // File layout:
-// 1:       Execution Cycle Number (int32)
-// 2:       cmdFuncName (str: int32 followed by that many bytes)
+// 1:       Execution Tick Number (int32)
+// 2:       cmdFunction (str: int32 followed by that many bytes)
 // 3:       paramCount (int32)
 // 4-...:   Params (str paramName, int32 paramType, <type> paramValue)
 rule _ext_core__loadCommand
     active
     runImmediately
-    minInterval 2
-    maxInterval 2
-    priority 10
+    minInterval 3
+    maxInterval 3
+    priority 9
 {
-    bool success = xsOpenFile("command");
+    bool success = xsOpenFile("xslc.commands");
     if (success == false) {
         xsCloseFile();
         return;
     }
-    
-    int newCmdExecCycle = xsReadInt();
 
-    // if the new exec cycle is the same as the one read previously, then we're reading the same
+    int newCmdExecTick = xsReadInt();
+
+    // if the new exec tick is the same as the one read previously, then we're reading the same
     // command. return
-    // If the cycle is different but the current cycle has passed it, return as well
-    if (newCmdExecCycle == cmdExecCycle || cycle > newCmdExecCycle) {
+    // If the new exec tick is different but the current tick has tick passed it, return as well
+    if (newCmdExecTick == cmdExecTick || tick > newCmdExecTick) {
         xsCloseFile();
         return;
     }
 
-   cmdExecCycle = newCmdExecCycle;
+   cmdExecTick = newCmdExecTick;
 
    // read the relevant command data
-   cmdFuncName = xsReadString();
+   cmdFunction = xsReadString();
    paramCount = xsReadInt();
 
     if(verbose) {
-        xsChatData(">>> Command Queued");
-        xsChatData(">>> Cycle: "+cmdExecCycle);
-        xsChatData(">>> Function: "+cmdFuncName);
+        xsChatData(">>> Command Received");
+        xsChatData(">>> Tick: "+cmdExecTick);
+        xsChatData(">>> Function: "+cmdFunction);
         xsChatData(">>> # Params: "+paramCount);
     }
     
@@ -149,7 +151,7 @@ rule _ext_core__loadCommand
     xsArrayResizeFloat(floatParams, 0);
     xsArrayResizeBool(boolParams, 0);
     xsArrayResizeString(stringParams, 0);
-    xsArrayResizeVector(vectorParams, 0);
+    xsArrayResizeVector(vectorParams, 0); // CURRENTLY BROKEN
 
     xsArrayResizeString(paramNames, paramCount);
     xsArrayResizeInt(paramPos, paramCount);
@@ -219,7 +221,7 @@ rule _ext_core__loadCommand
             }
             case 4 : {
                 int sizeVector = xsArrayGetSize(vectorParams);
-                xsArrayResizeVector(vectorParams, sizeVector+1);
+                xsArrayResizeVector(vectorParams, sizeVector+1); // CURRENTLY BROKEN
 
                 vector valueVector = xsReadVector();
                 xsArraySetVector(vectorParams, sizeVector, valueVector);
@@ -248,7 +250,7 @@ rule _ext_core__main
     floatParams = xsArrayCreateFloat(0, 0, "floatParams");
     boolParams = xsArrayCreateBool(0, false, "boolParams");
     stringParams = xsArrayCreateString(0, "", "stringParams");
-    vectorParams = xsArrayCreateVector(10, cInvalidVector, "vectorParams");
+    vectorParams = xsArrayCreateVector(0, cInvalidVector, "vectorParams");
     paramPos = xsArrayCreateInt(0, 0, "paramPos");
     paramNames = xsArrayCreateString(0, "", "paramNames");
     xsDisableSelf();

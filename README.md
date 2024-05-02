@@ -21,7 +21,7 @@ The usage is split into two parts:
 
 ### End Users
 
-1. After installation, click "Create a Room".
+1. After installation, click "Create a RoomOld".
 2. On this screen, enter a room password and select a map. All maps that support usage for this application will be automatically detected and displayed. Now click "Create".
    ![](imgs/create a room.png)
 3. When on the lobby screen, you can copy the lobby code and send it to other players who can then join the room as a player/spectator or as a tyrant. A tyrant is the person who can choose to run effects and commands on players while a game is being played.

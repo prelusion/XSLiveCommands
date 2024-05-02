@@ -1,5 +1,5 @@
 <template>
-    <div id="loading" v-html="text"></div>
+    <div id="loading" v-html="loadingText"></div>
 
     <CustomModal ref="configResetModal" :outside-click-close="false">
         <ConfigReset @submit=""/>
@@ -7,9 +7,6 @@
 </template>
 
 <script lang="ts">
-import {GameHandler} from "../../classes/game-handler";
-import {SocketHandler} from "../../classes/socket-handler";
-import {io} from "socket.io-client";
 import {defineComponent} from "vue";
 import {CONFIG_VERSION} from "../../versions";
 import {changeTitle, handle} from "../../util/general";
@@ -18,9 +15,7 @@ import {MainErrorTypes} from "../../../../shared/src/util/errors";
 import {MainError} from "../../../../shared/src/types/errors";
 import CustomModal from "../modal/CustomModal.vue";
 import ConfigReset from "../modal/content/ConfigReset.vue";
-import {AuthenticatedPlayer} from "../../types/player";
-
-const {setTimeout} = window;
+import {UserServerAction} from "../../classes/user-server-action";
 
 export default defineComponent({
     name: "Loading",
@@ -29,14 +24,15 @@ export default defineComponent({
     data() {
         return {
             timeout: -1,
-            connectedToServer: false,
             loadedSettings: false,
+            error: [] as Array<string>,
+
             retrievedSteamId: false,
             retrievedSteamName: false,
-            error: [] as Array<string>,
+            connectedToServer: false,
         };
     },
-    async mounted() {
+    mounted: async function () {
         changeTitle("Loading...");
 
         const version = parseFloat(CONFIG_VERSION);
@@ -54,42 +50,23 @@ export default defineComponent({
             this.loadedSettings = true;
         }
 
-        window.registry.getSteamId().then(steamId => {
-            if (steamId === null)
-                return;
-
-            GameHandler.instance.steamId = steamId;
+        await UserServerAction.setPlatform();
+        if(UserServerAction.platform) {
             this.retrievedSteamId = true;
-        });
+        }
 
         const customUrl = config["custom-server-hostport"];
-        const serverUrl = await window.manager.getEnvVar('SERVER_URL') as string;
-        const fallback = 'https://xssync.aoe2.se/';
-
-        const socket = io(customUrl || serverUrl || fallback, );
-
-        socket.on("connect", () => {
-            this.$store.state.connectionOk = true;
-
-            const sh = SocketHandler.instance;
-            sh.socket = socket;
-            sh.verifyRoomExistsOnReconnect(this.$store);
-
-            this.connectedToServer = true;
-
-            socket.emit("retrieveSteamUsername", GameHandler.instance.steamId, (player: AuthenticatedPlayer) => {
-                GameHandler.instance.steamName = player.name;
+        await UserServerAction.connect(customUrl, () => {
+            if(this.connectedToServer) {
                 this.retrievedSteamName = true;
-            });
-        });
-
-        socket.on("disconnect", () => {
-            this.$store.state.connectionOk = false;
-            this.retrievedSteamName = false;
+                this.isLoadingComplete();
+            }
+            this.$store.state.connectionOk = UserServerAction.connected;
+            this.connectedToServer = true;
         });
     },
     computed: {
-        text() {
+        loadingText() {
             let lines = [
                 this.loadedSettings ? "Settings loaded successfully!": "Loading settings..."
             ];
@@ -107,14 +84,15 @@ export default defineComponent({
                 return lines.join("<br>");
             }
 
-            if (this.error.length > 0)
+            if (this.error.length > 0) {
                 lines = lines.concat([""], this.error);
+            }
 
             return lines.join("<br>");
         },
     },
     methods: {
-        checkIfLoadingComplete(): void {
+        isLoadingComplete(): void {
             if (
                 this.connectedToServer
                 && this.loadedSettings
@@ -133,17 +111,6 @@ export default defineComponent({
                 this.error.push(error.reason);
             }
         }
-    },
-    watch: {
-        connectedToServer() {
-            this.checkIfLoadingComplete();
-        },
-        retrievedSteamId() {
-            this.checkIfLoadingComplete();
-        },
-        retrievedSteamName() {
-            this.checkIfLoadingComplete();
-        },
     },
 });
 

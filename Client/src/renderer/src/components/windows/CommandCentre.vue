@@ -31,7 +31,7 @@
                         </div>
 
                         <datalist id="commands">
-                            <option v-bind:key="name" v-for="(name) in Object.keys(commands)"
+                            <option v-bind:key="name" v-for="(name) in Object.keys(room.mapCtx.commands)"
                                     v-bind:value="name"></option>
                         </datalist>
                     </div>
@@ -72,24 +72,18 @@
 </template>
 
 <script lang="ts">
-import {GameHandler} from "../../classes/game-handler";
-import {SocketHandler} from "../../classes/socket-handler";
 import Buttons from "../../components/Buttons.vue";
-import {
-    CommandEvent,
-    CommandParamConfig,
-    Param,
-    ParamType
-} from "../../../../shared/src/types/command";
 import {changeTitle} from "../../util/general";
 import {defineComponent} from "vue";
-import {QueueHandler} from "../../classes/queue-handler";
 import {ButtonConfig} from "../../types/buttons";
-import {assert, ensure} from "../../../../shared/src/util/general";
+import {ensure} from "../../../../shared/src/util/general";
 import DisconnectButton from "../DisconnectButton.vue";
 import InputField from "../forms/InputField.vue";
 import HasInputFields from "../../mixins/HasInputFields";
-import {Room} from "../../types/room";
+import {UserServerAction} from "../../classes/user-server-action";
+import {ParamStruct} from "../../../../shared/src/types/commands/structs";
+import {Param, ParamType} from "../../../../shared/src/types/commands/scheduled";
+import {Room} from "../../../../shared/src/types/room";
 
 const {setInterval} = window;
 
@@ -100,15 +94,11 @@ export default defineComponent({
     props: {},
     data() {
         return {
-            ParamType,
-
-            room: {} as Room,
-
             inputParams: [] as Array<number | string | boolean | undefined>,
             selectedCommand: "",
 
             planCommand: false,
-            expectedCycle: -1,
+            expectedTick: -1,
             cycleTime: 2,
 
             text: [] as Array<string>,
@@ -135,64 +125,47 @@ export default defineComponent({
                     },
                 },
             ] as Array<ButtonConfig>,
+
+            get room(): Room {
+                return ensure(UserServerAction.room);
+            },
         };
     },
     mounted() {
-        const socketHandler = ensure(SocketHandler.instance);
-        const room = ensure(SocketHandler.instance.room);
-        const socket = ensure(socketHandler.socket);
-
-        this.room = room;
-
-        socket.on("room-connection-update", this.roomConnectionUpdate);
-        socket.on("event", this.eventRegistered);
-
         this.interval = setInterval(() => {
-            socketHandler.getExecutionCyclePrediction().then((c) => this.expectedCycle = c);
+            UserServerAction.getTickPrediciton().then(tick => {
+                this.expectedTick = tick;
+            })
         }, 1000);
 
-        changeTitle(`COMMAND CENTRE! (Room: ${room.id})`);
+        changeTitle(`COMMAND CENTRE! (Room: ${this.room.id})`);
         window.manager.resize(800, 600);
     },
     unmounted() {
-        const socket = ensure(SocketHandler.instance.socket);
-        socket.off("room-connection-update", this.roomConnectionUpdate);
-        socket.off("event", this.eventRegistered);
-
         clearInterval(this.interval);
     },
     computed: {
         roomId() {
-            return ensure(SocketHandler.instance.room).id
+            return this.room.id
         },
         mapName() {
-            assert(SocketHandler.instance.room);
-
-            return ensure(SocketHandler.instance.room.map).name;
-        },
-        commands() {
-            if (!this.room.map) {
-                return {};
-            }
-
-            return this.room.map.commands;
+            return this.room.mapCtx.name;
         },
         commandId(): string | undefined {
-            return this.commands[this.selectedCommand]?.function;
+            return this.room.commands.get(this.selectedCommand)?.function;
         },
-        commandParams(): Array<CommandParamConfig> {
-            return this.commands[this.selectedCommand]?.params ?? [];
+        commandParams(): Array<ParamStruct> {
+            return this.room.commands.get(this.selectedCommand)?.params ?? [];
         },
     },
     methods: {
-        ensure,
         copyRoomId() {
-            window.clipboard.write(ensure(SocketHandler.instance.room).id);
+            window.clipboard.write(this.room.id);
         },
         getCommandRules(index: number): Array<string> {
             const rules: Array<string> = ['max:1000'];
 
-            const def = this.getCommandParameter(index)?.default;
+            const def = this.getCommandParameter(index).default;
 
             /* Truthy won't work as '0' or '' could be valid defaults */
             if (def === null || def === undefined) {
@@ -201,7 +174,7 @@ export default defineComponent({
 
             return rules;
         },
-        getCommandParameter(index: number): CommandParamConfig {
+        getCommandParameter(index: number): ParamStruct {
             return this.commandParams[index];
         },
         getCommandParameterDefault(index: number): string {
@@ -216,37 +189,16 @@ export default defineComponent({
             return param.name + defString;
         },
         getCommandParameterType(index: number): ParamType {
-            const TYPES: Record<string, ParamType | undefined> = {
-                'int': ParamType.INT,
-                'float': ParamType.FLOAT,
-                'bool': ParamType.BOOL,
-                'string': ParamType.STRING,
-            }
-            const paramType = TYPES[this.getCommandParameter(index).type];
-
-            if (paramType === undefined) {
-                const paramName = this.getCommandParameter(index).name;
-                throw TypeError(`Unknown type in commands. (param: '${paramName}', index: ${index})`);
-            }
-            return paramType
+            return ParamType[this.getCommandParameter(index).type.toUpperCase()];
         },
         commandInputType(index: number): string {
-            const TYPES: Record<ParamType, string | undefined> = {
-                [ParamType.INT]: 'number',
-                [ParamType.FLOAT]: 'number',
-                [ParamType.BOOL]: 'checkbox',
-                [ParamType.STRING]: 'text',
+            const type = this.getCommandParameterType(index);
+            switch (type) {
+                case ParamType.INT:
+                case ParamType.FLOAT:  return 'number';
+                case ParamType.BOOL:   return 'checkbox';
+                case ParamType.STRING: return 'text';
             }
-            const type = TYPES[this.getCommandParameterType(index)];
-
-            if (type === undefined) {
-                const paramName = this.getCommandParameter(index).name;
-                throw TypeError(`Invalid input field type (${type}). (param: '${paramName}', index: ${index})`);
-            }
-            return type;
-        },
-        roomConnectionUpdate(room: Room) {
-            this.room = room;
         },
         setError(...strings: Array<string>): void {
             this.error = true;
@@ -256,13 +208,8 @@ export default defineComponent({
             this.error = false;
             this.text = strings;
         },
-        eventRegistered(commandEvent: CommandEvent) {
-            console.log("Event registered!");
-            console.log(commandEvent);
-            QueueHandler.instance.enqueue(commandEvent);
-        },
         exitTyrantView() {
-            SocketHandler.instance.loseTyrant(ensure(SocketHandler.instance.room).id)
+            UserServerAction.leaveTyrant()
                 .then(() => {
                     this.$store.commit("changeWindow", "Room");
                 })
@@ -271,51 +218,39 @@ export default defineComponent({
                 });
         },
         async disconnect() {
-            await SocketHandler.instance.leaveRoom();
-            const room = ensure(SocketHandler.instance.room);
-
-            if (room.map) {
-                await GameHandler.instance.resetState(room.map);
-            }
+            await UserServerAction.leaveRoom();
 
             this.$store.commit("changeWindow", "MainRoom");
-
         },
         sendCommand(): void {
             if (this.commandId === undefined) {
                 return this.setError("Please choose a valid command");
             }
-            const values: Array<Param> = [];
+            const params: Array<Param> = [];
 
             for (let i = 0; i < this.commandParams.length; ++i) {
-                let value = this.inputParams[i];
                 const param = this.commandParams[i];
+                let value = this.inputParams[i] ?? param.default;
                 const type = param.type;
-                const default_ = param.default;
 
                 // A checkbox loaded initially (not clicked) is undefined even though it should be false.
-                if (type.toLowerCase() === 'bool' && value === undefined) {
-                    value = false
+                if (type === 'bool' && value === undefined) {
+                    value = false;
                 }
-
-                if (value === undefined && default_ === undefined) {
-                    return this.setError("Please enter numbers for all required arguments before sending the command!");
-                } else {
-                    values.push({
-                        type: this.getCommandParameterType(i),
-                        data: (value ?? default_) as string | number | boolean,
-                        name: this.commandParams[i].name,
-                    });
+                if (value === undefined) {
+                    return this.setError("Please enter values for all required arguments before sending the command!");
                 }
+                params.push(<Param>{
+                    type: this.getCommandParameterType(i),
+                    name: param.name,
+                    value,
+                });
             }
 
             this.setText("Command Sent!");
             this.inputParams = [];
 
-            SocketHandler.instance.sendCommand({
-                function: this.commandId,
-                params: values
-            });
+            UserServerAction.issueCommand(this.commandId, params)
         },
     },
     watch: {
