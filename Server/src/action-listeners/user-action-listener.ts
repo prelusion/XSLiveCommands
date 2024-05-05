@@ -1,7 +1,7 @@
 import {Socket} from "socket.io";
 import type {XSLCServer} from "./xslc-server";
 import {Room, RoomId} from "../types/room";
-import {UserAction, JoinCallback, err, ok, Result} from "../types/actions";
+import {UserAction, ResultCallback, err, ok, Result, logThis} from "../types/actions";
 import {AuthenticatedUser} from "../types/user";
 import {SteamPlayerSummaryResponse} from "../types/steam";
 import {MapCommands} from "../types/commands/structs";
@@ -11,7 +11,7 @@ export class UserActionListener {
     public userSkt: Socket
     public server: XSLCServer
 
-    private room: Room | null
+    public room: Room | null = null;
 
     public constructor(server: XSLCServer, userSkt: Socket) {
         this.server = server;
@@ -57,7 +57,7 @@ export class UserActionListener {
         this.server.userDisconnect(this.userSkt.id);
     }
 
-    private createRoom(mapName: string, commands: MapCommands, tyrantPassword: string, callback: JoinCallback): void {
+    private createRoom(mapName: string, commands: MapCommands, tyrantPassword: string, callback: ResultCallback): void {
         if(tyrantPassword === "") {
             tyrantPassword = null;
         }
@@ -66,6 +66,12 @@ export class UserActionListener {
         if(!user?.authenticated) {
             console.log(this.tag, `Tried to create room while unauthenticated`);
             callback(err(`[Unauthenticated] Unable to create room`));
+            return;
+        }
+
+        if(logThis(this.room) !== null) {
+            console.log(this.tag, `Tried to create room while in a room`);
+            callback(err(`[AlreadyInRoom] Unable to create room`));
             return;
         }
 
@@ -78,11 +84,17 @@ export class UserActionListener {
         callback(ok(this.room));
     }
 
-    private joinRoom(roomId: RoomId, callback: JoinCallback): void {
+    private joinRoom(roomId: RoomId, callback: ResultCallback): void {
         let user = this.server.users.get(this.userSkt.id);
         if(!user?.authenticated) {
             console.log(this.tag, `Tried to join room while unauthenticated`);
-            callback(err(`Unauthenticated users cannot join room`));
+            callback(err(`[Unauthenticated] Unable to join room`));
+            return;
+        }
+
+        if(this.room !== null) {
+            console.log(this.tag, `Tried to create room while in a room`);
+            callback(err(`[AlreadyInRoom] Unable to join room`));
             return;
         }
 
@@ -94,13 +106,13 @@ export class UserActionListener {
         }
         this.userSkt.join(room.id);
         room.join(user);
-        this.server.broadcastRoomUpdate(room);
-        this.room = room;
-
         callback(ok(room));
+
+        this.room = room;
+        this.server.broadcastRoomUpdate(room);
     }
 
-    private leaveRoom(callback: JoinCallback): void {
+    private leaveRoom(callback: ResultCallback): void {
         if(!this.room) {
             console.log(this.tag, `Tried to leave room not in a room`);
             callback(err(`Cannot join tyrant when not in a room`));
@@ -108,38 +120,40 @@ export class UserActionListener {
         }
         this.userSkt.leave(this.room.id);
         this.room.leave(this.userSkt.id);
-        this.server.broadcastRoomUpdate(this.room);
         this.room = null;
         callback(ok(null));
+
+        this.server.broadcastRoomUpdate(this.room);
     }
 
-    private joinTyrant(password: string, callback: JoinCallback): void {
+    private joinTyrant(password: string, callback: ResultCallback): void {
         if(!this.room) {
             console.log(this.tag, `Tried to join tyrants when not in a room`);
             callback(err(`Cannot join tyrant when not in a room`));
             return;
         }
         if(this.room.tryJoinTyrant(this.userSkt.id, password)) {
-            this.server.broadcastRoomUpdate(this.room);
             callback(ok(this.room));
+            this.server.broadcastRoomUpdate(this.room);
             return;
         }
         console.log(this.tag, "Tried to join tyrants with an incorrect launch code")
         callback(err(`Incorrect launch code`));
     }
 
-    private leaveTyrant(callback: JoinCallback): void {
+    private leaveTyrant(callback: ResultCallback): void {
         if(!this.room) {
             console.log(this.tag, `Tried to leave tyrants when not in a room`);
             callback(err(`Cannot leave tyrant when not in a room`));
             return;
         }
         this.room.leaveTyrant(this.userSkt.id);
-        this.server.broadcastRoomUpdate(this.room);
         callback(ok(this.room));
+
+        this.server.broadcastRoomUpdate(this.room);
     }
 
-    private issueCommand(command: Command, callback: JoinCallback): void {
+    private issueCommand(command: Command, callback: ResultCallback): void {
         if(!this.room) {
             console.log(this.tag, `Tried to issue a command when not in a room`);
             callback(err(`Cannot issue command when not in a room`));
@@ -147,8 +161,9 @@ export class UserActionListener {
         }
 
         this.room.issueCommand(this.userSkt.id, command)
-        this.server.broadcastRoomUpdate(this.room);
         callback(ok(this.room));
+
+        this.server.broadcastRoomUpdate(this.room);
     }
 
     private getTickPrediction(callback: (result: Result<number>) => void): void {

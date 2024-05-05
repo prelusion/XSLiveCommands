@@ -1,3 +1,5 @@
+/* ⚠️ COPIED FROM Server/src/types ⚠️ - Symlinks don't work yet */
+
 import type {Room} from "./room";
 
 export enum ServerEvent {
@@ -23,11 +25,11 @@ export enum UserAction {
 
 export type Result<T> = {isError: false, value: T} | {isError: true, error: string}
 
-export function of<T>(value: T): Result<T> {
+export function ok<T>(value: T): Result<T> {
     return {value, isError: false};
 }
 export function err<T>(error: string): Result<T> {
     return {error, isError: true};
 }
 
-export type JoinCallback = (result: Result<Room>) => void;
+export type ResultCallback = (result: Result<Room>) => void;

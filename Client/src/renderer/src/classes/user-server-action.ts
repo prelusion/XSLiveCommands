@@ -6,7 +6,7 @@ import {AuthenticatedUser, PlatformUser} from "../../../shared/src/types/user";
 import {IRoom, Room} from "../../../shared/src/types/room";
 import {Param, UnscheduledCommand} from "../../../shared/src/types/commands/scheduled";
 import {MapCommands} from "../../../shared/src/types/commands/structs";
-import {RwCoreLoop} from "./rw-loop";
+import {CoreLoop} from "./core-loop";
 
 export class UserServerAction {
     public static skt: Socket;
@@ -15,6 +15,9 @@ export class UserServerAction {
 
     public static room: Room | null = null;
     public static username: string | null = null;
+
+    private static roomUpdateCallbacks: Set<(room: Room | null) => void> = new Set();
+    private static connectionChangedCallback: () => void;
 
     private static emit<T>(action: UserAction, ...args): Promise<T> {
         return new Promise(resolve => this.skt.emit(action, ...args, resolve))
@@ -28,39 +31,61 @@ export class UserServerAction {
         // todo: MS Store
     }
 
-    public static async connect(serverCustom: string | null, fn: () => void): Promise<void> {
+    public static async connect(serverCustom: string | null, connectionChangedCallback: () => void): Promise<void> {
         if(serverCustom === "") {
             serverCustom = null;
         }
         const serverEnv = await window.manager.getEnvVar('SERVER_URL') as (string | null);
         const serverSE = 'https://xssync.aoe2.se/';
 
+        this.connectionChangedCallback = connectionChangedCallback;
         this.skt = io(serverCustom ?? serverEnv ?? serverSE);
         this.skt.on(UserAction.EstablishConnection, async () => {
             this.connected = true;
-            fn();
+            connectionChangedCallback();
             this.username = await this.getUsername();
-            fn();
+            connectionChangedCallback();
             let exists = await this.doesRoomExist();
             if(!exists) {
+                await CoreLoop.stop();
                 this.room = null;
+                this.invokeRoomUpdateCallbacks();
+            } else {
+                await CoreLoop.start();
             }
             this.skt.on(UserAction.LoseConnection, this.disconnect.bind(this));
             this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
         })
     }
 
-    private static updateRoom(room: IRoom) {
-        if(this.room?.id !== room.id) {
-            throw new Error("Unreachable");
-        }
-        this.room = Room.from(room);
+    public static onRoomUpdate(fn: (room: Room | null) => void) {
+        this.roomUpdateCallbacks.add(fn);
     }
 
-    public static disconnect(): void {
+    public static offRoomUpdate(fn: (room: Room | null) => void) {
+        this.roomUpdateCallbacks.delete(fn);
+    }
+
+    private static updateRoom(room: IRoom) {
+        if(this.room && this.room.id !== room.id) {
+            throw new Error(`client room '${this.room.id}' disagrees with server '${room.id}'`);
+        }
+        this.room = Room.from(room);
+        this.invokeRoomUpdateCallbacks();
+    }
+
+    private static invokeRoomUpdateCallbacks() {
+        for(const callback of this.roomUpdateCallbacks) {
+            callback(this.room);
+        }
+    }
+
+    public static async disconnect(): Promise<void> {
         this.connected = false;
         this.username = null;
-        this.skt.disconnect();
+        this.connectionChangedCallback();
+
+        await CoreLoop.stop();
     }
 
     public static updateTick(tick: number) {
@@ -72,7 +97,7 @@ export class UserServerAction {
             return false;
         }
 
-        return await this.emit(UserAction.VerifyRoom, this.room!.id)
+        return await this.emit(UserAction.VerifyRoom, this.room.id)
     }
 
     public static async createRoom(filename: string, commands: MapCommands, password: string = ""): Promise<void> {
@@ -82,10 +107,10 @@ export class UserServerAction {
         }
 
         this.room = Room.from(result.value);
-        await RwCoreLoop.startCoreLoop();
+        await CoreLoop.start();
     }
 
-    public static async joinRoom(roomId: string): Promise<Room> {
+    public static async joinRoom(roomId: string): Promise<void> {
         // todo: start loop
         const result: Result<IRoom> = await this.emit(UserAction.JoinRoom, roomId);
         if(result.isError) {
@@ -93,9 +118,7 @@ export class UserServerAction {
         }
 
         this.room = Room.from(result.value);
-        await RwCoreLoop.startCoreLoop();
-
-        return this.room;
+        await CoreLoop.start();
     }
 
     public static async leaveRoom(): Promise<void> {
@@ -108,7 +131,7 @@ export class UserServerAction {
         if(result.isError) {
             throw new Error(result.error);
         }
-        await RwCoreLoop.stopCoreLoop();
+        await CoreLoop.stop();
         this.room = null;
     }
 
@@ -147,7 +170,7 @@ export class UserServerAction {
         }
     }
 
-    public static async getTickPrediciton(): Promise<number> {
+    public static async getTickPrediction(): Promise<number> {
         if(this.room === null) {
             throw new Error("Cannot get tick prediction whilst not in a room");
         }

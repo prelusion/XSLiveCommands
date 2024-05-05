@@ -67,7 +67,8 @@ export default defineComponent({
             this.joiningInProgress = true;
 
             UserServerAction.joinRoom(this.roomId)
-                .then((_) => {
+                .then(() => {
+
                     this.$store.commit("changeWindow", "Room");
                 })
                 .catch((reason) => {

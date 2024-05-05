@@ -1,4 +1,4 @@
-/* ⚠️ COPIED TO Client/src/renderer/src/types/player.ts ⚠️ - Symlinks don't work yet */
+/* ⚠️ COPIED TO Client/src/shared/src/types ⚠️ - Symlinks don't work yet */
 
 /* Alias for readability */
 export type SocketId = string;

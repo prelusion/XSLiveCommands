@@ -4,31 +4,31 @@ import {ensure} from "../../../shared/src/util/general";
 
 const {setInterval, clearInterval} = window;
 
-export class RwCoreLoop {
-    private static interval: number | null = null;
+export class CoreLoop {
+    private static loopInterval: number | null = null;
     private static nextCmdExecTick: number = 0;
     private static nextCmdIdx: number = 0;
 
     private static READ_SPEED: number = Math.round(1000/60);
 
-    private static async resetState(): Promise<void> {
+    private static async reset(): Promise<void> {
         await window.fs.deleteXsDataFiles(ensure(UserServerAction.platform), this.mapName);
         this.nextCmdExecTick = 0;
         this.nextCmdIdx = 0;
     }
 
-    public static async startCoreLoop(): Promise<void> {
-        await this.resetState();
-        this.interval = setInterval(this.coreLoop.bind(this), this.READ_SPEED);
+    public static async start(): Promise<void> {
+        await this.reset();
+        this.loopInterval = setInterval(this.coreLoop.bind(this), this.READ_SPEED);
     }
 
-    public static async stopCoreLoop(): Promise<void> {
-        if(!this.interval) {
+    public static async stop(): Promise<void> {
+        if(!this.loopInterval) {
             return;
         }
-        clearInterval(this.interval);
-        this.interval = null;
-        await this.resetState();
+        clearInterval(this.loopInterval);
+        this.loopInterval = null;
+        await this.reset();
     }
 
     private static async coreLoop(): Promise<void> {

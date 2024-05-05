@@ -1,3 +1,5 @@
+/* ⚠️ COPIED FROM Server/src/types ⚠️ - Symlinks don't work yet */
+
 export type MapName = string;
 export type MapPath = string;
 export type CommandName = string;

@@ -126,22 +126,20 @@ export default defineComponent({
                 },
             ] as Array<ButtonConfig>,
 
-            get room(): Room {
-                return ensure(UserServerAction.room);
-            },
+            room: Room.new(),
         };
     },
     mounted() {
-        this.interval = setInterval(() => {
-            UserServerAction.getTickPrediciton().then(tick => {
-                this.expectedTick = tick;
-            })
-        }, 1000);
+        this.room = ensure(UserServerAction.room);
+        UserServerAction.onRoomUpdate(this.setRoom);
+
+        this.interval = setInterval(this.getTickPrediction, 500);
 
         changeTitle(`COMMAND CENTRE! (Room: ${this.room.id})`);
         window.manager.resize(800, 600);
     },
     unmounted() {
+        UserServerAction.offRoomUpdate(this.setRoom);
         clearInterval(this.interval);
     },
     computed: {
@@ -159,6 +157,21 @@ export default defineComponent({
         },
     },
     methods: {
+        setRoom(room: Room | null) {
+            if (room) {
+                this.room = room;
+                return;
+            }
+            this.$store.commit("changeWindow", {
+                window: "MainRoom",
+                data: {
+                    'message': 'The server does not recognize the room anymore, please join or create a new one.'
+                }
+            });
+        },
+        async getTickPrediction() {
+            this.expectedTick = await UserServerAction.getTickPrediction();
+        },
         copyRoomId() {
             window.clipboard.write(this.room.id);
         },

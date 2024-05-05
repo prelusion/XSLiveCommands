@@ -23,8 +23,11 @@ export class Room {
     private players: Map<SocketId, AuthenticatedUser>
     private tyrants: Set<SocketId>
 
+    public static new(): Room {
+        return new Room(<AuthenticatedUser>{sktId: ""}, "", {}, null);
+    }
     public static from(iRoom: IRoom): Room {
-        const room = new Room(<AuthenticatedUser>{sktId: ""}, "", {}, null);
+        const room = Room.new();
         room.id = iRoom.id;
         room.hostId = iRoom.hostId;
         room.tyrantPassword = iRoom.tyrantPassword;

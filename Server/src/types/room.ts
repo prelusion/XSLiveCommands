@@ -49,15 +49,15 @@ export class Room {
         user: AuthenticatedUser,
     ): void {
         this.players.set(user.sktId, user)
-        console.log(this.tag, `+ ${user.sktId}`);
+        console.log(this.tag, `+ ${this.userLog(user.sktId)}`);
     }
 
     public leave(
         userId: SocketId,
     ): void {
+        console.log(this.tag, `- ${this.userLog(userId)}`);
         this.tyrants.delete(userId);
         this.players.delete(userId);
-        console.log(this.tag, `- ${userId}`);
     }
 
     public tryJoinTyrant(
@@ -69,7 +69,7 @@ export class Room {
         }
 
         this.tyrants.add(userId);
-        console.log(this.tag, `^ ${userId}`);
+        console.log(this.tag, `↑ ${this.userLog(userId)}`);
         return true;
     }
 
@@ -77,7 +77,7 @@ export class Room {
         userId: SocketId,
     ): void {
         this.tyrants.delete(userId);
-        console.log(this.tag, `v ${userId}`);
+        console.log(this.tag, `↓ ${this.userLog(userId)}`);
     }
 
     public issueCommand(
@@ -95,7 +95,7 @@ export class Room {
 
         this.mapCtx.events.push(scheduled)
         const args = command.params.map(param => `${param.name} = ${param.value}`).join(", ");
-        console.log(this.tag, `>> ${command.function}(${args})`);
+        console.log(this.tag, `⮞ ${this.userLog(userId)} ↦ ${command.function}(${args})`);
 
         return scheduled;
     }
@@ -126,14 +126,15 @@ export class Room {
         return this.players.size;
     }
 
+    public getPlayerName(userId: SocketId): string | undefined {
+        return this.players.get(userId)?.name;
+    }
+
     public get commands(): Map<CommandName, CommandStruct> {
         return new Map(Object.entries(this.mapCtx.commands));
     }
 
-    private get tag(): String {
-        return `[Room ${this.id} (${this.numTyrants}/${this.numPlayers}) ${this.currentTick}]`
-    }
-
+    /* do not remove this, used by socket.io */
     public toJSON(): IRoom {
         return {
             id: this.id,
@@ -143,5 +144,13 @@ export class Room {
             players: Array.from(this.players),
             tyrants: Array.from(this.tyrants),
         }
+    }
+
+    private get tag(): string {
+        return `[Room ${this.id} (${this.numTyrants}/${this.numPlayers}) ${this.currentTick}]`
+    }
+
+    private userLog(userId: SocketId): string {
+        return `${this.getPlayerName(userId)} (${userId})`;
     }
 }

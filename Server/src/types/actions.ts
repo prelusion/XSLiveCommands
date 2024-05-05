@@ -1,3 +1,5 @@
+/* ⚠️ COPIED TO Client/src/shared/src/types ⚠️ - Symlinks don't work yet */
+
 import type {Room} from "./room";
 
 export enum ServerEvent {
@@ -30,7 +32,7 @@ export function err<T>(error: string): Result<T> {
     return {error, isError: true};
 }
 
-export type JoinCallback = (result: Result<Room>) => void;
+export type ResultCallback = (result: Result<Room>) => void;
 
 /**
  * Easy way of logging values returned from changed functions

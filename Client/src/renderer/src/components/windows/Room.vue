@@ -63,16 +63,20 @@ export default defineComponent({
                     }
                 }
             ] as Array<ButtonConfig>,
-            get room(): Room {
-                return ensure(UserServerAction.room);
-            },
+
+            room: Room.new(),
             get selfUserId(): SocketId {
                 return ensure(UserServerAction.skt?.id);
             }
         };
     },
     mounted() {
+        this.room = ensure(UserServerAction.room);
+        UserServerAction.onRoomUpdate(this.setRoom);
         changeTitle(`Room ${this.room.id}`);
+    },
+    unmounted() {
+        UserServerAction.offRoomUpdate(this.setRoom);
     },
     computed: {
         roomId() {
@@ -83,6 +87,18 @@ export default defineComponent({
         },
     },
     methods: {
+        setRoom(room: Room | null) {
+            if (room) {
+                this.room = room;
+                return;
+            }
+            this.$store.commit("changeWindow", {
+                window: "MainRoom",
+                data: {
+                    'message': 'The server does not recognize the room anymore, please join or create a new one.'
+                }
+            });
+        },
         copyRoomId() {
             window.clipboard.write(this.roomId);
         },

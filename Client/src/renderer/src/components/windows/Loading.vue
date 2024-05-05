@@ -27,8 +27,8 @@ export default defineComponent({
             loadedSettings: false,
             error: [] as Array<string>,
 
-            retrievedSteamId: false,
-            retrievedSteamName: false,
+            retrievedPlatform: false,
+            retrievedName: false,
             connectedToServer: false,
         };
     },
@@ -52,17 +52,17 @@ export default defineComponent({
 
         await UserServerAction.setPlatform();
         if(UserServerAction.platform) {
-            this.retrievedSteamId = true;
+            this.retrievedPlatform = true;
         }
 
         const customUrl = config["custom-server-hostport"];
         await UserServerAction.connect(customUrl, () => {
             if(this.connectedToServer) {
-                this.retrievedSteamName = true;
+                this.retrievedName = UserServerAction.username !== null;
                 this.isLoadingComplete();
             }
             this.$store.state.connectionOk = UserServerAction.connected;
-            this.connectedToServer = true;
+            this.connectedToServer = UserServerAction.connected;
         });
     },
     computed: {
@@ -72,14 +72,14 @@ export default defineComponent({
             ];
 
             if (this.loadedSettings) {
-                lines.push(this.retrievedSteamId ? "Steam ID loaded successfully!" : "Loading Steam ID...")
+                lines.push(this.retrievedPlatform ? "Steam ID loaded successfully!" : "Detecting Platform...")
                 lines.push(this.connectedToServer ? "Connected to server successfully!": "Connecting to server...")
             } else {
                 return lines.join("<br>");
             }
 
             if (this.connectedToServer) {
-                lines.push(this.retrievedSteamName ? "Steam name loaded successfully!" : "Retrieving Steam name...")
+                lines.push(this.retrievedName ? "Username loaded successfully!" : "Retrieving username...")
             } else {
                 return lines.join("<br>");
             }
@@ -96,8 +96,8 @@ export default defineComponent({
             if (
                 this.connectedToServer
                 && this.loadedSettings
-                && this.retrievedSteamId
-                && this.retrievedSteamName
+                && this.retrievedPlatform
+                && this.retrievedName
             ) {
                 setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }

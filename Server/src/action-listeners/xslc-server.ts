@@ -30,7 +30,6 @@ export class XSLCServer {
     public userDisconnect(userId: SocketId): void {
         this.listeners.delete(userId);
         this.users.delete(userId);
-
         console.log(this.tag, `- User: ${userId}`);
     }
 
@@ -39,8 +38,8 @@ export class XSLCServer {
             return;
         }
         if(room.numPlayers === 0) {
-            console.log(this.tag, `- Room: ${room.id}`);
             this.rooms.delete(room.id);
+            console.log(this.tag, `- Room: ${room.id}`);
         }
         // do not send the password to the clients 11
         const pw = room.tyrantPassword;
@@ -51,7 +50,6 @@ export class XSLCServer {
 
     public addRoom(room: Room) {
         this.rooms.set(room.id, room);
-
         console.log(this.tag, `+ Room: ${room.id}`);
     }
 

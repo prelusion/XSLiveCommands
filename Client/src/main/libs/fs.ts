@@ -294,7 +294,6 @@ export function writeCommand(platform: PlatformUser, _: string, scheduledCommand
         }
     }
 
-    console.log(commandFilePath);
     let interval = setInterval(() => {
         try {
             fs.writeFileSync(commandFilePath, bufferInfo.buffer);

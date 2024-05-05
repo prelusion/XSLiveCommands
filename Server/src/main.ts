@@ -2,10 +2,8 @@ import {config} from "dotenv";
 import {createServer} from "http";
 import {Server} from "socket.io";
 
-// import {startIoServer} from "./handlers/client-handler";
 import {XSLCServer} from "./action-listeners/xslc-server";
 
-// Load .env file
 config();
 
 export const EXEC_TICK_OFFSET = parseInt(process.env.EXEC_TICK_OFFSET || '3');
@@ -18,7 +16,6 @@ function main() {
     io.listen(port);
 
     new XSLCServer(io);
-    // startIoServer(io);
 }
 
 main();

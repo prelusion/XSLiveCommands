@@ -1,3 +1,5 @@
+/* ⚠️ COPIED FROM Server/src/types ⚠️ - Symlinks don't work yet */
+
 export enum ParamType {
     INT,
     FLOAT,

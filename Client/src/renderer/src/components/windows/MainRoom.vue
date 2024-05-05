@@ -4,7 +4,7 @@
             Name: {{ steamName }}
         </div>
         <div class="">
-            SteamID: {{ steamId }}
+            Steam ID: {{ steamId }}
         </div>
         <div id="displayMessage">
             {{ message }}

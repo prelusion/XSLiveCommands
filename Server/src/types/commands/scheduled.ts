@@ -1,3 +1,5 @@
+/* ⚠️ COPIED TO Client/src/shared/src/types ⚠️ - Symlinks don't work yet */
+
 export enum ParamType {
     INT,
     FLOAT,
