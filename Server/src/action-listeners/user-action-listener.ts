@@ -1,7 +1,7 @@
 import {Socket} from "socket.io";
 import type {XSLCServer} from "./xslc-server";
 import {Room, RoomId} from "../types/room";
-import {UserAction, JoinCallback, err, of, Result} from "../types/actions";
+import {UserAction, JoinCallback, err, ok, Result} from "../types/actions";
 import {AuthenticatedUser} from "../types/user";
 import {SteamPlayerSummaryResponse} from "../types/steam";
 import {MapCommands} from "../types/commands/structs";
@@ -75,7 +75,7 @@ export class UserActionListener {
         this.userSkt.join(this.room.id);
 
         this.server.addRoom(this.room);
-        callback(of(this.room));
+        callback(ok(this.room));
     }
 
     private joinRoom(roomId: RoomId, callback: JoinCallback): void {
@@ -97,7 +97,7 @@ export class UserActionListener {
         this.server.broadcastRoomUpdate(room);
         this.room = room;
 
-        callback(of(room));
+        callback(ok(room));
     }
 
     private leaveRoom(callback: JoinCallback): void {
@@ -110,7 +110,7 @@ export class UserActionListener {
         this.room.leave(this.userSkt.id);
         this.server.broadcastRoomUpdate(this.room);
         this.room = null;
-        callback(of(null));
+        callback(ok(null));
     }
 
     private joinTyrant(password: string, callback: JoinCallback): void {
@@ -121,7 +121,7 @@ export class UserActionListener {
         }
         if(this.room.tryJoinTyrant(this.userSkt.id, password)) {
             this.server.broadcastRoomUpdate(this.room);
-            callback(of(this.room));
+            callback(ok(this.room));
             return;
         }
         console.log(this.tag, "Tried to join tyrants with an incorrect launch code")
@@ -136,7 +136,7 @@ export class UserActionListener {
         }
         this.room.leaveTyrant(this.userSkt.id);
         this.server.broadcastRoomUpdate(this.room);
-        callback(of(this.room));
+        callback(ok(this.room));
     }
 
     private issueCommand(command: Command, callback: JoinCallback): void {
@@ -148,7 +148,7 @@ export class UserActionListener {
 
         this.room.issueCommand(this.userSkt.id, command)
         this.server.broadcastRoomUpdate(this.room);
-        callback(of(this.room));
+        callback(ok(this.room));
     }
 
     private getTickPrediction(callback: (result: Result<number>) => void): void {
@@ -157,7 +157,7 @@ export class UserActionListener {
             callback(err(`Cannot get a tick prediction when not in a room`));
             return;
         }
-        callback(of(this.room.nextExecTick));
+        callback(ok(this.room.nextExecTick));
     }
 
     private async getSteamUsername(steamId: string, callback: (user: AuthenticatedUser) => void): Promise<void> {

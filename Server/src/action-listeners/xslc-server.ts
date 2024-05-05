@@ -39,6 +39,7 @@ export class XSLCServer {
             return;
         }
         if(room.numPlayers === 0) {
+            console.log(this.tag, `- Room: ${room.id}`);
             this.rooms.delete(room.id);
         }
         // do not send the password to the clients 11

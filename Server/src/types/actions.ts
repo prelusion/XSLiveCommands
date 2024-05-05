@@ -23,7 +23,7 @@ export enum UserAction {
 
 export type Result<T> = {isError: false, value: T} | {isError: true, error: string}
 
-export function of<T>(value: T): Result<T> {
+export function ok<T>(value: T): Result<T> {
     return {value, isError: false};
 }
 export function err<T>(error: string): Result<T> {
