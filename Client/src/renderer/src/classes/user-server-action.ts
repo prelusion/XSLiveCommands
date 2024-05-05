@@ -84,7 +84,6 @@ export class UserServerAction {
         this.connected = false;
         this.username = null;
         this.connectionChangedCallback();
-
         await CoreLoop.stop();
     }
 

@@ -59,7 +59,9 @@ export default defineComponent({
         await UserServerAction.connect(customUrl, () => {
             if(this.connectedToServer) {
                 this.retrievedName = UserServerAction.username !== null;
-                this.isLoadingComplete();
+                if(this.$store.state.window === "Loading") {
+                    this.isLoadingComplete();
+                }
             }
             this.$store.state.connectionOk = UserServerAction.connected;
             this.connectedToServer = UserServerAction.connected;

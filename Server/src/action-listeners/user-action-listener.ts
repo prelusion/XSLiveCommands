@@ -117,7 +117,7 @@ export class UserActionListener {
     private leaveRoom(callback: ResultCallback): void {
         if(!this.room) {
             console.log(this.tag, `Tried to leave room not in a room`);
-            callback(err(`Cannot join tyrant when not in a room`));
+            callback(err(`Cannot leave room when not in a room`));
             return;
         }
         this.userSkt.leave(this.room.id);
