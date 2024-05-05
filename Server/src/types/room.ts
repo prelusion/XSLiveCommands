@@ -82,9 +82,9 @@ export class Room {
     public issueCommand(
         userId: SocketId,
         command: Command,
-    ): ScheduledCommand {
+    ): boolean {
         if(!this.tyrants.has(userId)) {
-            return;
+            return false;
         }
         const scheduled: ScheduledCommand = {
             ...command,
@@ -96,7 +96,7 @@ export class Room {
         const args = command.params.map(param => `${param.name} = ${param.value}`).join(", ");
         console.log(this.tag, `⮞ ${this.userLog(userId)} ↦ ${command.function}(${args})`);
 
-        return scheduled;
+        return true;
     }
 
     public get currentTick(): number {

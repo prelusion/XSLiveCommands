@@ -162,9 +162,14 @@ export class UserActionListener {
             return;
         }
 
-        this.room.issueCommand(this.userSkt.id, command)
-        callback(ok(this.room));
+        const success = this.room.issueCommand(this.userSkt.id, command)
+        if(!success) {
+            console.log(this.tag, `Tried to issue a command when not a tyrant`);
+            callback(err(`Cannot issue command when not tyrant`));
+            return;
+        }
 
+        callback(ok(this.room));
         this.server.broadcastRoomUpdate(this.room);
     }
 
