@@ -84,6 +84,7 @@ import {UserServerAction} from "../../classes/user-server-action";
 import {ParamStruct} from "../../../../shared/src/types/commands/structs";
 import {Param, ParamType} from "../../../../shared/src/types/commands/scheduled";
 import {Room} from "../../../../shared/src/types/room";
+import {SocketId} from "../../types/player";
 
 const {setInterval} = window;
 
@@ -127,6 +128,9 @@ export default defineComponent({
             ] as Array<ButtonConfig>,
 
             room: Room.new(),
+            get selfUserId(): SocketId {
+                return ensure(UserServerAction.skt?.id);
+            }
         };
     },
     mounted() {
@@ -158,6 +162,10 @@ export default defineComponent({
     },
     methods: {
         setRoom(room: Room | null) {
+            if(!room?.isTyrant(this.selfUserId)) {
+                this.$store.commit("changeWindow", "Room");
+                return;
+            }
             if (room) {
                 this.room = room;
                 return;
@@ -170,6 +178,9 @@ export default defineComponent({
             });
         },
         async getTickPrediction() {
+            if (!this.$store.state.connectionOk) {
+                return;
+            }
             this.expectedTick = await UserServerAction.getTickPrediction();
         },
         copyRoomId() {

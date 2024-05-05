@@ -42,11 +42,8 @@ export class XSLCServer {
             this.rooms.delete(room.id);
             console.log(this.tag, `- Room: ${room.id}`);
         }
-        // do not send the password to the clients 11
-        const pw = room.tyrantPassword;
-        room.tyrantPassword = null;
+
         this.skt.to(room.id).emit(ServerEvent.RoomUpdate, room);
-        room.tyrantPassword = pw;
     }
 
     public addRoom(room: Room) {

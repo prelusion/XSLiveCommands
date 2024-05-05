@@ -8,7 +8,6 @@ export type RoomId = string;
 export interface IRoom {
     id: RoomId,
     hostId: SocketId,
-    tyrantPassword: string | null,
     mapCtx: MapContext,
     players: Array<[SocketId, AuthenticatedUser]>,
     tyrants: Array<SocketId>,
@@ -30,7 +29,6 @@ export class Room {
         const room = Room.new();
         room.id = iRoom.id;
         room.hostId = iRoom.hostId;
-        room.tyrantPassword = iRoom.tyrantPassword;
         room.mapCtx = iRoom.mapCtx;
         room.players = new Map(iRoom.players);
         room.tyrants = new Set(iRoom.tyrants);
@@ -56,6 +54,10 @@ export class Room {
         this.tyrants = new Set();
         this.players.set(host.sktId, host);
         this.tyrantPassword = tyrantPassword
+    }
+
+    public hasPlayer(userId: SocketId): boolean {
+        return this.players.has(userId);
     }
 
     public isTyrant(userId: SocketId): boolean {

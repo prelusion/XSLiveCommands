@@ -9,7 +9,6 @@ export type RoomId = string;
 interface IRoom {
     id: RoomId,
     hostId: SocketId,
-    tyrantPassword: string | null,
     mapCtx: MapContext,
     players: Array<[SocketId, AuthenticatedUser]>,
     tyrants: Array<SocketId>,
@@ -143,7 +142,6 @@ export class Room {
         return {
             id: this.id,
             hostId: this.hostId,
-            tyrantPassword: this.tyrantPassword,
             mapCtx: this.mapCtx,
             players: Array.from(this.players),
             tyrants: Array.from(this.tyrants),
