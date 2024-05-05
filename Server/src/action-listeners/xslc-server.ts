@@ -1,6 +1,6 @@
 import {Room, RoomId} from "../types/room";
 import {Server, Socket} from "socket.io";
-import {SocketId, User} from "../types/user";
+import {SocketId, UnauthenticatedUser, User} from "../types/user";
 import {UserActionListener} from "./user-action-listener";
 import {ServerEvent, UserAction} from "../types/actions";
 
@@ -21,8 +21,9 @@ export class XSLCServer {
     }
 
     public addListener(userSkt: Socket): void {
-        this.users.set(userSkt.id, {authenticated: false, sktId: userSkt.id});
-        this.listeners.set(userSkt.id, new UserActionListener(this, userSkt));
+        const user: UnauthenticatedUser = {authenticated: false, sktId: userSkt.id};
+        this.users.set(userSkt.id, user);
+        this.listeners.set(userSkt.id, new UserActionListener(this, userSkt, user));
 
         console.log(this.tag, `+ User: ${userSkt.id}`);
     }

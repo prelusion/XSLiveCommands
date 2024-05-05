@@ -7,6 +7,7 @@ import {IRoom, Room} from "../../../shared/src/types/room";
 import {Param, UnscheduledCommand} from "../../../shared/src/types/commands/scheduled";
 import {MapCommands} from "../../../shared/src/types/commands/structs";
 import {CoreLoop} from "./core-loop";
+import {ensure} from "../../../shared/src/util/general";
 
 export class UserServerAction {
     public static skt: Socket;
@@ -47,15 +48,14 @@ export class UserServerAction {
             connectionChangedCallback();
             let exists = await this.doesRoomExist();
             if(!exists) {
-                await CoreLoop.stop();
                 this.room = null;
                 this.invokeRoomUpdateCallbacks();
             } else {
-                await CoreLoop.start();
+                await this.joinRoom(ensure(this.room).id);
             }
-            this.skt.on(UserAction.LoseConnection, this.disconnect.bind(this));
-            this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
         })
+        this.skt.on(UserAction.LoseConnection, this.disconnect.bind(this));
+        this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
     }
 
     public static onRoomUpdate(fn: (room: Room | null) => void) {

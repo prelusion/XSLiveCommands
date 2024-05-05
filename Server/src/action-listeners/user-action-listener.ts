@@ -2,7 +2,7 @@ import {Socket} from "socket.io";
 import type {XSLCServer} from "./xslc-server";
 import {Room, RoomId} from "../types/room";
 import {UserAction, ResultCallback, err, ok, Result, logThis} from "../types/actions";
-import {AuthenticatedUser} from "../types/user";
+import {AuthenticatedUser, UnauthenticatedUser, User} from "../types/user";
 import {SteamPlayerSummaryResponse} from "../types/steam";
 import {MapCommands} from "../types/commands/structs";
 import {Command} from "../types/commands/scheduled";
@@ -10,12 +10,14 @@ import {Command} from "../types/commands/scheduled";
 export class UserActionListener {
     public userSkt: Socket
     public server: XSLCServer
+    public user: User;
 
     public room: Room | null = null;
 
-    public constructor(server: XSLCServer, userSkt: Socket) {
+    public constructor(server: XSLCServer, userSkt: Socket, user: UnauthenticatedUser) {
         this.server = server;
         this.userSkt = userSkt;
+        this.user = user;
 
         this.userSkt.on(UserAction.UpdateTick, this.onUpdateTick.bind(this));
         this.userSkt.on(UserAction.VerifyRoom, this.doesRoomExist.bind(this));
@@ -211,10 +213,15 @@ export class UserActionListener {
         }
 
         this.server.users.set(this.userSkt.id, authenticatedUser);
+        this.user = authenticatedUser;
         callback(authenticatedUser);
     }
 
     private get tag(): string {
+        if(this.user.authenticated && this.user.resolved) {
+            return `[User ${this.userSkt.id} (${this.user.name})]`;
+        }
+
         return `[User ${this.userSkt.id}]`;
     }
 }

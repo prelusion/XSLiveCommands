@@ -126,8 +126,12 @@ export class Room {
         return this.players.size;
     }
 
-    public getPlayerName(userId: SocketId): string | undefined {
-        return this.players.get(userId)?.name;
+    private getPlayerName(userId: SocketId): string | null {
+        const player = this.players.get(userId);
+        if(!player?.resolved) {
+            return null;
+        }
+        return player.name;
     }
 
     public get commands(): Map<CommandName, CommandStruct> {
@@ -151,6 +155,10 @@ export class Room {
     }
 
     private userLog(userId: SocketId): string {
-        return `${this.getPlayerName(userId)} (${userId})`;
+        const name = this.getPlayerName(userId);
+        if(name) {
+            return `${userId} (${name})`;
+        }
+        return `${userId}`;
     }
 }
