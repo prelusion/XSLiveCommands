@@ -1,7 +1,6 @@
-import {ipcMain} from "electron";
-import SteamID from "steamid";
-import * as Registry from 'native-reg';
+import * as Registry from "native-reg";
 import {Access} from "native-reg";
+import SteamID from "steamid";
 
 export function getSteamId(): string | null {
     const regKey = `Software\\Valve\\Steam\\ActiveProcess\\`;
@@ -22,10 +21,7 @@ export function getSteamId(): string | null {
     return SteamID.fromIndividualAccountID(accountId.toString()).getSteamID64();
 }
 
-/** ========================================================================================
- *                        Handlers for wrapping the above functions                      
- *  ======================================================================================*/
-
-ipcMain.handle("registry:getSteamId", (): string | null => {
-    return getSteamId();
-});
+export function getMicrosoftId() {
+    throw new Error("Unimplemented");
+    // todo
+}

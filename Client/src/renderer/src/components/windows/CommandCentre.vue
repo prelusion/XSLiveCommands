@@ -253,8 +253,10 @@ export default defineComponent({
             const params: Array<Param> = [];
 
             for (let i = 0; i < this.commandParams.length; ++i) {
+                const inp = this.inputParams[i] === '' ? null : this.inputParams[i];
                 const param = this.commandParams[i];
-                let value = this.inputParams[i] ?? param.default;
+
+                let value = inp ?? param.default;
                 const type = param.type;
 
                 // A checkbox loaded initially (not clicked) is undefined even though it should be false.

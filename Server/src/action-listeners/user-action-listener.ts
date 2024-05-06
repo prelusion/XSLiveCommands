@@ -71,7 +71,7 @@ export class UserActionListener {
             return;
         }
 
-        if(logThis(this.room) !== null) {
+        if(this.room !== null) {
             console.log(this.tag, `Tried to create room while in a room`);
             callback(err(`[AlreadyInRoom] Unable to create room`));
             return;

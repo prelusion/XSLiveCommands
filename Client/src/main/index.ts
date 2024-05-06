@@ -179,10 +179,10 @@ function disableCorsCheck(win: BrowserWindow): void {
 // You can also put them in separate files and require them here.
 
 // Native-reg - Handling registry requests
-import("./libs/native-reg");
+import("./libs/native");
 
 // fs - Handling file system calls
-import("./libs/fs");
+import("./libs/filesys");
 
 // Clipboard - Handling clipboard actions
 import("./libs/clipboard");
