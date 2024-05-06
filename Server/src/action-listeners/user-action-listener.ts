@@ -1,7 +1,8 @@
 import {Socket} from "socket.io";
+import {err, ok, Result} from "../types/result";
 import type {XSLCServer} from "./xslc-server";
 import {Room, RoomId} from "../types/room";
-import {UserAction, ResultCallback, err, ok, Result, logThis} from "../types/actions";
+import {UserAction, ResultCallback} from "../types/actions";
 import {AuthenticatedUser, UnauthenticatedUser, User} from "../types/user";
 import {SteamPlayerSummaryResponse} from "../types/steam";
 import {MapCommands} from "../types/commands/structs";

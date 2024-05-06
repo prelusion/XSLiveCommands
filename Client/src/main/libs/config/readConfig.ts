@@ -1,28 +1,26 @@
-import {ConfigFileCoreFormat} from "../../../shared/src/types/config";
-import {MainError} from "../../../shared/src/types/errors";
-import {MainErrorTypes} from "../../../shared/src/util/errors";
-import {createError} from "../../util/errors";
+import {err, ok, Result} from "../../../shared/src/types/result";
+import {ConfigCoreStruct} from "../../../shared/src/types/config";
 import {configFileExists, readJsonFile, resetConfig, upgradeConfigFile} from "./common";
 
 /**
  *  Read the configuration file
  */
-export function readConfig(version: number): ConfigFileCoreFormat | MainError {
+export function readConfig(version: number): Result<ConfigCoreStruct> {
     if (!configFileExists()) {
         resetConfig(version);
     }
 
     try {
-        const configFile = readJsonFile('config') as ConfigFileCoreFormat;
+        const configFile = readJsonFile('config') as ConfigCoreStruct;
 
         if (!configFile.version) {
-            return createError("Missing config version", MainErrorTypes.INVALID_CONFIG)
+            return err("Missing config version");
         }
 
-        return upgradeConfigFile(configFile, version);
+        return ok(upgradeConfigFile(configFile, version));
     } catch (e) {
         if (e instanceof SyntaxError) {
-            return createError("Invalid configuration file", MainErrorTypes.INVALID_CONFIG)
+            return err("Invalid configuration file");
         } else {
             throw Error(`Unknown error occurred while trying to read the configuration file.`);
         }

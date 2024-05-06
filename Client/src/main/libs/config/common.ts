@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import {ConfigFileCoreFormat, ConfigFileFormatNewest} from "../../../shared/src/types/config";
+import {ConfigCoreStruct, ConfigStructLatest} from "../../../shared/src/types/config";
 import {ensure} from "../../../shared/src/util/general";
 import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../../util/config-data";
 
@@ -70,11 +70,11 @@ export function writeJsonFile(name: string, value: unknown): boolean {
 /**
  * Upgrade the config file if necessary
  */
-export function upgradeConfigFile(configFile: ConfigFileCoreFormat, version: number): ConfigFileFormatNewest {
+export function upgradeConfigFile(configFile: ConfigCoreStruct, version: number): ConfigStructLatest {
     if (configFile.version < version) {
         configFile = upgradeConfigFileToVersion(configFile, version);
     }
-    return configFile as ConfigFileFormatNewest;
+    return configFile as ConfigStructLatest;
 }
 
 /**
