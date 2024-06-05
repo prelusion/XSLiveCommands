@@ -3,17 +3,17 @@
     <div id="view">
         <div id="info">
             <table>
-            <tr>
-                <td>Room Code:</td>
-                <td>{{ roomId }}</td>
-                <td>
-                    <button @click="copyRoomId()">Copy</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Map:</td>
-                <td>{{ mapName }}</td>
-            </tr>
+                <tr>
+                    <td>Room Code:</td>
+                    <td>{{ roomId }}</td>
+                    <td>
+                        <button @click="copyRoomId()">Copy</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Map:</td>
+                    <td>{{ mapName }}</td>
+                </tr>
             </table>
         </div>
         <div id="command-centre">
@@ -68,7 +68,7 @@
             </div>
         </div>
     </div>
-    <Buttons :buttonConfig="buttonConfig"></Buttons>
+    <Buttons :buttonConfig="buttonConfig" ></Buttons>
 </template>
 
 <script lang="ts">
@@ -101,7 +101,7 @@ export default defineComponent({
             planCommand: false,
             expectedTick: -1,
             cycleTime: 2,
-
+            isClickable: true,
             text: [] as Array<string>,
             error: true,
 
@@ -110,22 +110,26 @@ export default defineComponent({
             buttonConfig: [
                 {
                     text: "Send",
-                    callback: (): void => {
-                        if (!this.validateInputs()) {
+                    callback: async (): Promise<void> => {
+                        if (!this.validateInputs() || !this.isClickable) {
                             return;
                         }
+                        this.commandDelay();
 
-                        this.sendCommand();
+                        await this.sendCommand();
                         this.clearInputs();
                     },
+                    disabled: (): boolean => !this.isClickable,
                 },
                 {
                     text: "Leave Tyranny",
                     callback: (): void => {
                         this.exitTyrantView();
                     },
+                    disabled: () => false
                 },
             ] as Array<ButtonConfig>,
+
 
             room: Room.new(),
             get selfUserId(): SocketId {
@@ -162,7 +166,7 @@ export default defineComponent({
     },
     methods: {
         setRoom(room: Room | null) {
-            if(!room?.isTyrant(this.selfUserId)) {
+            if (!room?.isTyrant(this.selfUserId)) {
                 this.$store.commit("changeWindow", "Room");
                 return;
             }
@@ -219,9 +223,12 @@ export default defineComponent({
             const type = this.getCommandParameterType(index);
             switch (type) {
                 case ParamType.INT:
-                case ParamType.FLOAT:  return 'number';
-                case ParamType.BOOL:   return 'checkbox';
-                case ParamType.STRING: return 'text';
+                case ParamType.FLOAT:
+                    return 'number';
+                case ParamType.BOOL:
+                    return 'checkbox';
+                case ParamType.STRING:
+                    return 'text';
             }
         },
         setError(...strings: Array<string>): void {
@@ -231,6 +238,13 @@ export default defineComponent({
         setText(...strings: Array<string>): void {
             this.error = false;
             this.text = strings;
+        },
+        commandDelay() {
+            this.isClickable = false;
+
+            setTimeout(() => {
+                this.isClickable = true;
+            }, 300);
         },
         exitTyrantView() {
             UserServerAction.leaveTyrant()
