@@ -1,5 +1,5 @@
 import {Store} from 'vuex'
-import {ConfigFileFormatNewest} from "../../shared/src/types/config";
+import {ConfigStructLatest} from "../../shared/src/types/config";
 
 declare module '@vue/runtime-core' {
     // Declare your own store states.
@@ -8,7 +8,7 @@ declare module '@vue/runtime-core' {
         data: unknown;
         window: string;
         connectionOk: boolean;
-        config: ConfigFileFormatNewest | null;
+        config: ConfigStructLatest | null;
         tyrantRequest: {
             roomId: string;
             code: string;

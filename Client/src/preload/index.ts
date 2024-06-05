@@ -1,5 +1,5 @@
 import {contextBridge, ipcRenderer} from "electron";
-import {ConfigFileCoreFormat} from "../shared/src/types/config";
+import {ConfigCoreStruct} from "../shared/src/types/config";
 import {ScheduledCommand} from "../shared/src/types/commands/scheduled";
 import {PlatformUser} from "../shared/src/types/user";
 
@@ -36,6 +36,6 @@ contextBridge.exposeInMainWorld('manager', {
 
 contextBridge.exposeInMainWorld('config', {
     readConfig: (version: number) => ipcRenderer.invoke('config:readConfig', version),
-    writeConfig: (config: ConfigFileCoreFormat, version: number) => ipcRenderer.invoke('config:writeConfig', config, version),
+    writeConfig: (config: ConfigCoreStruct, version: number) => ipcRenderer.invoke('config:writeConfig', config, version),
     resetConfig: (version: number | null = null) => ipcRenderer.invoke('config:resetConfig', version),
 });

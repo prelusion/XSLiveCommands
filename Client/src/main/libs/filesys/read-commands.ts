@@ -1,5 +1,5 @@
 import fs from "fs";
-import {CommandFile, MapCommands, ParamStruct} from "../../../shared/src/types/commands/structs";
+import {CommandFileStruct, MapCommands, ParamStruct} from "../../../shared/src/types/commands/structs";
 
 function areValidParameters(params?: Array<ParamStruct>): boolean {
     if(!params) {
@@ -29,7 +29,7 @@ export async function readCommands(path: string): Promise<{ commands?: MapComman
     }
 
     try {
-        const commandsArray: CommandFile = JSON.parse(fs.readFileSync(path).toString());
+        const commandsArray: CommandFileStruct = JSON.parse(fs.readFileSync(path).toString());
         const commands: MapCommands = {};
         for(let command of commandsArray) {
             if(!command.name || !command.function || !areValidParameters(command.params)) {

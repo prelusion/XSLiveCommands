@@ -31,5 +31,5 @@ export interface CommandStruct {
     templates?: Record<string, Array<ParamStruct>>
 }
 
-export type CommandFile = Array<CommandStruct>
+export type CommandFileStruct = Array<CommandStruct>
 export type MapCommands = Record<CommandName, CommandStruct>

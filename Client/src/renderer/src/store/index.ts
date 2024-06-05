@@ -1,6 +1,6 @@
 import {State} from "vue";
 import {createStore} from "vuex";
-import {ConfigFileFormatNewest} from "../../../shared/src/types/config";
+import {ConfigStructLatest} from "../../../shared/src/types/config";
 import {CONFIG_VERSION} from "../versions";
 import {toRaw} from "vue";
 import {isString} from "../util/general";
@@ -39,7 +39,7 @@ export default createStore({
                 state.data = payload.data;
             }
         },
-        patchConfig<K extends keyof ConfigFileFormatNewest>(state: State, payload: { key: K; value: ConfigFileFormatNewest[K] }) {
+        patchConfig<K extends keyof ConfigStructLatest>(state: State, payload: { key: K; value: ConfigStructLatest[K] }) {
             assert(state.config);
 
             state.config[payload.key] = payload.value;

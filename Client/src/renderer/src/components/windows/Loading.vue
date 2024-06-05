@@ -8,11 +8,10 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
+import {Result} from "../../../../shared/src/types/result";
 import {CONFIG_VERSION} from "../../versions";
-import {changeTitle, handle} from "../../util/general";
-import {ConfigFileFormatNewest} from "../../../../shared/src/types/config";
-import {MainErrorTypes} from "../../../../shared/src/util/errors";
-import {MainError} from "../../../../shared/src/types/errors";
+import {changeTitle} from "../../util/general";
+import {ConfigCoreStruct, ConfigStructLatest} from "../../../../shared/src/types/config";
 import CustomModal from "../modal/CustomModal.vue";
 import ConfigReset from "../modal/content/ConfigReset.vue";
 import {UserServerAction} from "../../classes/user-server-action";
@@ -38,15 +37,15 @@ export default defineComponent({
         const version = parseFloat(CONFIG_VERSION);
 
         /* Read config file */
-        const result = await handle(window.config.readConfig(version));
+        const result: Result<ConfigCoreStruct> = await window.config.readConfig(version);
         if (result.isError) {
-            this.handleConfigError(result.value);
+            this.handleConfigError(result.error);
             return;
         }
 
         const config = result.value
         if (config.version) {
-            this.$store.state.config = config as ConfigFileFormatNewest;
+            this.$store.state.config = config as ConfigStructLatest;
             this.loadedSettings = true;
         }
 
@@ -104,13 +103,13 @@ export default defineComponent({
                 setTimeout(() => this.$store.commit("changeWindow", "MainRoom"), 200);
             }
         },
-        handleConfigError(error: MainError): void {
-            if (error.type === MainErrorTypes.INVALID_CONFIG) {
+        handleConfigError(error: string): void {
+            if (error === "Invalid configuration file") {
                 const modal = this.$refs.configResetModal as CustomModal;
 
                 modal.open();
             } else {
-                this.error.push(error.reason);
+                this.error.push(error);
             }
         }
     },
