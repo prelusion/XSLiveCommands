@@ -3,9 +3,9 @@ import {
     exists,
     getCompatibleMaps,
     readCommands,
-    readCycle,
+    readTick,
     readModsJson,
-    writeEvent,
+    writeCommand,
 } from "../main/libs/fs";
 import {getSteamId} from "../main/libs/native-reg";
 
@@ -20,9 +20,9 @@ declare global {
         };
         fs: {
             deleteXsDataFiles: typeof deleteXsDataFiles;
-            readCycle: typeof readCycle;
+            readTick: typeof readTick;
             readCommands: typeof readCommands;
-            writeEvent: typeof writeEvent;
+            writeCommand: typeof writeCommand;
             readModsJson: typeof readModsJson;
             getCompatibleMaps: typeof getCompatibleMaps;
             exists: typeof exists;

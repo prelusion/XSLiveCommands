@@ -1,4 +1,4 @@
-/* ⚠️ COPIED TO Client/src/shared/src/types ⚠️ - Symlinks don't work yet */
+/* ⚠️ COPIED FROM Server/src/types ⚠️ - Symlinks don't work yet */
 
 import {MapCommands} from "./commands/structs";
 import {ScheduledCommand} from "./commands/scheduled";

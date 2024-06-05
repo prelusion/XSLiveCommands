@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "npx nodemon src/index.ts",
-    "start": "tsc && node dist/index.js",
+    "dev": "npx nodemon src/main.ts",
+    "start": "tsc && node dist/main.js",
     "watch": "npx tsc --watch",
     "run": "node dist/index.js"
   },

@@ -1,6 +1,7 @@
 import {contextBridge, ipcRenderer} from "electron";
-import {CommandEvent} from "../shared/src/types/command";
 import {ConfigFileCoreFormat} from "../shared/src/types/config";
+import {ScheduledCommand} from "../shared/src/types/commands/scheduled";
+import {PlatformUser} from "../shared/src/types/user";
 
 // In this file we want to expose protected methods that allow the renderer
 // process to use the ipcRenderer without exposing the entire object.
@@ -13,12 +14,12 @@ contextBridge.exposeInMainWorld('registry', {
 });
 
 contextBridge.exposeInMainWorld('fs', {
-    deleteXsDataFiles: (steamId: string, map: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', steamId, map),
-    readCycle: (steamId: string, map: string) => ipcRenderer.invoke('fs:readCycle', steamId, map),
+    deleteXsDataFiles: (platform: PlatformUser, map: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', platform, map),
+    readTick: (platform: PlatformUser, map: string) => ipcRenderer.invoke('fs:readTick', platform, map),
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
-    writeEvent: (steamId: string, map: string, event: CommandEvent) => ipcRenderer.invoke('fs:writeEvent', steamId, map, event),
-    readModsJson: (steamId: string) => ipcRenderer.invoke('fs:readModsJson', steamId),
-    getCompatibleMaps: (steamId: string, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleMaps', steamId, modFolderPath),
+    writeCommand: (platform: PlatformUser, map: string, event: ScheduledCommand) => ipcRenderer.invoke('fs:writeCommand', platform, map, event),
+    readModsJson: (platform: PlatformUser) => ipcRenderer.invoke('fs:readModsJson', platform),
+    getCompatibleMaps: (platform: PlatformUser, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleMaps', platform, modFolderPath),
     exists: (absolutePath: string) => ipcRenderer.invoke('fs:exists', absolutePath),
 });
 

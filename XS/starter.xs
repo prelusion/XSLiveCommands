@@ -1,4 +1,4 @@
-// include "ext_core.xs";
+include "xslc_core.xs";
 
 int typesString = -1;
 
