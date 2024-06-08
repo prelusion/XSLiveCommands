@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import {defineComponent, getCurrentInstance, PropType} from "vue";
-import {validateRules} from "@renderer/util/formRules";
+import {validateRules} from "@renderer/util/form/form-rules";
 
 const {clearTimeout, setTimeout} = window;
 

@@ -20,9 +20,9 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import InputField from "../../forms/InputField.vue";
 import HasInputFields from "@renderer/mixins/HasInputFields";
 import CustomModal from "@renderer/components/modal/CustomModal.vue";
+import InputField from "@renderer/components/InputField.vue";
 
 export default defineComponent({
     name: "Password",

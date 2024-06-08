@@ -1,4 +1,4 @@
-import InputField from "*.vue";
+import InputField from "@renderer/components/InputField.vue";
 
 
 export function validateInputs(inputFields: (typeof InputField | null)[]): boolean {

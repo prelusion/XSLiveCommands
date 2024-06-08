@@ -8,7 +8,7 @@ import {PlatformUser} from "../../../shared/src/types/user";
  * Reads the mods-status.json in the mods directory and returns a list of all installed mods
  * @param platform
  */
-export function readModsJson(platform: PlatformUser): Array<Mod> {
+export async function readModsJson(platform: PlatformUser): Promise<Array<Mod>> {
     const modsFolder = modsFolderPath(platform);
 
     let mods: Array<Mod> = [];

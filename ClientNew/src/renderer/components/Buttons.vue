@@ -66,7 +66,7 @@ export default defineComponent({
                 await config.callback();
             }
             if (config.window) {
-                this.$router.push(config.window);
+                this.$router.push({ name: config.window });
             }
         },
     },

@@ -28,6 +28,7 @@ import {defineComponent} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
 import {UserServerAction} from "@renderer/util/user-server-action";
+import {Route} from "@renderer/router/routes";
 
 export default defineComponent({
     name: "MainRoom",
@@ -39,11 +40,11 @@ export default defineComponent({
             steamName: '',
             buttonConfig: [
                 {
-                    window: "Join",
+                    window: Route.JOIN,
                     text: "Join a Room",
                 },
                 {
-                    window: "Create",
+                    window: Route.CREATE,
                     text: "Create a Room",
                 },
             ] as Array<ButtonConfig>,
@@ -54,7 +55,7 @@ export default defineComponent({
         changeTitle('');
         window.manager.resize(900, 600);
 
-        const message = this.$router.currentRoute.value.params?.message as string;
+        const message = this.$router.currentRoute.value.query?.message as string;
 
         if (message) {
             this.message = message;

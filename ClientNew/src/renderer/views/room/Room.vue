@@ -3,9 +3,6 @@ import Buttons from "../../components/Buttons.vue";
 import {changeTitle} from "../../util/general";
 import {onMounted, onUnmounted, ref} from "vue";
 import {ButtonConfig} from "../../types/buttons";
-import CustomModal from "../modal/CustomModal.vue";
-import Password from "../modal/content/Password.vue";
-import DisconnectButton from "../DisconnectButton.vue";
 import {SocketId} from "../../types/player";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {ensure} from "../../../shared/src/util/general";
@@ -13,6 +10,9 @@ import {Room} from "../../../shared/src/types/room";
 import {useRouter} from "vue-router";
 import {Route} from "@renderer/router/routes";
 import {useMainStore} from "@store/main";
+import CustomModal from "@renderer/components/modal/CustomModal.vue";
+import Password from "@renderer/components/modal/content/Password.vue";
+import DisconnectButton from "@renderer/components/DisconnectButton.vue";
 
 const store = useMainStore();
 const router = useRouter();
@@ -22,9 +22,9 @@ let room = Room.new();
 
 onMounted(async () => {
     room = ensure(UserServerAction.room);
+
     UserServerAction.onRoomUpdate(setRoom);
     changeTitle(`Room ${room.id}`);
-
 });
 
 onUnmounted(async () => {
@@ -39,7 +39,7 @@ const setRoom = (newRoom: Room | null) => {
 
     router.push({
         name: Route.MAIN,
-        params: {
+        query: {
             message: 'The server does not recognize the room anymore, please join or create a new one.'
         }
     });

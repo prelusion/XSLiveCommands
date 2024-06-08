@@ -11,7 +11,7 @@ import {modsFolderPath} from "./common";
  * @param platform
  * @param modFolderPath path to the mod folder relative to the user mods folder
  */
-export function getCompatibleMaps(platform: PlatformUser, modFolderPath: string): Record<MapName, MapPath> {
+export async function getCompatibleMaps(platform: PlatformUser, modFolderPath: string): Promise<Record<MapName, MapPath>> {
     let mapPaths: Array<MapPath> = [];
 
     const commonPath = path.join(modsFolderPath(platform), ...modFolderPath.split("//"), "resources", "_common");
@@ -32,7 +32,7 @@ export function getCompatibleMaps(platform: PlatformUser, modFolderPath: string)
         const cmdFilename = filename.replace(/\.(?:aoe2scenario|rms2?)$/, ".commands.json");
         return cmdFilename !== filename && mapPaths.includes(cmdFilename);
     })
-    const maps = {};
+    const maps: Record<string, string> = {};
     for (const filePath of mapPaths) {
         maps[path.basename(filePath)] = filePath;
     }
