@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import {useMainStore} from "@store/main";
+import {useRouter} from "vue-router";
+import {Route} from "@renderer/router/routes";
+
+const store = useMainStore();
+const router = useRouter();
+</script>
+
 <template>
 
         <div
@@ -11,15 +20,6 @@
         <component :is="Component"/>
     </router-view>
 </template>
-
-<script setup lang="ts">
-import {useMainStore} from "@store/main";
-import {useRouter} from "vue-router";
-import {Route} from "@renderer/router/routes";
-
-const store = useMainStore();
-const router = useRouter();
-</script>
 
 <style lang="scss">
 $height: 240px;
