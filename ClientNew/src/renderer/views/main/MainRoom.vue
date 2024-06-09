@@ -29,6 +29,7 @@ import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {Route} from "@renderer/router/routes";
+import {assert} from "../../../shared/src/util/general";
 
 export default defineComponent({
     name: "MainRoom",
@@ -52,6 +53,9 @@ export default defineComponent({
         };
     },
     mounted: function () {
+        assert(UserServerAction.platform);
+        assert(UserServerAction.username);
+
         changeTitle('');
         window.manager.resize(900, 600);
 
@@ -61,8 +65,8 @@ export default defineComponent({
             this.message = message;
         }
 
-        this.steamId = UserServerAction.platform!.userId;
-        this.steamName = UserServerAction.username!;
+        this.steamId = UserServerAction.platform.userId;
+        this.steamName = UserServerAction.username;
     },
     computed: {},
     methods: {},

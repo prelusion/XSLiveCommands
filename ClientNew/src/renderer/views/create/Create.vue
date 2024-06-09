@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Buttons from "../../components/Buttons.vue";
-import {changeTitle, logThis} from "../../util/general";
+import {changeTitle} from "../../util/general";
 import {onMounted, Ref, ref, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {MapCommands, MapName, MapPath} from "../../../shared/src/types/commands/structs";
@@ -12,6 +11,7 @@ import {Route} from "@renderer/router/routes";
 import {validateInputs} from "@renderer/util/form/validation";
 import InputField from "@renderer/components/InputField.vue";
 import {Mod} from "../../../shared/src/types/mods";
+import Buttons from "@renderer/components/Buttons.vue";
 
 /* Vue */
 const store = useMainStore();
@@ -42,7 +42,7 @@ const inputs: Ref<typeof InputField|null>[] = [launchCodeInput, showPasswordInpu
 /* Datalist */
 const enteredFilename = ref('');
 
-watch(enteredFilename, async (newFilename, oldFilename) => {
+watch(enteredFilename, async () => {
     errors.value = [];
     const filepath = maps.value[enteredFilename.value] ?? '';
 

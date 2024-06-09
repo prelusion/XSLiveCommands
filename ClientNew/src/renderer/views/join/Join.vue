@@ -3,12 +3,12 @@ import Buttons from "../../components/Buttons.vue";
 import {onMounted, ref} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
-import InputField from "../forms/InputField.vue";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {useRouter} from "vue-router";
 import {Route} from "@renderer/router/routes";
 import {validateInputs} from "@renderer/util/form/validation";
 import {assert} from "../../../shared/src/util/general";
+import InputField from "@renderer/components/InputField.vue";
 
 const router = useRouter();
 const joiningInProgress = ref(false);
@@ -22,6 +22,19 @@ onMounted(async () => {
     changeTitle(`Join as Player...`);
     inputRoomCode.value.focus();
 });
+
+const joinRoom = (): void => {
+    joiningInProgress.value = true;
+
+    UserServerAction.joinRoom(roomId)
+        .then(() => {
+            router.push({name: Route.ROOM});
+        })
+        .catch((reason) => {
+            joiningInProgress.value = false;
+            errorMsg.value = reason;
+        });
+}
 
 const buttonConfig = [
     {
@@ -39,21 +52,6 @@ const buttonConfig = [
         text: "Cancel",
     },
 ] as Array<ButtonConfig>;
-
-
-const joinRoom = (): void => {
-    joiningInProgress.value = true;
-
-    UserServerAction.joinRoom(roomId)
-        .then(() => {
-            router.push({name: Route.ROOM});
-        })
-        .catch((reason) => {
-            joiningInProgress.value = false;
-            errorMsg.value = reason;
-        });
-}
-
 </script>
 
 
