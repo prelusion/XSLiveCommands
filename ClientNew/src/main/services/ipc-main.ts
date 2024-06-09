@@ -4,6 +4,7 @@ import {updater} from './hot-updater'
 import DownloadFile from './download-file'
 import Update from './check-update'
 import config from '@config/index'
+import {ensure} from '../../shared/src/util/general';
 
 export const useMainDefaultIpc = () => {
     const defaultIpc = () => {
@@ -13,7 +14,7 @@ export const useMainDefaultIpc = () => {
         });
 
         ipcMain.handle('check-update', (event) => {
-            allUpdater.checkUpdate(BrowserWindow.fromWebContents(event.sender))
+            allUpdater.checkUpdate(ensure(BrowserWindow.fromWebContents(event.sender)))
         });
 
         ipcMain.handle('confirm-update', () => {
@@ -21,7 +22,7 @@ export const useMainDefaultIpc = () => {
         });
 
         ipcMain.handle('open-messagebox', async (event, arg) => {
-            return await dialog.showMessageBox(BrowserWindow.fromWebContents(event.sender), {
+            return await dialog.showMessageBox(ensure(BrowserWindow.fromWebContents(event.sender)), {
                 type: arg.type || 'info',
                 title: arg.title || '',
                 buttons: arg.buttons || [],
@@ -35,11 +36,11 @@ export const useMainDefaultIpc = () => {
         })
 
         ipcMain.handle('hot-update', (event, arg) => {
-            updater(BrowserWindow.fromWebContents(event.sender))
+            updater(ensure(BrowserWindow.fromWebContents(event.sender)))
         })
 
         ipcMain.handle('start-download', (event, msg) => {
-            new DownloadFile(BrowserWindow.fromWebContents(event.sender), msg.downloadUrl).start()
+            new DownloadFile(ensure(BrowserWindow.fromWebContents(event.sender)), msg.downloadUrl).start()
         })
 
         ipcMain.handle('open-win', (event, arg) => {

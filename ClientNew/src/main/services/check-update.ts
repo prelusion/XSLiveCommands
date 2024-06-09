@@ -1,5 +1,6 @@
 import {autoUpdater} from 'electron-updater'
 import {BrowserWindow} from 'electron'
+import {ensure} from "../../shared/src/util/general";
 
 /**
  * -1  Update check failed
@@ -10,7 +11,7 @@ import {BrowserWindow} from 'electron'
  *  4  Download complete
  */
 class Update {
-    public mainWindow: BrowserWindow
+    public mainWindow: BrowserWindow | null = null;
 
     constructor() {
         /* Set the URL */
@@ -20,39 +21,39 @@ class Update {
         autoUpdater.on('error', (err) => {
             console.log('Error occurred during update', err.message);
             if (err.message.includes('sha512 checksum mismatch')) {
-                this.Message(this.mainWindow, -1, 'sha512 checksum failed');
+                this.Message(ensure(this.mainWindow), -1, 'sha512 checksum failed');
             } else {
-                this.Message(this.mainWindow, -1, 'For error details, see the main process console');
+                this.Message(ensure(this.mainWindow), -1, 'For error details, see the main process console');
             }
         });
 
         /* Triggered when checking for updates starts */
         autoUpdater.on('checking-for-update', () => {
             console.log('Starting to check for updates');
-            this.Message(this.mainWindow, 0);
+            this.Message(ensure(this.mainWindow), 0);
         });
 
         /* When update data is found */
         autoUpdater.on('update-available', () => {
             console.log('Update available');
-            this.Message(this.mainWindow, 1);
+            this.Message(ensure(this.mainWindow), 1);
         });
 
         /* When no update data is found */
         autoUpdater.on('update-not-available', () => {
             console.log('No updates available');
-            this.Message(this.mainWindow, 2);
+            this.Message(ensure(this.mainWindow), 2);
         });
 
         /* Download progress listener */
         autoUpdater.on('download-progress', (progressObj) => {
-            this.Message(this.mainWindow, 3, `${progressObj}`);
+            this.Message(ensure(this.mainWindow), 3, `${progressObj}`);
         });
 
         /* Download complete */
         autoUpdater.on('update-downloaded', () => {
             console.log('Download completed');
-            this.Message(this.mainWindow, 4);
+            this.Message(ensure(this.mainWindow), 4);
         });
     }
 
@@ -68,6 +69,7 @@ class Update {
     /* Perform automatic update check */
     checkUpdate(mainWindow: BrowserWindow) {
         this.mainWindow = mainWindow
+
         autoUpdater.checkForUpdates().catch(err => {
             console.log('Network connection issue', err);
         });
