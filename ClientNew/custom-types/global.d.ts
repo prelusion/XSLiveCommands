@@ -1,4 +1,4 @@
-import {ipcRenderer, shell} from "electron";
+import {ipcRenderer, IpcRendererEvent, shell} from "electron";
 import type {getNativeSteamId} from "@main/libs/native";
 import type {deleteXsDataFiles} from "@main/libs/filesys/delete-xs-data-files";
 import type {readTick} from "@main/libs/filesys/read-tick";
@@ -59,6 +59,12 @@ declare global {
             writeConfig: typeof writeConfig;
             resetConfig: typeof resetConfig;
         };
+        electron: {
+            ipcRenderer: {
+                on: (channel: string, listener: (evt: IpcRendererEvent, message: any) => void) => void;
+                removeListener: (channel: string, listener: (evt: IpcRendererEvent, message: any) => void) => void
+            }
+        }
     }
 }
 

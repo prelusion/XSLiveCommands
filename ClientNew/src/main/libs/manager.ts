@@ -1,5 +1,6 @@
 import {app, BrowserWindow, ipcMain} from "electron";
 
+/* Dummy function to represent window */
 export async function resize(width: number, height: number): Promise<void> {
     // ...
 }

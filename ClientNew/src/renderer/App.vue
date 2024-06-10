@@ -5,16 +5,21 @@ import {Route} from "@renderer/router/routes";
 
 const store = useMainStore();
 const router = useRouter();
+
+/* Send user back to the loading screen when the app is restarted */
+window.electron.ipcRenderer.on('restart-finished-loading', () => {
+    router.push({name: Route.LOADING});
+});
+
 </script>
 
 <template>
-
-        <div
-            v-if="router.currentRoute.value.name !== Route.LOADING && !store.$state.connectionOk"
-            id="connection-window"
-        >
-            <div>Lost connection with the server. <br> Reconnecting...</div>
-        </div>
+    <div
+        v-if="router.currentRoute.value.name !== Route.LOADING && !store.$state.connectionOk"
+        id="connection-window"
+    >
+        <div>Lost connection with the server. <br> Reconnecting...</div>
+    </div>
 
     <router-view v-slot="{ Component }">
         <component :is="Component"/>

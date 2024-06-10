@@ -7,7 +7,7 @@ import {useApplicationFunctions} from "@main/libs/manager";
 
 class MainInit {
     public winURL: string = "";
-    public mainWindow: BrowserWindow|null = null;
+    public mainWindow: BrowserWindow | null = null;
     private readonly childProcessGone;
     private readonly applicationIpc;
 
@@ -66,13 +66,16 @@ class MainInit {
             this.mainWindow = null;
         });
 
-
         /* Make all links open with the browser, not with the application */
         this.mainWindow.webContents.setWindowOpenHandler(({url}) => {
             if (url.startsWith('https:')) {
-                shell.openExternal(url)
+                shell.openExternal(url);
             }
-            return {action: 'deny'}
+            return {action: 'deny'};
+        });
+
+        this.mainWindow.webContents.on('did-finish-load', () => {
+            this.mainWindow?.webContents.send('restart-finished-loading');
         });
     }
 

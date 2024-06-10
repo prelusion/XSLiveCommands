@@ -1,8 +1,8 @@
 import {contextBridge, ipcRenderer, IpcRendererEvent, shell} from "electron"
-import {platform, release, arch} from 'os'
-import {PlatformUser} from "../../../shared/src/types/user";
-import {ScheduledCommand} from "../../../shared/src/types/commands/scheduled";
-import {ConfigCoreStruct} from "../../../shared/src/types/config";
+import {arch, platform, release} from 'os'
+import {PlatformUser} from "../shared/src/types/user";
+import {ScheduledCommand} from "../shared/src/types/commands/scheduled";
+import {ConfigCoreStruct} from "../shared/src/types/config";
 
 contextBridge.exposeInMainWorld("ipcRenderer", {
     send: (channel: string, args?: any) => ipcRenderer.send(channel, args),
@@ -56,4 +56,28 @@ contextBridge.exposeInMainWorld('config', {
     readConfig: (version: number) => ipcRenderer.invoke('config:readConfig', version),
     writeConfig: (config: ConfigCoreStruct, version: number) => ipcRenderer.invoke('config:writeConfig', config, version),
     resetConfig: (version: number | null = null) => ipcRenderer.invoke('config:resetConfig', version),
+});
+
+/* The list of channels the ipcRenderer is allowed to act upon */
+const channelAllowList = [
+    'restart-finished-loading'
+];
+
+contextBridge.exposeInMainWorld('electron', {
+    ipcRenderer: {
+        on(channel: string, listener: (evt: IpcRendererEvent, message: any) => void): void {
+            if (!channelAllowList.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.on(channel, (event, message) => listener(event, message));
+        },
+        removeListener(channel: string, listener: (evt: IpcRendererEvent, message: any) => void): void {
+            if (!channelAllowList.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.removeListener(channel, listener);
+        },
+    },
 });
