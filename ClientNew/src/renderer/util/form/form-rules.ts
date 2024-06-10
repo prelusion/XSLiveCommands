@@ -1,13 +1,17 @@
 import {FormResult} from "@renderer/types/form";
 
 export function validateRules(rules: string[], label: string, value: unknown): FormResult {
+    if (rules.length === 0) {
+        return {valid: true, errors: []};
+    }
+
     const validators: Record<string, (...args: any[]) => boolean> = {
-        'required': (val: string): boolean => val !== null && val !== undefined && val !== '',
+        'required': (val: unknown): boolean => val !== null && val !== undefined && val !== '',
         'max': (val: string, max: string): boolean => val.toString().length <= parseInt(max, 10),
         'min': (val: string, min: string): boolean => val.toString().length >= parseInt(min, 10),
         'max-n': (val: number, max: string): boolean => val <= parseInt(max, 10),
         'min-n': (val: number, min: string): boolean => val >= parseInt(min, 10),
-        'string': (val: string): boolean => typeof val === 'string',
+        'string': (val: unknown): boolean => typeof val === 'string',
         'number': (val: string): boolean => !isNaN(Number(val)),
     };
 
