@@ -45,7 +45,7 @@ onMounted(async () => {
     /* ############# Get User ID (Steam only for now) ############# */
     await UserServerAction.setPlatform();
     if (!UserServerAction.platform) {
-        loadingError.value = 'Unable to detect platform.'
+        loadingError.value = 'Unable to detect platform. Make sure you\'re signed into Steam.'
         return;
     }
 

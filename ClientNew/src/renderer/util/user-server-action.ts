@@ -42,8 +42,13 @@ export class UserServerAction {
 
         this.connectionChangedCallback = connectionChangedCallback;
 
-        this.skt = io(serverCustom ?? serverEnv ?? serverSE);
+        const serverUrl = serverCustom ?? serverEnv ?? serverSE;
+        console.log(`Trying to connect to XSLC server on '${serverUrl}'`);
+
+        this.skt = io(serverUrl);
         this.skt.on(UserAction.EstablishConnection, async () => {
+            console.log(`Connected to XSLC server on '${serverUrl}'`);
+
             this.connected = true;
             connectionChangedCallback();
 

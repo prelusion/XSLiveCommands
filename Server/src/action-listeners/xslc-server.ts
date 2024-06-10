@@ -16,7 +16,7 @@ export class XSLCServer {
         this.listeners = new Map();
         this.skt = skt;
 
-        console.log("starting XSLC Server");
+        console.log("Starting XSLC Server...");
         this.skt.on(UserAction.NewConnection, this.addListener.bind(this))
     }
 
