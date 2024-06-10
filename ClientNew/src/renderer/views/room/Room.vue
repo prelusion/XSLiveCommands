@@ -18,22 +18,12 @@ const store = useMainStore();
 const router = useRouter();
 const passwordModal = ref(null as typeof CustomModal | null);
 const errorMsg = ref("");
-let room = Room.new();
+const room = ref(Room.new());
 
-onMounted(async () => {
-    room = ensure(UserServerAction.room);
-
-    UserServerAction.onRoomUpdate(setRoom);
-    changeTitle(`Room ${room.id}`);
-});
-
-onUnmounted(async () => {
-    UserServerAction.offRoomUpdate(setRoom);
-})
-
-const setRoom = (newRoom: Room | null) => {
-    if (newRoom) {
-        room = newRoom;
+const updateRoom = (updatedRoom: Room | null) => {
+    console.log(updatedRoom)
+    if (updatedRoom) {
+        room.value = updatedRoom;
         return;
     }
 
@@ -45,8 +35,21 @@ const setRoom = (newRoom: Room | null) => {
     });
 };
 
+onMounted(async () => {
+    room.value = ensure(UserServerAction.room);
+
+    console.log(UserServerAction.room)
+
+    UserServerAction.onRoomUpdate(updateRoom);
+    changeTitle(`Room ${room.value.id}`);
+});
+
+onUnmounted(async () => {
+    UserServerAction.offRoomUpdate(updateRoom);
+})
+
 const copyRoomId = () => {
-    window.clipboard.write(room.id);
+    window.clipboard.write(room.value.id);
 };
 
 const handlePassword = (password: string) => {
@@ -67,7 +70,7 @@ const closePasswordModal = () => {
 
 const startRequestTyrant = (): void => {
     /* If this room has already had a login */
-    if (store.tyrantRequest.roomId === room.id) {
+    if (store.tyrantRequest.roomId === room.value.id) {
         requestTyrant(store.tyrantRequest.code);
         return;
     }
@@ -78,7 +81,7 @@ const startRequestTyrant = (): void => {
 const requestTyrant = (password: string) => {
     UserServerAction.joinTyrant(password)
         .then(() => {
-            store.tyrantRequest.roomId = room.id;
+            store.tyrantRequest.roomId = room.value.id;
             store.tyrantRequest.code = password;
 
             router.push({name: Route.COMMAND_CENTRE});

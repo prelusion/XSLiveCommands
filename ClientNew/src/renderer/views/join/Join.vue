@@ -14,7 +14,7 @@ const router = useRouter();
 const joiningInProgress = ref(false);
 const inputRoomCode = ref(null as typeof InputField | null);
 const errorMsg = ref("");
-const roomId: string = "";
+const roomId = ref("");
 
 onMounted(async () => {
     assert(inputRoomCode.value);
@@ -26,7 +26,7 @@ onMounted(async () => {
 const joinRoom = (): void => {
     joiningInProgress.value = true;
 
-    UserServerAction.joinRoom(roomId)
+    UserServerAction.joinRoom(roomId.value)
         .then(() => {
             router.push({name: Route.ROOM});
         })
