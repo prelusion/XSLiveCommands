@@ -76,7 +76,6 @@ export class UserServerAction {
     }
 
     private static updateRoom(room: IRoom) {
-        console.log('updateRoom', room)
         if(this.room && this.room.id !== room.id) {
             throw new Error(`client room '${this.room.id}' disagrees with server '${room.id}'`);
         }
