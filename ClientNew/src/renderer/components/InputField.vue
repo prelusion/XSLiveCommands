@@ -21,9 +21,8 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, toRaw, onMounted, computed, getCurrentInstance, watch, PropType} from 'vue';
+import {getCurrentInstance, onMounted, PropType, ref} from 'vue';
 import {validateRules} from '@renderer/util/form/form-rules';
-import {ensure} from "../../shared/src/util/general";
 
 const props = defineProps({
     name: {
@@ -56,54 +55,54 @@ const props = defineProps({
 });
 const modelValue = defineModel();
 
-const emit = defineEmits([
-    'update:modelValue',
-    'onValueUpdated'
-]);
+const emit = defineEmits(['update:modelValue']);
 
 const inputField = ref<HTMLInputElement | null>(null);
-const inputValue = ref('');
-const errorMessages = reactive<Array<string>>([]);
-const timeout = ref(-1);
+const errorMessages = ref([] as string[]);
 
+/* Unique identifier for each InputElement */
 const instance = getCurrentInstance();
-
-const inputId = computed(() => `input-${instance?.uid}`);
+const inputId = `input-${instance?.uid}`;
 
 onMounted(() => {
     validate(false);
 });
 
-const onInputEvent = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const value = props.type === 'checkbox' ? target.checked : target.value;
-    emit('update:modelValue', toRaw(value));
-};
+let timeout = -1;
+const onInputEvent = () => {
+    clearTimeout(timeout);
 
-const checkValidity = () => {
-    clearTimeout(timeout.value);
+    timeout = setTimeout(() => {
+        validate();
 
-    timeout.value = setTimeout(validate, props.debounce) as unknown as number;
+        emit('update:modelValue', modelValue.value);
+    }, props.debounce) as unknown as number;
 };
 
 const validate = (error: boolean = true) => {
-    clearTimeout(ensure(timeout.value));
-    const formResult = validateRules(props.rules, props.label ?? props.name, inputValue.value);
-    emit('onValueUpdated', inputValue.value);
+    const formResult = validateRules(props.rules, props.label ?? props.name, modelValue.value);
+
     if (error) {
-        errorMessages.length = 0;
-        if (formResult.errors) errorMessages.push(...formResult.errors);
+        errorMessages.value = [];
+
+        if (formResult.errors) {
+            errorMessages.value.push(...formResult.errors);
+        }
     }
+
     return formResult.valid;
 };
 
 const clear = () => {
-    inputValue.value = '';
+    modelValue.value = '';
 };
 
 const focus = () => {
     inputField.value?.focus();
 };
+
+/* Allow functions to be called from outside other components */
+defineExpose({validate, clear, focus})
 </script>
 
 <style>

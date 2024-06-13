@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {changeTitle} from "../../util/general";
-import {onMounted, Ref, ref, toRaw, watch} from "vue";
+import {onMounted, Ref, ref, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {MapCommands, MapName, MapPath} from "../../../shared/src/types/commands/structs";
 import {assert, ensure} from "../../../shared/src/util/general";
@@ -24,7 +24,6 @@ const loadedAvailableMaps = ref(false);
 /* Input field variables */
 const password = ref('');
 const showPassword = ref(false);
-const passwordFieldType = ref('password');
 
 const maps = ref<Record<MapName, MapPath>>({});
 
@@ -44,15 +43,6 @@ const inputs: Ref<typeof InputField | null>[] = [launchCodeInputField, showPassw
 const enteredFilename = ref('');
 
 /* ######### Watchers ######### */
-// watch(password, async (newValue: unknown) => {
-//     console.log('password changed!')
-// })
-// watch(showPassword, async (newValue: unknown) => {
-//     const shouldShow = toRaw(newValue) as boolean;
-//
-//     passwordFieldType.value = shouldShow ? 'text' : 'password';
-// })
-
 watch(enteredFilename, async () => {
     errors.value = [];
     const filepath = maps.value[enteredFilename.value] ?? '';

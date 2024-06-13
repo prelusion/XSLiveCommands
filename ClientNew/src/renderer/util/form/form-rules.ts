@@ -27,14 +27,17 @@ export function validateRules(rules: string[], label: string, value: unknown): F
 
     const errors: Array<string> = [];
 
-    rules.forEach(rule => {
+    rules.every((rule) => {
         const [ruleName, ruleParam] = rule.includes(':')
             ? rule.split(':')
             : [rule];
 
         if (validators[ruleName] && !validators[ruleName](value, ruleParam)) {
-            errors.push(validatorErrors[ruleName](ruleParam))
+            errors.push(validatorErrors[ruleName](ruleParam));
+            return false; /* Stop loop */
         }
+
+        return true;
     });
 
     return errors.length === 0
