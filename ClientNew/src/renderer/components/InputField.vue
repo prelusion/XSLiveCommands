@@ -3,15 +3,14 @@
         <label :for="inputId">{{ label }}</label>
         <div class="custom-input-wrapper">
             <input
-                ref="input-field"
+                ref="inputField"
                 class="custom-input"
-                v-model="inputValue"
+                v-model="modelValue"
                 :id="inputId"
                 :type="type"
                 :placeholder="placeholder"
-                :class="{'custom-input-error': errorMessages.length}"
-                @input="() => checkValidity()"
-                @blur="() => validate()"
+                :class="{ 'custom-input-error': errorMessages.length }"
+                @input="onInputEvent"
             />
         </div>
         <div v-for="(error, index) in errorMessages" :key="index" class="error-msg">
@@ -21,89 +20,89 @@
     </div>
 </template>
 
-<script lang="ts">
-import {defineComponent, getCurrentInstance, PropType} from "vue";
-import {validateRules} from "@renderer/util/form/form-rules";
+<script setup lang="ts">
+import {getCurrentInstance, onMounted, PropType, ref} from 'vue';
+import {validateRules} from '@renderer/util/form/form-rules';
 
-const {clearTimeout, setTimeout} = window;
-
-export default defineComponent({
-    name: "InputField",
-    props: {
-        name: {
-            type: String,
-            required: true,
-        },
-        label: {
-            type: String,
-        },
-        type: {
-            type: String,
-            default: 'text'
-        },
-        placeholder: {
-            type: String,
-            default: ''
-        },
-        errorMsg: {
-            type: Array as PropType<Array<string>>,
-            default: () => [],
-        },
-        rules: {
-            type: Array as PropType<Array<string>>,
-            default: () => [],
-        },
-        debounce: {
-            type: Number,
-            default: 300,
-
-        }
+const props = defineProps({
+    name: {
+        type: String,
+        required: true,
     },
-    mounted() {
-        /* Initial validation to check if initial state is valid */
-        this.validate(false);
+    label: {
+        type: String,
     },
-    data() {
-        return {
-            inputValue: '',
-            errorMessages: [] as Array<string>,
-            timeout: -1 as number,
-        };
+    type: {
+        type: String,
+        default: 'text',
     },
-    computed: {
-        inputId() {
-            const instance = getCurrentInstance();
-            return `input-${instance?.uid}`;
-        }
+    placeholder: {
+        type: String,
+        default: '',
     },
-    methods: {
-        checkValidity() {
-            /* Input debounce */
-            clearTimeout(this.timeout);
+    errorMsg: {
+        type: Array as PropType<Array<string>>,
+        default: () => [],
+    },
+    rules: {
+        type: Array as PropType<Array<string>>,
+        default: () => [],
+    },
+    debounce: {
+        type: Number,
+        default: 300,
+    },
+});
+const modelValue = defineModel();
 
-            this.timeout = setTimeout(this.validate, this.debounce);
-        },
-        validate(error: boolean = true) {
-            const formResult = validateRules(this.rules, this.label ?? this.name, this.inputValue);
+const emit = defineEmits(['update:modelValue']);
 
-            this.$emit('onValueUpdated', this.inputValue);
+const inputField = ref<HTMLInputElement | null>(null);
+const errorMessages = ref([] as string[]);
 
-            if (error) {
-                this.errorMessages = formResult.errors ?? [];
-            }
+/* Unique identifier for each InputElement */
+const instance = getCurrentInstance();
+const inputId = `input-${instance?.uid}`;
 
-            return formResult.valid;
-        },
-        clear() {
-            this.inputValue = '';
-        },
-        focus() {
-            const input = this.$refs['input-field'] as HTMLInputElement;
+onMounted(() => {
+    validate(false);
+});
 
-            input.focus();
+let timeout = -1;
+const onInputEvent = () => {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+        validate();
+
+        emit('update:modelValue', modelValue.value);
+    }, props.debounce) as unknown as number;
+};
+
+const validate = (error: boolean = true) => {
+    const formResult = validateRules(props.rules, props.label ?? props.name, modelValue.value);
+
+    if (error) {
+        errorMessages.value = [];
+
+        if (formResult.errors) {
+            errorMessages.value.push(...formResult.errors);
         }
     }
-});
+
+    return formResult.valid;
+};
+
+const clear = () => {
+    modelValue.value = '';
+};
+
+const focus = () => {
+    inputField.value?.focus();
+};
+
+/* Allow functions to be called from outside other components */
+defineExpose({validate, clear, focus})
 </script>
 
 <style>
@@ -113,32 +112,31 @@ export default defineComponent({
     flex-direction: column;
     gap: 5px;
     align-items: start;
+}
 
-    .custom-input-wrapper {
-        width: 100%;
-        height: 30px;
-        display: flex;
-        align-items: center;
+.custom-input-wrapper {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
 
-        .custom-input {
-            border: 1px solid #767676;
-            border-radius: 2px;
-            width: 100%;
-            padding: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
+.custom-input {
+    border: 1px solid #767676;
+    border-radius: 2px;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
 
-            &.custom-input-error {
-                border: 1px solid red;
-            }
-        }
+.custom-input-error {
+    border: 1px solid red;
+}
 
-    }
-
-    .error-msg {
-        margin-top: -3px;
-        font-size: 15px;
-        color: red;
-    }
+.error-msg {
+    margin-top: -3px;
+    font-size: 15px;
+    color: red;
 }
 </style>

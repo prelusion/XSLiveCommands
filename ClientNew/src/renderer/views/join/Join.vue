@@ -20,6 +20,7 @@ onMounted(async () => {
     assert(inputRoomCode.value);
 
     changeTitle(`Join as Player...`);
+
     inputRoomCode.value.focus();
 });
 
@@ -48,7 +49,7 @@ const buttonConfig = [
         },
     },
     {
-        window: "MainRoom",
+        window: Route.MAIN,
         text: "Cancel",
     },
 ] as Array<ButtonConfig>;
@@ -66,9 +67,9 @@ const buttonConfig = [
                 type="text"
                 name="room-code"
                 placeholder="Room Code"
-                :rules="['max:30']"
+                :rules="['required', 'max:30']"
                 :errorMsg="[errorMsg]"
-                @onValueUpdated="roomId = $event"
+                v-model="roomId"
             />
         </div>
 

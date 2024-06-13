@@ -35,13 +35,14 @@ const selectedMap = ref({
 const errors = ref([] as string[]);
 
 /* Input fields */
-const launchCodeInput = ref(null as typeof InputField | null);
-const showPasswordInput = ref(null as typeof InputField | null);
-const inputs: Ref<typeof InputField|null>[] = [launchCodeInput, showPasswordInput];
+const launchCodeInputField = ref(null as typeof InputField | null);
+const showPasswordInputField = ref(null as typeof InputField | null);
+const inputs: Ref<typeof InputField | null>[] = [launchCodeInputField, showPasswordInputField];
 
 /* Datalist */
 const enteredFilename = ref('');
 
+/* ######### Watchers ######### */
 watch(enteredFilename, async () => {
     errors.value = [];
     const filepath = maps.value[enteredFilename.value] ?? '';
@@ -54,6 +55,7 @@ watch(enteredFilename, async () => {
     }
 });
 
+/* Events */
 onMounted(async () => {
     changeTitle("Create Room...");
 
@@ -90,6 +92,7 @@ onMounted(async () => {
     loadedAvailableMaps.value = true;
 });
 
+/* ######### Functions ######### */
 /**
  * When a map is selected from the dropdown or when reading the previous map config
  */
@@ -179,24 +182,23 @@ const buttonConfig: Array<ButtonConfig> = [
             <div id="password">
                 <div id="show-password">
                     <InputField
-                        ref="launchCode"
+                        v-model="password"
+                        ref="launchCodeInputField"
                         class="input-field"
                         name="launch-code"
                         label="Launch Code"
                         placeholder="Launch Code for Tyrants"
                         :type="showPassword ? 'text' : 'password'"
                         :rules="['max:30']"
-                        @onValueUpdated="password = $event"
                     />
 
                     <InputField
-                        ref="showPassword"
+                        v-model="showPassword"
+                        ref="showPasswordInputField"
                         class="input-field show-password"
                         name="show-password"
                         label="Show password"
                         type="checkbox"
-                        :debounce="0"
-                        @onValueUpdated="showPassword = $event"
                     />
                 </div>
 
@@ -297,6 +299,7 @@ input, .input-field {
 }
 
 #loading {
+    margin-top: 40vh;
     width: 100%;
     text-align: center;
 }
