@@ -1,25 +1,3 @@
-<template>
-    <div class="custom-input-container">
-        <label :for="inputId">{{ label }}</label>
-        <div class="custom-input-wrapper">
-            <input
-                ref="inputField"
-                class="custom-input"
-                v-model="modelValue"
-                :id="inputId"
-                :type="type"
-                :placeholder="placeholder"
-                :class="{ 'custom-input-error': errorMessages.length }"
-                @input="onInputEvent"
-            />
-        </div>
-        <div v-for="(error, index) in errorMessages" :key="index" class="error-msg">
-            {{ error }}
-        </div>
-        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import {getCurrentInstance, onMounted, PropType, ref} from 'vue';
 import {validateRules} from '@renderer/util/form/form-rules';
@@ -35,6 +13,10 @@ const props = defineProps({
     type: {
         type: String,
         default: 'text',
+    },
+    list: {
+        type: String,
+        default: '',
     },
     placeholder: {
         type: String,
@@ -104,6 +86,29 @@ const focus = () => {
 /* Allow functions to be called from outside other components */
 defineExpose({validate, clear, focus})
 </script>
+
+<template>
+    <div class="custom-input-container">
+        <label v-show="!!label" :for="inputId">{{ label }}</label>
+        <div class="custom-input-wrapper">
+            <input
+                ref="inputField"
+                class="custom-input"
+                v-model="modelValue"
+                :id="inputId"
+                :list="list"
+                :type="type"
+                :placeholder="placeholder"
+                :class="{ 'custom-input-error': errorMessages.length }"
+                @input="onInputEvent"
+            />
+        </div>
+        <div v-for="(error, index) in errorMessages" :key="index" class="error-msg">
+            {{ error }}
+        </div>
+        <div id="error-msg" v-if="errorMsg" v-html="errorMsg"></div>
+    </div>
+</template>
 
 <style>
 .custom-input-container {
