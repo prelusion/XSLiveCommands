@@ -19,9 +19,13 @@ const router = useRouter();
 const passwordModal = ref(null as typeof CustomModal | null);
 const errorMsg = ref("");
 const room = ref(Room.new());
+const ownSocketId = ref(UserServerAction.skt?.id);
+
+/* Copy button */
+const copyButtonText = ref('Copy');
+let buttonTimeout = -1;
 
 const updateRoom = (updatedRoom: Room | null) => {
-    console.log(updatedRoom)
     if (updatedRoom) {
         room.value = updatedRoom;
         return;
@@ -46,14 +50,15 @@ onMounted(async () => {
 
 onUnmounted(async () => {
     UserServerAction.offRoomUpdate(updateRoom);
-})
+});
 
-const copyRoomId = () => {
-    window.clipboard.write(room.value.id);
-};
+const copyRoomId = async () => {
+    clearTimeout(buttonTimeout);
 
-const handlePassword = (password: string) => {
-    requestTyrant(password)
+    await window.clipboard.write(room.value.id);
+
+    copyButtonText.value = 'Copied!';
+    buttonTimeout = setTimeout(() => copyButtonText.value = 'Copy', 2000) as unknown as number;
 };
 
 const showPasswordModal = () => {
@@ -68,7 +73,7 @@ const closePasswordModal = () => {
     modal.close();
 };
 
-const startRequestTyrant = (): void => {
+const startTyrantRequest = (): void => {
     /* If this room has already had a login */
     if (store.tyrantRequest.roomId === room.value.id) {
         requestTyrant(store.tyrantRequest.code);
@@ -76,6 +81,10 @@ const startRequestTyrant = (): void => {
     }
 
     showPasswordModal();
+};
+
+const submitTyrantRequest = (password: string) => {
+    requestTyrant(password)
 };
 
 const requestTyrant = (password: string) => {
@@ -95,18 +104,14 @@ const requestTyrant = (password: string) => {
 const disconnect = async () => {
     await UserServerAction.leaveRoom();
 
-    router.replace({name: Route.MAIN});
+    await router.replace({name: Route.MAIN});
 };
-
-const getSelfUserId = (): SocketId => {
-    return ensure(UserServerAction.skt?.id);
-}
 
 const buttonConfig = [
     {
         text: "Begin Tyranny",
         callback: (): void => {
-            startRequestTyrant()
+            startTyrantRequest()
         }
     }
 ] as Array<ButtonConfig>;
@@ -121,7 +126,7 @@ const buttonConfig = [
                 <td>Room Code:</td>
                 <td>{{ room.id }}</td>
                 <td>
-                    <button @click="copyRoomId()">Copy</button>
+                    <button @click="copyRoomId()">{{ copyButtonText }}</button>
                 </td>
             </tr>
             <tr>
@@ -137,14 +142,14 @@ const buttonConfig = [
                 <td title="User is tyrant">
                     {{ room.isTyrant(userId) ? '💪' : '' }}
                 </td>
-                <td :style="{ fontWeight: userId === getSelfUserId() ? 'bold' : 'normal' }">
+                <td :style="{ fontWeight: userId === ownSocketId ? 'bold' : 'normal' }">
                     {{ room.getPlayerName(userId) }}
                 </td>
             </tr>
         </table>
         <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
         <CustomModal ref="passwordModal">
-            <Password @submit="handlePassword" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
+            <Password @submit="submitTyrantRequest" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
         </CustomModal>
     </div>
 </template>
@@ -153,10 +158,6 @@ const buttonConfig = [
 <style scoped lang="scss">
 table {
     tr {
-        //td:first-child {
-        //    text-align: right;
-        //}
-
         td:nth-child(2) {
             padding-left: 10px;
         }

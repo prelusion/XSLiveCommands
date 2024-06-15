@@ -1,7 +1,7 @@
 import {clipboard, ipcMain} from "electron";
 
 
-export function write(text: string): void {
+export async function write(text: string): Promise<void> {
     clipboard.writeText(text);
 }
 
