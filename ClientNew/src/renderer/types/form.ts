@@ -1,6 +1,5 @@
 interface ValidForm {
     valid: true;
-    errors: [];  /* Always empty */
 }
 
 interface InvalidForm {

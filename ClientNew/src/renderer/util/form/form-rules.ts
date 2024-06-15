@@ -2,7 +2,7 @@ import {FormResult} from "@renderer/types/form";
 
 export function validateRules(rules: string[], label: string, value: unknown): FormResult {
     if (rules.length === 0) {
-        return {valid: true, errors: []};
+        return {valid: true};
     }
 
     const validators: Record<string, (...args: any[]) => boolean> = {
@@ -25,12 +25,17 @@ export function validateRules(rules: string[], label: string, value: unknown): F
         'number': (): string => `The ${label} must be a number`,
     };
 
-    const errors: Array<string> = [];
+    let valueIsNotRequired = true;
 
+    const errors: Array<string> = [];
     rules.every((rule) => {
         const [ruleName, ruleParam] = rule.includes(':')
             ? rule.split(':')
             : [rule];
+
+        if (ruleName === 'required') {
+            valueIsNotRequired = false;
+        }
 
         if (validators[ruleName] && !validators[ruleName](value, ruleParam)) {
             errors.push(validatorErrors[ruleName](ruleParam));
@@ -40,7 +45,12 @@ export function validateRules(rules: string[], label: string, value: unknown): F
         return true;
     });
 
+    /* If the value is not required, and the given value is empty, ignore errors and return valid response */
+    if (valueIsNotRequired && (value === null || value === undefined || value === '')) {
+        return {valid: true};
+    }
+
     return errors.length === 0
-        ? {valid: true, errors: []}
-        : {valid: false, errors: errors}
+        ? {valid: true}
+        : {valid: false, errors: errors};
 }

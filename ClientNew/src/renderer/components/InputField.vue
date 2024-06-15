@@ -79,13 +79,13 @@ const onInputEvent = () => {
     }, props.debounce) as unknown as number;
 };
 
-const validate = (error: boolean = true) => {
+const validate = (updateErrors: boolean = true) => {
     const formResult = validateRules(props.rules, props.label ?? props.name, modelValue.value);
 
-    if (error) {
+    if (updateErrors) {
         errorMessages.value = [];
 
-        if (formResult.errors) {
+        if (! formResult.valid) {
             errorMessages.value.push(...formResult.errors);
         }
     }
