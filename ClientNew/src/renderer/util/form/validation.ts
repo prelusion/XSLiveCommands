@@ -7,6 +7,8 @@ export function validateInputs(inputFields: (typeof InputField | null)[]): boole
         .every(c => c.validate());
 }
 
-export function clearInputs(inputFields: typeof InputField[]): void {
-    inputFields.forEach((c: typeof InputField) => c.clear())
+export function clearInputs(inputFields: (typeof InputField | null)[]): void {
+    inputFields
+        .filter((c): c is typeof InputField => c !== null)
+        .forEach((c: typeof InputField) => c.clear());
 }

@@ -1,34 +1,57 @@
 <script setup lang="ts">
-import Buttons from "../../components/Buttons.vue";
-import { changeTitle } from "../../util/general";
-import { ref, onMounted, computed, watch } from "vue";
-import { ButtonConfig } from "../../types/buttons";
-import { ensure } from "../../../shared/src/util/general";
-import DisconnectButton from "../DisconnectButton.vue";
-import InputField from "../forms/InputField.vue";
-import { SocketId } from "../../types/player";
-import { UserServerAction } from "@renderer/util/user-server-action";
-import { Param, ParamType } from "../../../shared/src/types/commands/scheduled";
-import { useRouter } from "vue-router";
-import { Room } from "../../../shared/src/types/room";
-import { ParamStruct } from "../../../shared/src/types/commands/structs";
-import { useMainStore } from "@store/main";
-import { clearInputs, validateInputs } from "@renderer/util/form/validation";
-import { Route } from "@renderer/router/routes";
-
-const input = ref<InstanceType<typeof InputField> | null>(null);
+import {changeTitle} from "../../util/general";
+import {ref, onMounted, computed, watch, onUnmounted, toRaw} from "vue";
+import {ButtonConfig} from "../../types/buttons";
+import {ensure} from "../../../shared/src/util/general";
+import {SocketId} from "../../types/player";
+import {UserServerAction} from "@renderer/util/user-server-action";
+import {Param, ParamType} from "../../../shared/src/types/commands/scheduled";
+import {useRouter} from "vue-router";
+import {Room} from "../../../shared/src/types/room";
+import {ParamStruct} from "../../../shared/src/types/commands/structs";
+import {useMainStore} from "@store/main";
+import {clearInputs, validateInputs} from "@renderer/util/form/validation";
+import {Route} from "@renderer/router/routes";
+import InputField from "@renderer/components/InputField.vue";
+import DisconnectButton from "@renderer/components/DisconnectButton.vue";
+import Buttons from "@renderer/components/Buttons.vue";
+import {log} from "electron-log";
 
 const store = useMainStore();
 const router = useRouter();
 
+const commandSelectionInput = ref<typeof InputField | null>(null);
+const commandParamValueInputs = ref<(typeof InputField | null)[]>([]);
+const commandParamValues = ref<(number | string | boolean | undefined)[]>([]);
+
+/* Create a temporary room */
 const room = ref<Room>(Room.new());
+
 const selectedCommand = ref("");
-const inputParams = ref<(number | string | boolean | undefined)[]>([]);
+
 const expectedTick = ref(-1);
 const isClickable = ref(true);
 const text = ref<string[]>([]);
 const error = ref(true);
-const interval = ref<number | undefined>(undefined);
+
+const tickPredictionInterval = ref<number | undefined>(undefined);
+
+onMounted(() => {
+    room.value = ensure(UserServerAction.room);
+
+    UserServerAction.onRoomUpdate(updateRoom);
+
+    tickPredictionInterval.value = window.setInterval(getTickPrediction, 500);
+
+    changeTitle(`COMMAND CENTRE! (Room: ${room.value.id})`);
+    window.manager.resize(800, 600);
+});
+
+onUnmounted(async () => {
+    clearInterval(tickPredictionInterval.value);
+
+    UserServerAction.offRoomUpdate(updateRoom);
+});
 
 const sendCommand = async (): Promise<void> => {
     if (!commandId.value) {
@@ -38,20 +61,24 @@ const sendCommand = async (): Promise<void> => {
     const params: Param[] = [];
 
     for (let i = 0; i < commandParams.value.length; ++i) {
-        const inp = inputParams.value[i] === '' ? null : inputParams.value[i];
+        const inputValue = commandParamValues.value[i] !== ''
+            ? commandParamValues.value[i]
+            : null;
+
         const param = commandParams.value[i];
 
-        let value = inp ?? param.default;
-        const type = param.type;
+        let value = inputValue ?? param.default;
 
-        // A checkbox loaded initially (not clicked) is undefined even though it should be false.
-        if (type === 'bool' && value === undefined) {
+        /* A checkbox loaded initially (not clicked) is undefined even though it should be false. */
+        if (param.type === 'bool' && value === undefined) {
             value = false;
         }
+
         if (value === undefined) {
             setError("Please enter values for all required arguments before sending the command!");
             return;
         }
+
         params.push(<Param>{
             type: getCommandParameterType(i) as ParamType,
             name: param.name,
@@ -60,7 +87,7 @@ const sendCommand = async (): Promise<void> => {
     }
 
     setText("Command Sent!");
-    inputParams.value = [];
+    commandParamValues.value = [];
 
     await UserServerAction.issueCommand(commandId.value, params);
 };
@@ -75,6 +102,7 @@ const commandParams = computed(() => {
 
 const commandInputType = (index: number): string => {
     const type = getCommandParameterType(index);
+
     switch (type) {
         case ParamType.INT:
         case ParamType.FLOAT:
@@ -103,9 +131,9 @@ const getCommandParameterPlaceholderText = (index: number): string => {
     return param.name + defString;
 };
 
-const setRoom = (newRoom: Room | null) => {
-    if (!newRoom?.isTyrant(UserServerAction.skt?.id as SocketId)) {
-        router.replace({ name: Route.ROOM });
+const updateRoom = (newRoom: Room | null) => {
+    if (! newRoom?.isTyrant(UserServerAction.skt?.id as SocketId)) {
+        router.replace({name: Route.ROOM});
         return;
     }
     if (newRoom) {
@@ -143,8 +171,9 @@ const getCommandRules = (index: number): Array<string> => {
 
     const def = getCommandParameter(index).default;
 
+    /* Add required as a rule when no default was given */
     /* Truthy won't work as '0' or '' could be valid defaults */
-    if (def === null || def === undefined) {
+    if (def === undefined) {
         rules.push('required');
     }
 
@@ -162,15 +191,15 @@ const commandDelay = () => {
 const exitTyrantView = async () => {
     try {
         await UserServerAction.leaveTyrant();
-        await router.replace({ name: Route.ROOM });
+        await router.replace({name: Route.ROOM});
     } catch {
-        await router.replace({ name: Route.MAIN });
+        await router.replace({name: Route.MAIN});
     }
 };
 
 const disconnect = async () => {
     await UserServerAction.leaveRoom();
-    await router.replace({ name: Route.MAIN });
+    await router.replace({name: Route.MAIN});
 };
 
 
@@ -178,33 +207,26 @@ const copyRoomId = () => {
     window.clipboard.write(room.value.id);
 };
 
-onMounted(() => {
-    room.value = ensure(UserServerAction.room);
-    UserServerAction.onRoomUpdate(setRoom);
-
-    interval.value = window.setInterval(getTickPrediction, 500);
-
-    changeTitle(`COMMAND CENTRE! (Room: ${room.value.id})`);
-    window.manager.resize(800, 600);
-});
-
 watch(commandId, () => {
     text.value = [];
-    inputParams.value = [];
+    commandParamValues.value = [];
 });
 
 const buttonConfig = ref<ButtonConfig[]>([
     {
         text: "Send",
         callback: async (): Promise<void> => {
-            ensure(input.value);
-            if (!validateInputs([input.value]) || !isClickable.value) {
+            const validated = validateInputs(commandParamValueInputs.value);
+
+            if (!validated || !isClickable.value) {
                 return;
             }
+
             commandDelay();
 
             await sendCommand();
-            clearInputs([input.value]);
+
+            clearInputs([commandSelectionInput.value]);
         },
         disabled: (): boolean => !isClickable.value,
     },
@@ -241,10 +263,20 @@ const buttonConfig = ref<ButtonConfig[]>([
             <div id="command">
                 <div id="command-selection">
                     <div id="command-top-order">
-                        <div>
-                            <input v-model="selectedCommand" list="commands" placeholder="Select Command" />
+                        <div style="display: flex; flex-direction: row; align-items: center; gap: 1">
+                            <div style="width: 300px; height: 30px; display: block">
+                                <InputField
+                                    name="command-selection"
+                                    v-model="selectedCommand"
+                                    ref="commandSelectionInput"
+                                    list="commands"
+                                    placeholder="Select Command"
+                                />
+                            </div>
                             <button @click="selectedCommand = ''" id="clear-command-button"
-                                    title="Clear the command selection text box">
+                                    title="Clear the command selection text box"
+                                    style="height: 30px;"
+                            >
                                 Clear
                             </button>
                         </div>
@@ -260,15 +292,16 @@ const buttonConfig = ref<ButtonConfig[]>([
                             Arguments:
                         </div>
                         <table>
-                            <tr class="param-entry" v-bind:key="index" v-for="(_, index) in commandParams?.length ?? 0">
+                            <tr class="param-entry" v-for="(_, index) in commandParams?.length ?? 0" v-bind:key="index" >
                                 <td>
                                     <InputField
-                                        ref="input"
+                                        :ref="(el: unknown) => commandParamValueInputs[index] = toRaw(el) as typeof InputField"
+                                        v-model="commandParamValues[index]"
                                         :name="getCommandParameter(index).name"
                                         :type="commandInputType(index)"
                                         :placeholder="getCommandParameterPlaceholderText(index)"
                                         :rules="getCommandRules(index)"
-                                        @onValueUpdated="inputParams[index] = $event" />
+                                    />
                                 </td>
                             </tr>
                         </table>
@@ -312,9 +345,9 @@ const buttonConfig = ref<ButtonConfig[]>([
                     color: red;
                 }
 
-                input {
-                    margin-top: 3px;
-                }
+                //input {
+                //    margin-top: 3px;
+                //}
 
                 .expected-execution-time {
                     margin: 0;
@@ -353,7 +386,7 @@ const buttonConfig = ref<ButtonConfig[]>([
     }
 }
 
-input,
+command-param-value-inputs,
 button {
     padding: 5px;
 }
