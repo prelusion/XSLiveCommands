@@ -12,7 +12,7 @@ import InputField from "@renderer/components/InputField.vue";
 
 const router = useRouter();
 const joiningInProgress = ref(false);
-const inputRoomCode = ref(null as typeof InputField | null);
+const inputRoomCode = ref<typeof InputField | null>(null);
 const errorMsg = ref("");
 const roomId = ref("");
 

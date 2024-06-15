@@ -12,7 +12,7 @@ import {ensure} from "../../../shared/src/util/general";
 
 const store = useMainStore();
 const router = useRouter();
-const configResetModal = ref(null as typeof CustomModal|null);
+const configResetModal = ref<typeof CustomModal|null>(null);
 
 changeTitle('');
 

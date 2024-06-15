@@ -35,8 +35,8 @@ const selectedMap = ref({
 const errors = ref([] as string[]);
 
 /* Input fields */
-const launchCodeInputField = ref(null as typeof InputField | null);
-const showPasswordInputField = ref(null as typeof InputField | null);
+const launchCodeInputField = ref<typeof InputField | null>(null);
+const showPasswordInputField = ref<typeof InputField | null>(null);
 const inputs: Ref<typeof InputField | null>[] = [launchCodeInputField, showPasswordInputField];
 
 /* Datalist */

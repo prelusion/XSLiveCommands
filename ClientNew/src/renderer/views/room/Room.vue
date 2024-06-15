@@ -16,7 +16,7 @@ import DisconnectButton from "@renderer/components/DisconnectButton.vue";
 
 const store = useMainStore();
 const router = useRouter();
-const passwordModal = ref(null as typeof CustomModal | null);
+const passwordModal = ref<typeof CustomModal | null>(null);
 const errorMsg = ref("");
 const room = ref(Room.new());
 const ownSocketId = ref(UserServerAction.skt?.id);

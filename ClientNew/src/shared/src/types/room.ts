@@ -25,6 +25,7 @@ export class Room {
     public static new(): Room {
         return new Room(<AuthenticatedUser>{sktId: ""}, "", {}, null);
     }
+
     public static from(iRoom: IRoom): Room {
         const room = Room.new();
         room.id = iRoom.id;
