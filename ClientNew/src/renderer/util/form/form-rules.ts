@@ -7,8 +7,8 @@ export function validateRules(rules: string[], label: string, value: unknown): F
 
     const validators: Record<string, (...args: any[]) => boolean> = {
         'required': (val: unknown): boolean => val !== null && val !== undefined && val !== '',
-        'max': (val: string, max: string): boolean => val.toString().length <= parseInt(max, 10),
-        'min': (val: string, min: string): boolean => val.toString().length >= parseInt(min, 10),
+        'max': (val: string, max: string): boolean => val !== undefined && (val.toString().length <= parseInt(max, 10)),
+        'min': (val: string, min: string): boolean => val !== undefined && (val.toString().length >= parseInt(min, 10)),
         'max-n': (val: number, max: string): boolean => val <= parseInt(max, 10),
         'min-n': (val: number, min: string): boolean => val >= parseInt(min, 10),
         'string': (val: unknown): boolean => typeof val === 'string',
@@ -25,17 +25,19 @@ export function validateRules(rules: string[], label: string, value: unknown): F
         'number': (): string => `The ${label} must be a number`,
     };
 
-    let valueIsNotRequired = true;
+    /* Check if any rule is the required rule */
+    const includesRequiredRule = rules.some((rule) => rule === 'required');
+
+    /* Make sure required rule is always executed first */
+    if (rules.length > 1 && includesRequiredRule && rules[0] !== 'required') {
+        rules = ['required', ...rules.filter(rule => rule !== 'required')];
+    }
 
     const errors: Array<string> = [];
     rules.every((rule) => {
         const [ruleName, ruleParam] = rule.includes(':')
             ? rule.split(':')
             : [rule];
-
-        if (ruleName === 'required') {
-            valueIsNotRequired = false;
-        }
 
         if (validators[ruleName] && !validators[ruleName](value, ruleParam)) {
             errors.push(validatorErrors[ruleName](ruleParam));
@@ -46,7 +48,7 @@ export function validateRules(rules: string[], label: string, value: unknown): F
     });
 
     /* If the value is not required, and the given value is empty, ignore errors and return valid response */
-    if (valueIsNotRequired && (value === null || value === undefined || value === '')) {
+    if (!includesRequiredRule && (value === null || value === undefined || value === '')) {
         return {valid: true};
     }
 
