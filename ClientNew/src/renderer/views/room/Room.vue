@@ -27,7 +27,7 @@ const updateRoom = (updatedRoom: Room | null) => {
         return;
     }
 
-    router.push({
+    router.replace({
         name: Route.MAIN,
         query: {
             message: 'The server does not recognize the room anymore, please join or create a new one.'
@@ -84,7 +84,7 @@ const requestTyrant = (password: string) => {
             store.tyrantRequest.roomId = room.value.id;
             store.tyrantRequest.code = password;
 
-            router.push({name: Route.COMMAND_CENTRE});
+            router.replace({name: Route.COMMAND_CENTRE});
         })
         .catch((reason) => {
             store.tyrantRequest.code = '';
@@ -95,7 +95,7 @@ const requestTyrant = (password: string) => {
 const disconnect = async () => {
     await UserServerAction.leaveRoom();
 
-    router.push({name: Route.MAIN});
+    router.replace({name: Route.MAIN});
 };
 
 const getSelfUserId = (): SocketId => {

@@ -6,9 +6,14 @@ import {Route} from "@renderer/router/routes";
 const store = useMainStore();
 const router = useRouter();
 
+/* Disable history states, so the back and forth buttons canNOT be used */
+router.push = () => {
+    throw new Error('Please use `router.replace(...)` instead of `router.push(...)`');
+}
+
 /* Send user back to the loading screen when the app is restarted */
 window.electron.ipcRenderer.on('restart-finished-loading', () => {
-    router.push({name: Route.LOADING});
+    router.replace({name: Route.LOADING});
 });
 
 </script>

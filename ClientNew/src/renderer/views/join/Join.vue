@@ -29,7 +29,7 @@ const joinRoom = (): void => {
 
     UserServerAction.joinRoom(roomId.value)
         .then(() => {
-            router.push({name: Route.ROOM});
+            router.replace({name: Route.ROOM});
         })
         .catch((reason) => {
             joiningInProgress.value = false;

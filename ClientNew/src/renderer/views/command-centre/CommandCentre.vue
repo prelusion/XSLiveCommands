@@ -105,7 +105,7 @@ const getCommandParameterPlaceholderText = (index: number): string => {
 
 const setRoom = (newRoom: Room | null) => {
     if (!newRoom?.isTyrant(UserServerAction.skt?.id as SocketId)) {
-        router.push({ name: Route.ROOM });
+        router.replace({ name: Route.ROOM });
         return;
     }
     if (newRoom) {
@@ -113,7 +113,7 @@ const setRoom = (newRoom: Room | null) => {
         return;
     }
 
-    router.push({
+    router.replace({
         name: Route.MAIN,
         query: {
             message: 'The server does not recognize the room anymore, please join or create a new one.'
@@ -162,15 +162,15 @@ const commandDelay = () => {
 const exitTyrantView = async () => {
     try {
         await UserServerAction.leaveTyrant();
-        await router.push({ name: Route.ROOM });
+        await router.replace({ name: Route.ROOM });
     } catch {
-        await router.push({ name: Route.MAIN });
+        await router.replace({ name: Route.MAIN });
     }
 };
 
 const disconnect = async () => {
     await UserServerAction.leaveRoom();
-    await router.push({ name: Route.MAIN });
+    await router.replace({ name: Route.MAIN });
 };
 
 

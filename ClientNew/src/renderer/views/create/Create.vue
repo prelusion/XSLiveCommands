@@ -138,7 +138,7 @@ const createRoom = () => {
             store.$state.tyrantRequest.roomId = UserServerAction.room.id;
             store.$state.tyrantRequest.code = password.value;
 
-            router.push({name: Route.ROOM, query: {asHost: 1}});
+            router.replace({name: Route.ROOM, query: {asHost: 1}});
         })
         .catch(error => {
             /* Log it for debugging */

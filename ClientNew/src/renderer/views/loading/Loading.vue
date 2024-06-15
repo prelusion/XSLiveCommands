@@ -79,7 +79,7 @@ const reconnectCallback = (): void => {
 
         /* If reconnecting while on the loading route, redirect to main route */
         if (router.currentRoute.value.name === Route.LOADING) {
-            router.push({ name: Route.MAIN })
+            router.replace({ name: Route.MAIN })
         }
     }
 
