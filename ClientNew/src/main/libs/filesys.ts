@@ -23,8 +23,8 @@ export const useFileSystemFunctions = () => {
             return readCommands(path);
         });
 
-        ipcMain.handle("fs:writeCommand", (_, platform: PlatformUser, map: string, scheduledCommand: ScheduledCommand) => {
-            return writeCommand(platform, map, scheduledCommand);
+        ipcMain.handle("fs:writeCommand", (_, platform: PlatformUser, scheduledCommand: ScheduledCommand) => {
+            return writeCommand(platform, scheduledCommand);
         });
 
         ipcMain.handle("fs:readModsJson", (_, platform: PlatformUser) => {

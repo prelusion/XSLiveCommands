@@ -44,7 +44,7 @@ export class CoreLoop {
         const event: ScheduledCommand = this.scheduledCommands[this.nextCmdIdx++];
         this.nextCmdExecTick = event.execTick;
 
-        await window.fs.writeCommand(ensure(UserServerAction.platform), this.mapName, event);
+        await window.fs.writeCommand(ensure(UserServerAction.platform), event);
     }
 
     private static get scheduledCommands(): Array<ScheduledCommand> {

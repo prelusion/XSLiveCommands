@@ -4,7 +4,7 @@ import {clearInterval} from "timers";
 import {PlatformUser} from "../../../shared/src/types/user";
 import {addIntToBuff, BufferInfo, profileFolderPath} from "./common";
 
-export function deleteXsDataFiles(platform: PlatformUser, map: string): void {
+export async function deleteXsDataFiles(platform: PlatformUser, map: string): Promise<void> {
     const profileFolder = profileFolderPath(platform);
 
     const cmdsDatFilePath = path.join(profileFolder, "xslc.commands.xsdat");
