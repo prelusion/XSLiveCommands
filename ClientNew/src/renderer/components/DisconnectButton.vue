@@ -1,3 +1,13 @@
+<script lang="ts" setup>
+import { defineEmits } from 'vue';
+
+const emit = defineEmits(['disconnect']);
+
+const emitDisconnect = (): void => {
+    emit('disconnect');
+};
+</script>
+
 <template>
     <button @click="emitDisconnect" class="disconnect-button">
         <svg viewBox="0 0 24 24" class="icon">
@@ -6,20 +16,6 @@
         </svg>
     </button>
 </template>
-
-<script lang="ts">
-import {defineComponent} from "vue";
-
-export default defineComponent({
-    name: "DisconnectButton",
-    components: {},
-    methods: {
-        emitDisconnect(): void {
-            this.$emit('disconnect');
-        }
-    }
-});
-</script>
 
 <style scoped>
 .disconnect-button {
