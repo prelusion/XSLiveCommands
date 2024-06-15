@@ -1,7 +1,50 @@
+<script setup lang="ts">
+import {PropType, StyleValue} from "vue";
+import {ButtonConfig} from "../types/buttons";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
+
+const props = defineProps({
+    buttonConfig: {
+        type: Array as PropType<Array<ButtonConfig>>,
+        default: () => [],
+        required: true,
+    },
+    reverse: {
+        type: Boolean,
+        default: false
+    },
+    direction: {
+        type: String as PropType<StyleValue>,
+        default: 'row'
+    },
+    position: {
+        type: String,
+        default: 'fixed'
+    },
+    styles: {
+        type: Object,
+        default: () => new Object(),
+    }
+});
+
+const clickedButton = async (index: number) => {
+    const config = props.buttonConfig[index];
+    if (config.callback) {
+        await config.callback();
+    }
+
+    if (config.route) {
+        await router.replace({name: config.route});
+    }
+};
+</script>
+
 <template>
     <div
         :style="{
-            position: positionClass,
+            position: position === 'fixed' ? 'fixed' : 'relative',
             flexDirection: direction,
             ...styles,
         }"
@@ -17,63 +60,6 @@
         </button>
     </div>
 </template>
-
-<script lang="ts">
-import {defineComponent, PropType, StyleValue} from "vue";
-import {ButtonConfig} from "../types/buttons";
-
-export default defineComponent({
-    name: "Buttons",
-    components: {},
-    props: {
-        buttonConfig: {
-            type: Array as PropType<Array<ButtonConfig>>,
-            default: () => [],
-            required: true,
-        },
-        reverse: {
-            type: Boolean,
-            default: false
-        },
-        direction: {
-            type: String as PropType<StyleValue>,
-            default: 'row'
-        },
-        position: {
-            type: String,
-            default: 'fixed'
-        },
-        styles: {
-            type: Object,
-            default: () => {},
-        }
-    },
-    // data() {
-    // },
-    // mounted() {
-    // },
-    computed: {
-        positionClass() {
-            return this.position === 'fixed'
-                ? 'fixed'
-                : 'relative';
-        },
-    },
-    methods: {
-        async clickedButton(index: number) {
-            const config = this.buttonConfig[index];
-            if (config.callback) {
-                await config.callback();
-            }
-            if (config.route) {
-                this.$router.replace({ name: config.route });
-            }
-        },
-    },
-    watch: {},
-});
-
-</script>
 
 <style scoped lang="scss">
 $padding: 20px - 10;
