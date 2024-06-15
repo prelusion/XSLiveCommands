@@ -2,7 +2,7 @@ type ButtonCallback = () => void;
 
 export interface ButtonConfig {
     text: string;
-    window?: string;
+    route?: string;
     callback?: ButtonCallback;
     disabled?: () => boolean;
 }

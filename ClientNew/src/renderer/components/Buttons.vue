@@ -65,8 +65,8 @@ export default defineComponent({
             if (config.callback) {
                 await config.callback();
             }
-            if (config.window) {
-                this.$router.replace({ name: config.window });
+            if (config.route) {
+                this.$router.replace({ name: config.route });
             }
         },
     },

@@ -41,11 +41,11 @@ export default defineComponent({
             steamName: '',
             buttonConfig: [
                 {
-                    window: Route.JOIN,
+                    route: Route.JOIN,
                     text: "Join a Room",
                 },
                 {
-                    window: Route.CREATE,
+                    route: Route.CREATE,
                     text: "Create a Room",
                 },
             ] as Array<ButtonConfig>,

@@ -49,7 +49,7 @@ const buttonConfig = [
         },
     },
     {
-        window: Route.MAIN,
+        route: Route.MAIN,
         text: "Cancel",
     },
 ] as Array<ButtonConfig>;

@@ -165,7 +165,7 @@ const buttonConfig: Array<ButtonConfig> = [
         disabled: (): boolean => !selectedMap.value.filepath,
     },
     {
-        window: Route.MAIN,
+        route: Route.MAIN,
         text: "Cancel",
     }
 ];
