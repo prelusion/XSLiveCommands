@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {getCurrentInstance, onMounted, PropType, ref} from 'vue';
 import {validateRules} from '@renderer/util/form/form-rules';
+const {setTimeout, clearTimeout} = window;
 
 const props = defineProps({
     name: {
@@ -58,7 +59,7 @@ const onInputEvent = () => {
         validate();
 
         emit('update:modelValue', modelValue.value);
-    }, props.debounce) as unknown as number;
+    }, props.debounce);
 };
 
 const validate = (updateErrors: boolean = true) => {

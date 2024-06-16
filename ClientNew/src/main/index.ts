@@ -34,7 +34,7 @@ function onAppReady() {
         session.defaultSession.loadExtension(VUEJS_DEVTOOLS, {
             allowFileAccess: true,
         });
-        console.log("Installed: vue-devtools");
+        // console.log("Installed: vue-devtools");
     }
 }
 
@@ -45,13 +45,13 @@ app.on("window-all-closed", () => {
 });
 
 app.on("browser-window-created", () => {
-    console.log("window-created");
+    // console.log("Window created");
 });
 
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
         app.removeAsDefaultProtocolClient("xs-live-commands");
-        console.log("Due to the particularity of the framework, this cannot be used in the development environment");
+        // console.log("Due to the particularity of the framework, this cannot be used in the development environment");
     }
 } else {
     app.setAsDefaultProtocolClient("xs-live-commands");

@@ -84,7 +84,7 @@ function startRenderer(): Promise<void> {
         console.log(
           "\n\n" +
             chalk.blue(
-              `Preparing main process, please wait...`
+              `  Preparing main process, please wait...`
             ) +
             "\n\n"
         );

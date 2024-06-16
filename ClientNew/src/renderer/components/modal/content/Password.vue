@@ -36,6 +36,7 @@ export default defineComponent({
     props: {
         errorMsg: {
             type: String,
+            default: '',
         }
     },
     data() {

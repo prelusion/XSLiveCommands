@@ -3,7 +3,6 @@ import Buttons from "../../components/Buttons.vue";
 import {changeTitle} from "../../util/general";
 import {onMounted, onUnmounted, ref} from "vue";
 import {ButtonConfig} from "../../types/buttons";
-import {SocketId} from "../../types/player";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {ensure} from "../../../shared/src/util/general";
 import {Room} from "../../../shared/src/types/room";
@@ -13,6 +12,7 @@ import {useMainStore} from "@store/main";
 import CustomModal from "@renderer/components/modal/CustomModal.vue";
 import Password from "@renderer/components/modal/content/Password.vue";
 import DisconnectButton from "@renderer/components/DisconnectButton.vue";
+const {setTimeout, clearTimeout} = window;
 
 const store = useMainStore();
 const router = useRouter();
@@ -58,7 +58,7 @@ const copyRoomId = async () => {
     await window.clipboard.write(room.value.id);
 
     copyButtonText.value = 'Copied!';
-    buttonTimeout = setTimeout(() => copyButtonText.value = 'Copy', 2000) as unknown as number;
+    buttonTimeout = setTimeout(() => copyButtonText.value = 'Copy', 2000);
 };
 
 const showPasswordModal = () => {
