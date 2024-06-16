@@ -50,7 +50,7 @@ const disconnect = async () => {
             </div>
 
             <div>Map:</div>
-            <div>{{ room.mapCtx.name }}</div>
+            <div>{{ room.mapCtx.file }}</div>
         </div>
     </div>
 </template>

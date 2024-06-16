@@ -29,7 +29,7 @@ const maps = ref<Record<MapName, MapPath>>({});
 
 const selectedMap = ref({
     filepath: '',
-    mapname: '',
+    mapName: '',
     commands: {} as MapCommands,
 });
 const errors = ref([] as string[]);
@@ -48,10 +48,10 @@ watch(enteredFilename, async () => {
     const filepath = maps.value[enteredFilename.value] ?? '';
 
     if (filepath) {
-        selectedMap.value.mapname = enteredFilename.value;
+        selectedMap.value.mapName = enteredFilename.value;
         await selectMap(filepath);
     } else {
-        selectedMap.value.mapname = '';
+        selectedMap.value.mapName = '';
     }
 });
 
@@ -69,7 +69,7 @@ onMounted(async () => {
         const commandFileExists = await window.fs.exists(toCommandFilepath(prevFilepath));
 
         if (mapExists && commandFileExists) {
-            selectedMap.value.mapname = prevMapname;
+            selectedMap.value.mapName = prevMapname;
 
             await selectMap(prevFilepath);
         }
@@ -105,7 +105,7 @@ const selectMap = async (filepath: string): Promise<void> => {
         selectedMap.value.filepath = filepath;
         selectedMap.value.commands = result.commands;
     } else {
-        selectedMap.value.mapname = '';
+        selectedMap.value.mapName = '';
         selectedMap.value.filepath = '';
 
         if (result.reason === 'no-json') {
@@ -122,16 +122,14 @@ const selectMap = async (filepath: string): Promise<void> => {
 const createRoom = () => {
     creationInProgress.value = true;
 
-    const mapname = selectedMap.value.mapname;
+    const mapName = selectedMap.value.mapName;
 
     store.PATCH_CONFIG('previous-map', {
         path: selectedMap.value.filepath,
-        name: mapname,
+        name: mapName,
     });
 
-    const plainMapname = mapname.replace(/.(?:aoe2scenario|rms2?)$/, '');
-
-    UserServerAction.createRoom(plainMapname, ensure(selectedMap.value.commands), password.value)
+    UserServerAction.createRoom(mapName, ensure(selectedMap.value.commands), password.value)
         .then(() => {
             assert(UserServerAction.room);
 

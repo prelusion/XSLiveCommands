@@ -32,7 +32,8 @@ export class Room {
         this.id = Date.now().toString();
         this.hostId = host.sktId;
         this.mapCtx = {
-            name: mapName,
+            name: mapName.replace(/.(?:aoe2scenario|rms2?)$/, ''),
+            file: mapName,
             commands,
             events: [],
             lastExecTick: -1,

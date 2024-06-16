@@ -67,7 +67,7 @@ export class Room {
 
     public getPlayerName(userId: SocketId): string | undefined {
         return this.players.get(userId)?.name;
-    }
+    }   
 
     public get numTyrants(): number {
         return this.tyrants.size;
