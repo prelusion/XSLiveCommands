@@ -1,27 +1,34 @@
-import * as Registry from "native-reg";
-import {Access} from "native-reg";
 import SteamID from "steamid";
+import Registry from "winreg";
+import {promisify} from "util";
 
-export function getSteamId(): string | null {
-    const regKey = `Software\\Valve\\Steam\\ActiveProcess\\`;
-    const key = Registry.openKey(Registry.HKCU, regKey, Access.READ);
+export async function getSteamId(): Promise<string | null> {
+    const steamRegistryKey = new Registry({
+        hive: Registry.HKCU,
+        key: `\\Software\\Valve\\Steam\\ActiveProcess`,
+    });
 
-    if (!key) {
-        Registry.closeKey(key);
+    let accountId = null;
+    try {
+        const get = promisify(steamRegistryKey.get.bind(steamRegistryKey))
+        const steamRegistryItem = await get("ActiveUser");
+
+        accountId = parseInt(steamRegistryItem.value, 16);
+    } catch (_) {
         return null;
     }
 
-    const accountId = Registry.getValue(key, null, 'ActiveUser');
-    Registry.closeKey(key);
-
-    if (!accountId) {
+    if (! accountId) {
         return null;
     }
-
-    return SteamID.fromIndividualAccountID(accountId.toString()).getSteamID64();
+    return SteamID.fromIndividualAccountID(accountId).getSteamID64();
 }
 
 export function getMicrosoftId() {
     throw new Error("Unimplemented");
     // todo
+}
+
+export const useWinNative = () => {
+    return {getSteamId}
 }

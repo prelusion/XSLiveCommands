@@ -20,8 +20,8 @@ export class Room {
     public tyrantPassword: string | null
     public mapCtx: MapContext
 
-    private players: Map<SocketId, AuthenticatedUser>
-    private tyrants: Set<SocketId>
+    private readonly players: Map<SocketId, AuthenticatedUser>
+    private readonly tyrants: Set<SocketId>
 
     public constructor(
         host: AuthenticatedUser,
@@ -32,7 +32,8 @@ export class Room {
         this.id = Date.now().toString();
         this.hostId = host.sktId;
         this.mapCtx = {
-            name: mapName,
+            name: mapName.replace(/.(?:aoe2scenario|rms2?)$/, ''),
+            file: mapName,
             commands,
             events: [],
             lastExecTick: -1,
@@ -57,6 +58,12 @@ export class Room {
         console.log(this.tag, `- ${this.userLog(userId)}`);
         this.tyrants.delete(userId);
         this.players.delete(userId);
+
+        /* Switch lobby host when previous lobby host disconnects */
+        if (this.hostId === userId && this.players.size > 0) {
+            [this.hostId] = this.players.keys();
+            console.log(this.tag, `★ ${this.userLog(this.hostId)}`);
+        }
     }
 
     public tryJoinTyrant(
@@ -92,6 +99,7 @@ export class Room {
             execTick: this.nextExecTick,
         };
 
+        this.mapCtx.lastExecTick = scheduled.execTick;
         this.mapCtx.events.push(scheduled)
         const args = command.params.map(param => `${param.name} = ${param.value}`).join(", ");
         console.log(this.tag, `⮞ ${this.userLog(userId)} ↦ ${command.function}(${args})`);

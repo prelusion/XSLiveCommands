@@ -1,6 +1,6 @@
-import {ensure} from "../../../shared/src/util/general";
 import {configDefaults, ConfigDefaultsKey} from "../../util/config-data";
 import {writeJsonFile} from "./common";
+import {ensure} from "../../../shared/src/util/general";
 
 /**
  *  Reset the configuration file

@@ -25,6 +25,7 @@ export class Room {
     public static new(): Room {
         return new Room(<AuthenticatedUser>{sktId: ""}, "", {}, null);
     }
+
     public static from(iRoom: IRoom): Room {
         const room = Room.new();
         room.id = iRoom.id;
@@ -44,7 +45,8 @@ export class Room {
         this.id = Date.now().toString();
         this.hostId = host.sktId;
         this.mapCtx = {
-            name: mapName,
+            name: mapName.replace(/.(?:aoe2scenario|rms2?)$/, ''),
+            file: mapName,
             commands,
             events: [],
             lastExecTick: -1,

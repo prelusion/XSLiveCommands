@@ -26,7 +26,7 @@ import {addBoolToBuff, addFloatToBuff, addIntToBuff, addStringToBuff, BufferInfo
  *      | ENDIF            | >    |        |        |                             |            |
  *      | END REPEAT       | >    |        |        |                             |            |
  */
-export function writeCommand(platform: PlatformUser, _: string, scheduledCommand: ScheduledCommand): void {
+export async function writeCommand(platform: PlatformUser, scheduledCommand: ScheduledCommand): Promise<void> {
     const commandFilePath = path.join(profileFolderPath(platform), "xslc.commands.xsdat");
 
     if (!scheduledCommand.params)

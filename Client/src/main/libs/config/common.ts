@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import {ConfigCoreStruct, ConfigStructLatest} from "../../../shared/src/types/config";
+import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "@main/util/config-data";
 import {ensure} from "../../../shared/src/util/general";
-import {configDefaults, ConfigDefaultsKey, upgradeConfigFileToVersion} from "../../util/config-data";
+import {ConfigCoreStruct, ConfigStructLatest} from "../../../shared/src/types/config";
 
 const USER_HOME_DIR = process.platform === "win32" ? ensure(process.env.USERPROFILE) : "~";
 

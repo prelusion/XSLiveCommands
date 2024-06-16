@@ -3,7 +3,10 @@ export interface ConfigCoreStruct {
 }
 
 export interface ConfigStructV01 extends ConfigCoreStruct {
-    'last-map-path': string;
+    'previous-map': {
+        'path': string;
+        'name': string;
+    };
     'custom-server-hostport': string;
 }
 

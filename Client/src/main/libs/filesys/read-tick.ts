@@ -3,7 +3,7 @@ import path from "path";
 import {PlatformUser} from "../../../shared/src/types/user";
 import {profileFolderPath} from "./common";
 
-export function readTick(platform: PlatformUser, map: string): number | undefined {
+export async function readTick(platform: PlatformUser, map: string): Promise<number | undefined> {
     const profileFolder = profileFolderPath(platform);
 
     try {

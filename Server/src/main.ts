@@ -15,6 +15,8 @@ function main() {
     const io = new Server(httpServer, {});
     io.listen(port);
 
+    console.log(`Configured for port: ${port}`)
+
     new XSLCServer(io);
 }
 

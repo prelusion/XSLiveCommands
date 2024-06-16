@@ -1,11 +1,11 @@
 import {err, ok, Result} from "../../../shared/src/types/result";
-import {ConfigCoreStruct} from "../../../shared/src/types/config";
+import {ConfigCoreStruct, ConfigStructLatest} from "../../../shared/src/types/config";
 import {configFileExists, readJsonFile, resetConfig, upgradeConfigFile} from "./common";
 
 /**
  *  Read the configuration file
  */
-export function readConfig(version: number): Result<ConfigCoreStruct> {
+export async function readConfig(version: number): Promise<Result<ConfigStructLatest>> {
     if (!configFileExists()) {
         resetConfig(version);
     }

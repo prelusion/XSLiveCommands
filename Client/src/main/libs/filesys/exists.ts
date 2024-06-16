@@ -1,5 +1,5 @@
 import fs from "fs";
 
-export function exists(absolutePath: string): boolean {
+export async function exists(absolutePath: string): Promise<boolean> {
     return fs.existsSync(absolutePath);
 }

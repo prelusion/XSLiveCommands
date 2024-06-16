@@ -1,18 +1,25 @@
 import {ipcMain} from "electron";
+import {useWinNative} from "@main/libs/native/win";
+import {useMacOsNative} from "@main/libs/native/macos";
+import {useLinuxNative} from "@main/libs/native/linux";
 
-export async function getSteamId(): Promise<string | null> {
+export async function getNativeSteamId(): Promise<string | null> {
     switch (process.platform) {
         case "win32": {
-            const Win32 = await import("./native/win");
-            return Win32.getSteamId();
+            const {getSteamId} = useWinNative();
+
+            return getSteamId();
         }
         case "linux": {
-            const Linux = await import("./native/linux");
-            return Linux.getSteamId();
+            const {getSteamId} = useLinuxNative();
+
+            return getSteamId();
         }
-        case "darwin": /* mac */ {
-            const MacOs = await import("./native/macos");
-            return MacOs.getSteamId();
+        case "darwin": /* mac */
+        {
+            const {getSteamId} = useMacOsNative();
+
+            return getSteamId();
         }
         default: {
             throw new Error("Platform not supported :(");
@@ -20,6 +27,12 @@ export async function getSteamId(): Promise<string | null> {
     }
 }
 
-ipcMain.handle("registry:getSteamId", async (): Promise<string | null> => {
-    return getSteamId();
-});
+export const useNativeFunctions = () => {
+    const nativeIpc = () => {
+        ipcMain.handle("registry:getSteamId", async (): Promise<string | null> => {
+            return getNativeSteamId();
+        });
+    }
+
+    return {nativeIpc};
+}
