@@ -35,7 +35,7 @@ contextBridge.exposeInMainWorld('fs', {
     deleteXsDataFiles: (platform: PlatformUser, map: string) => ipcRenderer.invoke('fs:deleteXsDataFiles', platform, map),
     readTick: (platform: PlatformUser, map: string) => ipcRenderer.invoke('fs:readTick', platform, map),
     readCommands: (path: string) => ipcRenderer.invoke('fs:readCommands', path),
-    writeCommand: (platform: PlatformUser, map: string, event: ScheduledCommand) => ipcRenderer.invoke('fs:writeCommand', platform, map, event),
+    writeCommand: (platform: PlatformUser, event: ScheduledCommand) => ipcRenderer.invoke('fs:writeCommand', platform, event),
     readModsJson: (platform: PlatformUser) => ipcRenderer.invoke('fs:readModsJson', platform),
     getCompatibleMaps: (platform: PlatformUser, modFolderPath: string) => ipcRenderer.invoke('fs:getCompatibleMaps', platform, modFolderPath),
     exists: (absolutePath: string) => ipcRenderer.invoke('fs:exists', absolutePath),
