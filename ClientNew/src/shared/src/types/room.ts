@@ -45,7 +45,8 @@ export class Room {
         this.id = Date.now().toString();
         this.hostId = host.sktId;
         this.mapCtx = {
-            name: mapName,
+            name: mapName.replace(/.(?:aoe2scenario|rms2?)$/, ''),
+            file: mapName,
             commands,
             events: [],
             lastExecTick: -1,
@@ -67,7 +68,7 @@ export class Room {
 
     public getPlayerName(userId: SocketId): string | undefined {
         return this.players.get(userId)?.name;
-    }   
+    }
 
     public get numTyrants(): number {
         return this.tyrants.size;
