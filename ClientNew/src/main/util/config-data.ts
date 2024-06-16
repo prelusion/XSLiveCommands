@@ -3,8 +3,11 @@ import {ConfigCoreStruct, ConfigStructLatest, ConfigStructV01} from "../../share
 export const configDefaults = {
     '0.1': {
         'version': 0.1,
-        'last-map-path': '',
-        'custom-server-hostport': ''
+        'custom-server-hostport': '',
+        'previous-map': {
+            'path': '',
+            'name': '',
+        },
     } as ConfigStructV01,
 };
 

@@ -57,7 +57,6 @@ export default defineComponent({
         assert(UserServerAction.username);
 
         changeTitle('');
-        window.manager.resize(900, 600);
 
         const message = this.$router.currentRoute.value.query?.message as string;
 

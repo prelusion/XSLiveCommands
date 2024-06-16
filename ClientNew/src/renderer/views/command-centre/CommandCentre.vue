@@ -44,7 +44,6 @@ onMounted(() => {
     tickPredictionInterval.value = window.setInterval(getTickPrediction, 500);
 
     changeTitle(`COMMAND CENTRE! (Room: ${room.value.id})`);
-    window.manager.resize(800, 600);
 });
 
 onUnmounted(async () => {
