@@ -11,14 +11,15 @@ import {Route} from "@renderer/router/routes";
 import {useMainStore} from "@store/main";
 import CustomModal from "@renderer/components/modal/CustomModal.vue";
 import Password from "@renderer/components/modal/content/Password.vue";
-import DisconnectButton from "@renderer/components/DisconnectButton.vue";
+import RoomHeader from "@renderer/components/RoomHeader.vue";
+
 const {setTimeout, clearTimeout} = window;
 
 const store = useMainStore();
 const router = useRouter();
 const passwordModal = ref<typeof CustomModal | null>(null);
 const errorMsg = ref("");
-const room = ref(Room.new());
+const room = ref<Room>(Room.new());
 const ownSocketId = ref(UserServerAction.skt?.id);
 
 /* Copy button */
@@ -26,7 +27,7 @@ const copyButtonText = ref('Copy');
 let buttonTimeout = -1;
 
 const updateRoom = (updatedRoom: Room | null) => {
-    if (updatedRoom) {
+    if (updatedRoom !== null) {
         room.value = updatedRoom;
         return;
     }
@@ -101,12 +102,6 @@ const requestTyrant = (password: string) => {
         });
 };
 
-const disconnect = async () => {
-    await UserServerAction.leaveRoom();
-
-    await router.replace({name: Route.MAIN});
-};
-
 const buttonConfig = [
     {
         text: "Begin Tyranny",
@@ -119,21 +114,10 @@ const buttonConfig = [
 
 
 <template>
-    <disconnect-button @disconnect="disconnect"/>
     <div>
-        <table>
-            <tr>
-                <td>Room Code:</td>
-                <td>{{ room.id }}</td>
-                <td>
-                    <button @click="copyRoomId()">{{ copyButtonText }}</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Map:</td>
-                <td>{{ room.mapCtx.name }}</td>
-            </tr>
-        </table>
+        <div>
+            <RoomHeader :room="room as Room"></RoomHeader>
+        </div>
         <table id="player-list">
             <tr v-for="userId in room.playerIds">
                 <td title="User is host">

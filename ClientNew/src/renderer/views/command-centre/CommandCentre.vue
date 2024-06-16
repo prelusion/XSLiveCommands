@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {changeTitle} from "../../util/general";
-import {ref, onMounted, computed, watch, onUnmounted, toRaw} from "vue";
+import {computed, onMounted, onUnmounted, ref, toRaw, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {ensure} from "../../../shared/src/util/general";
 import {SocketId} from "../../types/player";
@@ -13,9 +13,10 @@ import {useMainStore} from "@store/main";
 import {clearInputs, validateInputs} from "@renderer/util/form/validation";
 import {Route} from "@renderer/router/routes";
 import InputField from "@renderer/components/InputField.vue";
-import DisconnectButton from "@renderer/components/DisconnectButton.vue";
 import Buttons from "@renderer/components/Buttons.vue";
-import {log} from "electron-log";
+import RoomHeader from "@renderer/components/RoomHeader.vue";
+
+const {setTimeout} = window;
 
 const store = useMainStore();
 const router = useRouter();
@@ -131,7 +132,7 @@ const getCommandParameterPlaceholderText = (index: number): string => {
 };
 
 const updateRoom = (newRoom: Room | null) => {
-    if (! newRoom?.isTyrant(UserServerAction.skt?.id as SocketId)) {
+    if (!newRoom?.isTyrant(UserServerAction.skt?.id as SocketId)) {
         router.replace({name: Route.ROOM});
         return;
     }
@@ -196,16 +197,6 @@ const exitTyrantView = async () => {
     }
 };
 
-const disconnect = async () => {
-    await UserServerAction.leaveRoom();
-    await router.replace({name: Route.MAIN});
-};
-
-
-const copyRoomId = () => {
-    window.clipboard.write(room.value.id);
-};
-
 watch(commandId, () => {
     text.value = [];
     commandParamValues.value = [];
@@ -241,28 +232,15 @@ const buttonConfig = ref<ButtonConfig[]>([
 
 
 <template>
-    <disconnect-button @disconnect="disconnect"/>
     <div id="view">
-        <div id="info">
-            <table>
-                <tr>
-                    <td>Room Code:</td>
-                    <td>{{ room.id }}</td>
-                    <td>
-                        <button @click="copyRoomId()">Copy</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Map:</td>
-                    <td>{{ room.mapCtx.name }}</td>
-                </tr>
-            </table>
+        <div>
+            <RoomHeader :room="room as Room"></RoomHeader>
         </div>
         <div id="command-centre">
             <div id="command">
                 <div id="command-selection">
                     <div id="command-top-order">
-                        <div style="display: flex; flex-direction: row; align-items: center; gap: 1">
+                        <div style="display: flex; flex-direction: row; align-items: center;">
                             <div style="width: 300px; height: 30px; display: block">
                                 <InputField
                                     name="command-selection"
@@ -291,7 +269,7 @@ const buttonConfig = ref<ButtonConfig[]>([
                             Arguments:
                         </div>
                         <table>
-                            <tr class="param-entry" v-for="(_, index) in commandParams?.length ?? 0" v-bind:key="index" >
+                            <tr class="param-entry" v-for="(_, index) in commandParams?.length ?? 0" v-bind:key="index">
                                 <td>
                                     <InputField
                                         :ref="(el: unknown) => commandParamValueInputs[index] = toRaw(el) as typeof InputField"
@@ -379,9 +357,12 @@ const buttonConfig = ref<ButtonConfig[]>([
         }
     }
 
-    #info {
-        border-bottom: 1px solid #b6b6b6;
-        padding-bottom: 10px;
+    table {
+        tr {
+            td:nth-child(2) {
+                padding-left: 10px;
+            }
+        }
     }
 }
 
