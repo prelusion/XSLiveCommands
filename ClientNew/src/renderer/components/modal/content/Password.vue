@@ -8,7 +8,7 @@
             :type="password"
             :rules="['max:30']"
             :errorMsg="[errorMsg]"
-            @onValueUpdated="password = $event"
+            v-model="password"
         />
 
         <div class="input-container">
