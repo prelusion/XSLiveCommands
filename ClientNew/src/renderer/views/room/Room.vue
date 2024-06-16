@@ -118,26 +118,27 @@ const buttonConfig = [
         <div>
             <RoomHeader :room="room as Room"></RoomHeader>
         </div>
-        <table id="player-list">
-            <tr v-for="userId in room.playerIds">
-                <td title="User is host">
-                    {{ room.hostId === userId ? '👑' : '' }}
-                </td>
-                <td title="User is tyrant">
-                    {{ room.isTyrant(userId) ? '💪' : '' }}
-                </td>
-                <td :style="{ fontWeight: userId === ownSocketId ? 'bold' : 'normal' }">
-                    {{ room.getPlayerName(userId) }}
-                </td>
-            </tr>
-        </table>
-        <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
-        <CustomModal ref="passwordModal">
-            <Password @submit="submitTyrantRequest" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
-        </CustomModal>
+        <div id="content">
+            <table id="player-list">
+                <tr v-for="userId in room.playerIds">
+                    <td title="User is host">
+                        {{ room.hostId === userId ? '👑' : '' }}
+                    </td>
+                    <td title="User is tyrant">
+                        {{ room.isTyrant(userId) ? '💪' : '' }}
+                    </td>
+                    <td :style="{ fontWeight: userId === ownSocketId ? 'bold' : 'normal' }">
+                        {{ room.getPlayerName(userId) }}
+                    </td>
+                </tr>
+            </table>
+            <Buttons :buttonConfig="buttonConfig" :direction="'row-reverse'"></Buttons>
+            <CustomModal ref="passwordModal">
+                <Password @submit="submitTyrantRequest" @closeModal="closePasswordModal" :errorMsg="errorMsg"/>
+            </CustomModal>
+        </div>
     </div>
 </template>
-
 
 <style scoped lang="scss">
 table {
@@ -148,9 +149,11 @@ table {
     }
 }
 
-#player-list {
-    margin-top: 10px;
+#content {
+    padding: 20px;
+}
 
+#player-list {
     th, td {
         padding: 0;
         min-width: 22px;

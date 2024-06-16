@@ -174,68 +174,74 @@ const buttonConfig: Array<ButtonConfig> = [
 </script>
 
 <template>
-    <div v-if="creationInProgress" id="loading">
-        Creating room...
-    </div>
-    <div v-else>
-        <div>
-            <div id="password">
-                <div id="show-password">
-                    <InputField
-                        v-model="password"
-                        ref="launchCodeInputField"
-                        class="input-field"
-                        name="launch-code"
-                        label="Launch Code"
-                        placeholder="Launch Code for Tyrants"
-                        :type="showPassword ? 'text' : 'password'"
-                        :rules="['max:30']"
-                    />
+    <div id="create">
 
-                    <InputField
-                        v-model="showPassword"
-                        ref="showPasswordInputField"
-                        class="input-field show-password"
-                        name="show-password"
-                        label="Show password"
-                        type="checkbox"
-                    />
-                </div>
+        <div v-if="creationInProgress" id="loading">
+            Creating room...
+        </div>
+        <div v-else>
+            <div>
+                <div id="password">
+                    <div id="show-password">
+                        <InputField
+                            v-model="password"
+                            ref="launchCodeInputField"
+                            class="input-field"
+                            name="launch-code"
+                            label="Launch Code"
+                            placeholder="Launch Code for Tyrants"
+                            :type="showPassword ? 'text' : 'password'"
+                            :rules="['max:30']"
+                        />
 
-                <span class="small-text">
+                        <InputField
+                            v-model="showPassword"
+                            ref="showPasswordInputField"
+                            class="input-field show-password"
+                            name="show-password"
+                            label="Show password"
+                            type="checkbox"
+                        />
+                    </div>
+
+                    <span class="small-text">
                     This Launch Code (password) is <b>not</b> for players but is required for <b>tyrants</b> to send commands in a lobby.<br>
                     <i>It may be left empty, but is not recommended</i>
                 </span>
-            </div>
-
-            <div id="file-selection">
-                <div class="flex-row-center" v-if="loadedAvailableMaps">
-                    <input v-model="enteredFilename" list="scenarios" placeholder="Select Map">
-                    <datalist id="scenarios">
-                        <option v-for="(name) in Object.keys(maps)" v-bind:key="name">{{ name }}</option>
-                    </datalist>
-                    <button @click="enteredFilename = ''"
-                            id="clear-map-button"
-                            title="Clear the map selection text box">Clear
-                    </button>
-                    <span id="file-selection-text">{{ selectedMap.filepath || 'No map selected' }}</span>
                 </div>
-                <span class="small-text">
+
+                <div id="file-selection">
+                    <div class="flex-row-center" v-if="loadedAvailableMaps">
+                        <input v-model="enteredFilename" list="scenarios" placeholder="Select Map">
+                        <datalist id="scenarios">
+                            <option v-for="(name) in Object.keys(maps)" v-bind:key="name">{{ name }}</option>
+                        </datalist>
+                        <button @click="enteredFilename = ''"
+                                id="clear-map-button"
+                                title="Clear the map selection text box">Clear
+                        </button>
+                        <span id="file-selection-text">{{ selectedMap.filepath || 'No map selected' }}</span>
+                    </div>
+                    <span class="small-text">
                     For a map to be detected, a json file with the following format:
                     <i>&lt;mapname&gt;.commands.json</i> containing information about supported commands must be
                     present in the same folder as the map.<br>
                     <i>This list will <b>not</b> refresh automatically</i>.
                 </span>
-                <div>
-                    <span id="error" v-html="errors.join('<br>')"></span>
+                    <div>
+                        <span id="error" v-html="errors.join('<br>')"></span>
+                    </div>
                 </div>
             </div>
+            <Buttons :buttonConfig="buttonConfig"></Buttons>
         </div>
-        <Buttons :buttonConfig="buttonConfig"></Buttons>
     </div>
 </template>
 
 <style scoped lang="scss">
+#create {
+    padding: 20px;
+}
 input, .input-field {
     width: 250px;
 

@@ -306,7 +306,7 @@ const buttonConfig = ref<ButtonConfig[]>([
     justify-content: space-between;
 
     #command-centre {
-        margin-top: 15px;
+        padding: 20px;
 
         #command {
             width: 100%;

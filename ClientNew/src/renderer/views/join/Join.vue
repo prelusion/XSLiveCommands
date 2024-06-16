@@ -57,43 +57,50 @@ const buttonConfig = [
 
 
 <template>
-    <div v-if="joiningInProgress" id="loading">
-        Joining room...
-    </div>
-    <div v-else>
-        <div class="join-input">
-            <InputField
-                ref="inputRoomCode"
-                type="text"
-                name="room-code"
-                placeholder="Room Code"
-                :rules="['required', 'max:30']"
-                :errorMsg="[errorMsg]"
-                v-model="roomId"
-            />
+    <div id="join">
+        <div v-if="joiningInProgress" id="loading">
+            Joining room...
         </div>
+        <div v-else>
+            <div class="join-input">
+                <InputField
+                    ref="inputRoomCode"
+                    type="text"
+                    name="room-code"
+                    placeholder="Room Code"
+                    label="Enter the code for the room you would like to join:"
+                    subtext="Enter the code for the room. This code is shown to the host and others who are already in the room."
+                    :rules="['required', 'max:30']"
+                    :errorMsg="[errorMsg]"
+                    v-model="roomId"
+                />
+            </div>
 
-        <Buttons :buttonConfig="buttonConfig"></Buttons>
+            <Buttons :buttonConfig="buttonConfig"></Buttons>
+        </div>
     </div>
 </template>
 
-
 <style scoped lang="scss">
-#loading {
-    width: 100%;
-    text-align: center;
-}
+#join {
+    padding: 20px;
 
-#error-msg {
-    margin-top: 3px;
-    color: red;
-}
+    #loading {
+        width: 100%;
+        text-align: center;
+    }
 
-.join-input {
-    width: 40%;
-}
+    #error-msg {
+        margin-top: 3px;
+        color: red;
+    }
 
-input {
-    padding: 5px;
+    .join-input {
+        width: 40%;
+    }
+
+    input {
+        padding: 5px;
+    }
 }
 </style>

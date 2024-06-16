@@ -11,6 +11,10 @@ const props = defineProps({
     label: {
         type: String,
     },
+    subtext: {
+        type: String,
+        default: null,
+    },
     type: {
         type: String,
         default: 'text',
@@ -104,6 +108,9 @@ defineExpose({validate, clear, focus})
                 @input="onInputEvent"
             />
         </div>
+        <div v-if="subtext" class="small-text">
+            {{ subtext }}
+        </div>
         <div v-for="(error, index) in errorMessages" :key="index" class="error-msg">
             {{ error }}
         </div>
@@ -144,5 +151,12 @@ defineExpose({validate, clear, focus})
     margin-top: -3px;
     font-size: 15px;
     color: red;
+}
+
+.small-text {
+    font-size: 12px;
+    color: gray;
+    display: inline-block;
+    line-height: 12px;
 }
 </style>
