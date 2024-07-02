@@ -50,11 +50,7 @@ const props = defineProps({
 const isUsingVModel = ref(false);
 watch(
     () => props.modelValue,
-    (newValue) => {
-        if (newValue !== undefined) {
-            isUsingVModel.value = true;
-        }
-    },
+    (newValue) => isUsingVModel.value = newValue !== undefined,
     {immediate: true}
 );
 
