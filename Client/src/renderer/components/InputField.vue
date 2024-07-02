@@ -57,6 +57,9 @@ onMounted(() => {
 
 let timeout = -1;
 const onInputEvent = () => {
+    if (props.debounce === -1)
+        return;
+
     clearTimeout(timeout);
 
     timeout = setTimeout(() => {
