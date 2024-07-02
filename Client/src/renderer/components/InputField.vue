@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import {getCurrentInstance, onMounted, PropType, ref} from 'vue';
+import {getCurrentInstance, onMounted, PropType, ref, watch} from 'vue';
 import {validateRules} from '@renderer/util/form/form-rules';
+
 const {setTimeout, clearTimeout} = window;
 
 const props = defineProps({
@@ -39,7 +40,24 @@ const props = defineProps({
         type: Number,
         default: 300,
     },
+    modelValue: {
+        type: [String, Number, Boolean, Object, Array],
+        required: false,
+    },
 });
+
+/* Detect if the v-model was used on the input field - ChatGpt */
+const isUsingVModel = ref(false);
+watch(
+    () => props.modelValue,
+    (newValue) => {
+        if (newValue !== undefined) {
+            isUsingVModel.value = true;
+        }
+    },
+    {immediate: true}
+);
+
 const modelValue = defineModel();
 
 const emit = defineEmits(['update:modelValue']);
@@ -57,7 +75,7 @@ onMounted(() => {
 
 let timeout = -1;
 const onInputEvent = () => {
-    if (props.debounce === -1)
+    if (isUsingVModel.value === false)
         return;
 
     clearTimeout(timeout);
@@ -75,7 +93,7 @@ const validate = (updateErrors: boolean = true) => {
     if (updateErrors) {
         errorMessages.value = [];
 
-        if (! formResult.valid) {
+        if (!formResult.valid) {
             errorMessages.value.push(...formResult.errors);
         }
     }

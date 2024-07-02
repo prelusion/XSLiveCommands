@@ -287,7 +287,6 @@ window.addEventListener('keyup', (event: KeyboardEvent) => {
                                     ref="commandSelectionInput"
                                     list="commands"
                                     placeholder="Select Command"
-                                    :debounce="-1"
                                 />
                             </div>
                         </div>
