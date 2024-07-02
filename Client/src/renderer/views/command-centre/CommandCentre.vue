@@ -2,7 +2,7 @@
 import {changeTitle} from "../../util/general";
 import {computed, onMounted, onUnmounted, ref, toRaw, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
-import {ensure} from "../../../shared/src/util/general";
+import {ensure, assert} from "../../../shared/src/util/general";
 import {SocketId} from "../../types/player";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {Param, ParamType} from "../../../shared/src/types/commands/scheduled";
@@ -53,7 +53,21 @@ onUnmounted(async () => {
     UserServerAction.offRoomUpdate(updateRoom);
 });
 
-const sendCommand = async (): Promise<void> => {
+const sendCommand = async () => {
+    const validated = validateInputs(commandParamValueInputs.value);
+
+    if (!validated || !isClickable.value) {
+        return;
+    }
+
+    commandDelay();
+
+    await _sendCommandAction();
+
+    clearInputs([commandSelectionInput.value]);
+}
+
+const _sendCommandAction = async (): Promise<void> => {
     if (!commandId.value) {
         setError("Please choose a valid command");
         return;
@@ -205,31 +219,56 @@ watch(commandId, () => {
 const buttonConfig = ref<ButtonConfig[]>([
     {
         text: "Send",
-        callback: async (): Promise<void> => {
-            const validated = validateInputs(commandParamValueInputs.value);
-
-            if (!validated || !isClickable.value) {
-                return;
-            }
-
-            commandDelay();
-
-            await sendCommand();
-
-            clearInputs([commandSelectionInput.value]);
-        },
+        callback: sendCommand,
         disabled: (): boolean => !isClickable.value,
     },
     {
         text: "Leave Tyranny",
-        callback: (): void => {
-            exitTyrantView();
-        },
+        callback: exitTyrantView,
         disabled: () => false,
     },
 ]);
-</script>
 
+const submitSearch = (event: InputEvent) => {
+    const target = (event.target as HTMLInputElement);
+    const value = target.value;
+
+    if (room.value.commands.has(value)) {
+        selectedCommand.value = value;
+        target.value = '';
+        return;
+    }
+
+    const options = [...room.value.commands.values()]
+        .filter((option) => option.name.toLowerCase().includes(value.toLowerCase()))
+
+    if (options.length > 0) {
+        selectedCommand.value = options[0].name;
+        target.value = '';
+        return;
+    }
+
+    target.value = '';
+    selectedCommand.value = '';
+}
+
+window.addEventListener('keyup', (event: KeyboardEvent) => {
+    // console.log(event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.key);
+
+    if (! commandSelectionInput.value || ! isClickable)
+        return;
+
+    if (event.ctrlKey && event.key.toLowerCase() === 'q') {
+        commandSelectionInput.value.focus();
+        return;
+    }
+
+    if (event.ctrlKey && event.key.toLowerCase() === 'enter') {
+        sendCommand();
+        return;
+    }
+})
+</script>
 
 <template>
     <div id="view">
@@ -244,24 +283,23 @@ const buttonConfig = ref<ButtonConfig[]>([
                             <div style="width: 300px; height: 30px; display: block">
                                 <InputField
                                     name="command-selection"
-                                    v-model="selectedCommand"
+                                    v-on:change="submitSearch"
                                     ref="commandSelectionInput"
                                     list="commands"
                                     placeholder="Select Command"
+                                    :debounce="-1"
                                 />
                             </div>
-                            <button @click="selectedCommand = ''" id="clear-command-button"
-                                    title="Clear the command selection text box"
-                                    style="height: 30px;"
-                            >
-                                Clear
-                            </button>
                         </div>
 
                         <datalist id="commands">
                             <option v-bind:key="name" v-for="(name) in Object.keys(room.mapCtx.commands)"
                                     v-bind:value="name"></option>
                         </datalist>
+                    </div>
+
+                    <div id="selected-command">
+                        {{ selectedCommand }}
                     </div>
 
                     <div id="params">
@@ -311,8 +349,11 @@ const buttonConfig = ref<ButtonConfig[]>([
         #command {
             width: 100%;
 
-            #clear-command-button {
-                margin-left: 4px;
+            #selected-command {
+                width: 100%;
+                margin-top: 10px;
+                margin-bottom: 5px;
+                font-weight: bold;
             }
 
             #plan-command {
@@ -321,10 +362,6 @@ const buttonConfig = ref<ButtonConfig[]>([
                 #plan-cycle-warning {
                     color: red;
                 }
-
-                //input {
-                //    margin-top: 3px;
-                //}
 
                 .expected-execution-time {
                     margin: 0;
