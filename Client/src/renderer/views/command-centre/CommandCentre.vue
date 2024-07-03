@@ -54,24 +54,34 @@ onUnmounted(async () => {
 });
 
 const sendCommand = async () => {
-    const validated = validateInputs(commandParamValueInputs.value);
-
-    if (!validated || !isClickable.value) {
+    if (!isClickable.value)
         return;
-    }
 
-    commandDelay();
-
-    await _sendCommandAction();
-
-    clearInputs([commandSelectionInput.value]);
-}
-
-const _sendCommandAction = async (): Promise<void> => {
     if (!commandId.value) {
         setError("Please choose a valid command");
         return;
     }
+
+    const valid = validateInputs(commandParamValueInputs.value);
+    if (!valid)
+        return;
+
+    setCommandCooldown();
+
+    setText("Command Sent!");
+
+    const params = getParamsFromInputs();
+    if (params === null) {
+        return;
+    }
+
+    await UserServerAction.issueCommand(commandId.value, params);
+
+    clearInputs([commandSelectionInput.value]);
+    commandParamValues.value = [];
+}
+
+const getParamsFromInputs = (): Param[] | null => {
     const params: Param[] = [];
 
     for (let i = 0; i < commandParams.value.length; ++i) {
@@ -90,7 +100,7 @@ const _sendCommandAction = async (): Promise<void> => {
 
         if (value === undefined) {
             setError("Please enter values for all required arguments before sending the command!");
-            return;
+            return null;
         }
 
         params.push(<Param>{
@@ -100,11 +110,8 @@ const _sendCommandAction = async (): Promise<void> => {
         });
     }
 
-    setText("Command Sent!");
-    commandParamValues.value = [];
-
-    await UserServerAction.issueCommand(commandId.value, params);
-};
+    return params;
+}
 
 const commandId = computed(() => {
     return room.value.commands.get(selectedCommand.value)?.function;
@@ -194,7 +201,7 @@ const getCommandRules = (index: number): Array<string> => {
     return rules;
 };
 
-const commandDelay = () => {
+const setCommandCooldown = () => {
     isClickable.value = false;
 
     setTimeout(() => {
@@ -254,8 +261,7 @@ const submitSearch = (event: InputEvent) => {
 
 window.addEventListener('keyup', (event: KeyboardEvent) => {
     // console.log(event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.key);
-
-    if (! commandSelectionInput.value || ! isClickable)
+    if (!commandSelectionInput.value)
         return;
 
     if (event.ctrlKey && event.key.toLowerCase() === 'q') {
