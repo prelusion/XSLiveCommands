@@ -66,16 +66,16 @@ const sendCommand = async () => {
     if (!valid)
         return;
 
-    setCommandCooldown();
-
-    setText("Command Sent!");
-
     const params = getParamsFromInputs();
     if (params === null) {
         return;
     }
 
+    setCommandCooldown();
+
     await UserServerAction.issueCommand(commandId.value, params);
+
+    setText("Command Sent!");
 
     clearInputs([commandSelectionInput.value]);
     commandParamValues.value = [];
