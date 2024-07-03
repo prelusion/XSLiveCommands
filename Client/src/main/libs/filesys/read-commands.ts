@@ -7,20 +7,18 @@ function areValidParameters(params?: Array<ParamStruct>): boolean {
     }
 
     for(let param of params) {
-        if(!param.name) {
+        if(!param.name || !param.type) {
             return false;
         }
         if(!param.default) {
             continue;
         }
-        /* Despite the linter saying that these conditions are always false because of typing, this struct was read
-           from a file and is being validated here. Better types should be used here for the unvalidated struct so that
-           the linter understands */
+
         switch (param.type) {
             case "int":
-            case "float":  if (typeof param.default !== "number") return false; break;
-            case "bool":   if (typeof param.default !== "boolean") return false; break;
-            case "string": if (typeof param.default !== "string") return false; break;
+            case "float":  if (typeof (param.default as unknown) !== "number") return false; break;
+            case "bool":   if (typeof (param.default as unknown) !== "boolean") return false; break;
+            case "string": if (typeof (param.default as unknown) !== "string") return false; break;
         }
     }
     return true;
