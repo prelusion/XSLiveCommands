@@ -13,6 +13,9 @@ function areValidParameters(params?: Array<ParamStruct>): boolean {
         if(!param.default) {
             continue;
         }
+        /* Despite the linter saying that these conditions are always false because of typing, this struct was read
+           from a file and is being validated here. Better types should be used here for the unvalidated struct so that
+           the linter understands */
         switch (param.type) {
             case "int":
             case "float":  if (typeof param.default !== "number") return false; break;
