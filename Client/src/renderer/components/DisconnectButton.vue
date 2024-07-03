@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { defineEmits } from 'vue';
-
 const emit = defineEmits(['disconnect']);
 
 const emitDisconnect = (): void => {
