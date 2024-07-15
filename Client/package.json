@@ -1,6 +1,6 @@
 {
     "name": "xs-live-commands-client",
-    "version": "1.0.0-rc.1",
+    "version": "1.0.0-rc.1a",
     "main": "./dist/electron/main/main.js",
     "author": "Alian713, Prelusion & MrKirby",
     "description": "A client application used for the syncing of external calls to an XS file",

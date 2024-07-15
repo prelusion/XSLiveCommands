@@ -4,6 +4,7 @@ export interface XSLCVersion {
     patch: number,
     type?: 'alpha' | 'beta' | 'rc',
     count?: number,
+    build: string,
 }
 
 const XSLCv1: XSLCVersion = {
@@ -12,9 +13,10 @@ const XSLCv1: XSLCVersion = {
     patch: 0,
     type: "rc",
     count: 1,
+    build: 'a'
 };
 
-const XSLCv1_STR = "v1.0.0-rc.1";
+const XSLCv1_STR = "v1.0.0-rc.1a";
 
 export const XSLC_LATEST = XSLCv1;
 export const XSLC_VER_STR = XSLCv1_STR;
