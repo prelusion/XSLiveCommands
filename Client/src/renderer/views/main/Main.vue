@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Buttons from "../../components/Buttons.vue";
-import {defineComponent, onMounted, ref} from "vue";
+import {onMounted, ref} from "vue";
 import {changeTitle} from "../../util/general";
 import {ButtonConfig} from "../../types/buttons";
 import {UserServerAction} from "@renderer/util/user-server-action";

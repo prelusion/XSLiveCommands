@@ -1,4 +1,4 @@
-import {defineStore, Store} from 'pinia'
+import {defineStore} from 'pinia'
 import {ConfigStructLatest} from "../../../shared/src/types/config";
 import {assert} from "../../../shared/src/util/general";
 import {toRaw} from "vue";

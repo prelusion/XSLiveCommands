@@ -1,4 +1,4 @@
-include "xslc_core.xs";
+include "xslc_core_v1.0.0.xs";
 
 int typesString = -1;
 

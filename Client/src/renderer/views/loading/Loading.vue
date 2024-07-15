@@ -8,6 +8,7 @@ import {useRouter} from "vue-router";
 import {Route} from "@renderer/router/routes";
 import CustomModal from "@renderer/components/modal/CustomModal.vue";
 import ConfigReset from "@renderer/components/modal/content/ConfigReset.vue";
+import {XSLC_LATEST} from "../../../shared/src/types/version";
 import {ensure} from "../../../shared/src/util/general";
 
 const store = useMainStore();
@@ -69,21 +70,28 @@ const handleConfigError = (error: string): void => {
 /**
  * This will run on any type of connection, including initial load and after losing connection to the server
  */
-const reconnectCallback = (): void => {
-    if (store.$state.connectionOk) {
-        loadingTexts.value.serverConnected = "Connected to server successfully!";
-
-        if (UserServerAction.username !== null) {
-            loadingTexts.value.username = "Username loaded successfully!";
-        }
-
-        /* If reconnecting while on the loading route, redirect to main route */
-        if (router.currentRoute.value.name === Route.LOADING) {
-            router.replace({ name: Route.MAIN })
-        }
+const reconnectCallback = async (): Promise<void> => {
+    const compatible = await UserServerAction.checkVersion(XSLC_LATEST);
+    if(!compatible) {
+        loadingError.value = "XSLC app version incompatible with the XSLC server";
+        UserServerAction.connected = false;
+        UserServerAction.username = null;
+        return;
+    }
+    store.$state.connectionOk = UserServerAction.connected;
+    if (!UserServerAction.connected) {
+        loadingError.value = "Disconnected from XSLC server, attempting to reconnect";
+        return;
+    }
+    loadingTexts.value.serverConnected = "Connected to server successfully!";
+    if (UserServerAction.username !== null) {
+        loadingTexts.value.username = "Username loaded successfully!";
     }
 
-    store.$state.connectionOk = UserServerAction.connected;
+    /* If reconnecting while on the loading route, redirect to main route */
+    if (router.currentRoute.value.name === Route.LOADING) {
+        router.replace({ name: Route.MAIN })
+    }
 }
 </script>
 

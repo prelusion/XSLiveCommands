@@ -1,4 +1,5 @@
 import {io, Socket} from "socket.io-client";
+import {XSLCVersion} from "../../shared/src/types/version";
 
 
 import {CoreLoop} from "./core-loop";
@@ -33,7 +34,7 @@ export class UserServerAction {
         // todo: MS Store
     }
 
-    public static async connect(serverCustom: string | null, connectionChangedCallback: () => void): Promise<void> {
+    public static async connect(serverCustom: string | null, connectionChangedCallback: () => Promise<void>): Promise<void> {
         if(serverCustom === "") {
             serverCustom = null;
         }
@@ -50,10 +51,8 @@ export class UserServerAction {
             console.log(`Connected to XSLC server on '${serverUrl}'`);
 
             this.connected = true;
-            connectionChangedCallback();
-
             this.username = await this.getUsername();
-            connectionChangedCallback();
+            connectionChangedCallback().then();
 
             let exists = await this.doesRoomExist();
             if(!exists) {
@@ -65,6 +64,10 @@ export class UserServerAction {
         })
         this.skt.on(UserAction.LoseConnection, this.disconnect.bind(this));
         this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
+    }
+
+    public static async checkVersion(XSLCLatest: XSLCVersion): Promise<boolean> {
+        return await this.emit(UserAction.CheckVersion, XSLCLatest);
     }
 
     public static onRoomUpdate(fn: (room: Room | null) => void) {
