@@ -20,3 +20,9 @@ const XSLCv1_STR = "v1.0.0-rc.1a";
 
 export const XSLC_LATEST = XSLCv1;
 export const XSLC_VER_STR = XSLCv1_STR;
+
+export enum Compatibility {
+    Compatible,
+    Outdated,
+    Incompatible,
+}

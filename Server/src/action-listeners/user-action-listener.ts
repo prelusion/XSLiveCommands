@@ -21,7 +21,7 @@ export class UserActionListener {
         this.userSkt = userSkt;
         this.user = user;
 
-        this.userSkt.on(UserAction.CheckVersion, this.onCheckVersion.bind(this))
+        this.userSkt.on(UserAction.GetVersion, this.onGetVersion.bind(this))
         this.userSkt.on(UserAction.UpdateTick, this.onUpdateTick.bind(this));
         this.userSkt.on(UserAction.VerifyRoom, this.doesRoomExist.bind(this));
         this.userSkt.on(UserAction.Disconnect, this.disconnect.bind(this));
@@ -35,14 +35,8 @@ export class UserActionListener {
         this.userSkt.on(UserAction.SteamUsername, this.getSteamUsername.bind(this));
     }
 
-    private onCheckVersion(clientVersion: XSLCVersion, callback: (b: boolean) => void): void {
-        callback(
-            XSLC_LATEST.major === clientVersion.major
-            && XSLC_LATEST.minor === clientVersion.minor
-            && XSLC_LATEST.patch === clientVersion.patch
-            && XSLC_LATEST.type  === clientVersion.type
-            && XSLC_LATEST.count === clientVersion.count
-        );
+    private onGetVersion(callback: (b: XSLCVersion) => void): void {
+        callback(XSLC_LATEST);
     }
 
     private onUpdateTick(tick: number): void {

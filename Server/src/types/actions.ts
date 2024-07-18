@@ -9,7 +9,7 @@ export enum ServerEvent {
 
 export enum UserAction {
     NewConnection = "connection",
-    CheckVersion = "checkVersion",
+    GetVersion = "getVersion",
     EstablishConnection = "connect",
     LoseConnection = "disconnect",
     UpdateTick = "cycleUpdate",

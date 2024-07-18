@@ -1,15 +1,16 @@
 import {io, Socket} from "socket.io-client";
-import {XSLCVersion} from "../../shared/src/types/version";
+import {ServerEvent, UserAction} from "../../shared/src/types/actions";
+import {Param, UnscheduledCommand} from "../../shared/src/types/commands/scheduled";
+import {MapCommands} from "../../shared/src/types/commands/structs";
+import {Result} from "../../shared/src/types/result";
+import {IRoom, Room} from "../../shared/src/types/room";
+import {AuthenticatedUser, PlatformUser} from "../../shared/src/types/user";
+import {Compatibility, XSLC_LATEST, XSLCVersion} from "../../shared/src/types/version";
+import {ensure} from "../../shared/src/util/general";
 
 
 import {CoreLoop} from "./core-loop";
-import {AuthenticatedUser, PlatformUser} from "../../shared/src/types/user";
-import {IRoom, Room} from "../../shared/src/types/room";
-import {ServerEvent, UserAction} from "../../shared/src/types/actions";
-import {Result} from "../../shared/src/types/result";
-import {ensure} from "../../shared/src/util/general";
-import {MapCommands} from "../../shared/src/types/commands/structs";
-import {Param, UnscheduledCommand} from "../../shared/src/types/commands/scheduled";
+
 
 export class UserServerAction {
     public static skt: Socket;
@@ -38,7 +39,7 @@ export class UserServerAction {
         if(serverCustom === "") {
             serverCustom = null;
         }
-        const serverEnv = await window.manager.getEnvVar('SERVER_URL') as (string | null);
+        const serverEnv = await window.manager.getEnvVar('SERVER_URL');
         const serverSE = 'https://xssync.aoe2.se/';
 
         this.connectionChangedCallback = connectionChangedCallback;
@@ -66,8 +67,24 @@ export class UserServerAction {
         this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
     }
 
-    public static async checkVersion(XSLCLatest: XSLCVersion): Promise<boolean> {
-        return await this.emit(UserAction.CheckVersion, XSLCLatest);
+    public static async checkVersion(): Promise<Compatibility> {
+        let serverVersion: XSLCVersion = await this.emit(UserAction.GetVersion);
+        if(
+            serverVersion.major != XSLC_LATEST.major
+            || serverVersion.minor != XSLC_LATEST.minor
+            || serverVersion.patch != XSLC_LATEST.patch
+            || serverVersion.type  != XSLC_LATEST.type
+            || serverVersion.count != XSLC_LATEST.count
+        ) {
+            return Compatibility.Incompatible
+        }
+
+        if(serverVersion.build > XSLC_LATEST.build) {
+            // todo: This is probably not accurate, but this condition can be changed in the future
+            return Compatibility.Outdated;
+        }
+
+        return Compatibility.Compatible;
     }
 
     public static onRoomUpdate(fn: (room: Room | null) => void) {

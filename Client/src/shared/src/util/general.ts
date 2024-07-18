@@ -27,3 +27,12 @@ export function assert(value: unknown): asserts value {
         throw new TypeError("value must be defined");
     }
 }
+
+/**
+ * Sleep
+ *
+ * @param time Seconds to sleep for
+ */
+export async function sleep(time: number): Promise<void> {
+    await new Promise((res) => setTimeout(res, time * 1000));
+}
