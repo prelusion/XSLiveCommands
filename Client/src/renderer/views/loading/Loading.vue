@@ -58,7 +58,6 @@ onMounted(async () => {
     /* ############# Connect to server and retrieve username ############# */
     const customUrl = config["custom-server-hostport"];
     await UserServerAction.connect(customUrl, reconnectCallback);
-    loadingTexts.value.serverConnected = "Connection success!";
 });
 
 const handleConfigError = (error: string): void => {
@@ -75,14 +74,16 @@ const handleConfigError = (error: string): void => {
  */
 const reconnectCallback = async (): Promise<void> => {
     const compatible = await UserServerAction.checkVersion();
-    if(compatible == Compatibility.Compatible) {
+    if(compatible == Compatibility.Incompatible) {
+        outdatedWarningTime.value = 1;
         loadingError.value = "XSLC app version incompatible with the XSLC server";
         UserServerAction.connected = false;
         UserServerAction.username = null;
         return;
     }
+    loadingTexts.value.serverConnected = "Connection success!";
     if(compatible == Compatibility.Outdated) {
-        const waitTime = parseInt(ensure(await window.manager.getEnvVar('UPDATE_NOTIFICATION_TIME')));
+        const waitTime = 10;
         outdatedWarningTime.value = waitTime;
 
         let itv = setInterval(() => --outdatedWarningTime.value, 1000);
@@ -111,12 +112,14 @@ const reconnectCallback = async (): Promise<void> => {
         <div v-for="text of loadingTexts">
             {{ text }}
         </div>
-        <div id="error">{{ loadingError }}</div>
+        <div id="error-or-warn">
+            <div id="error">{{ loadingError }}</div>
 
-        <div id="warn" v-if="outdatedWarningTime > 0">
-            <div>({{ outdatedWarningTime }}s)</div>
-            <div>An update for the XSLC app is available!</div>
-            <div>Download it from <a target="_blank" href="https://github.com/prelusion/XSLiveCommands/releases/latest">here</a>!</div>
+            <div id="warn" v-if="outdatedWarningTime > 0">
+                <div v-if="!loadingError">({{ outdatedWarningTime }}s)</div>
+                <div>An update for the XSLC app is available!</div>
+                <div>Download it from <a target="_blank" href="https://github.com/prelusion/XSLiveCommands/releases/latest">here</a>!</div>
+            </div>
         </div>
     </div>
 
@@ -132,13 +135,17 @@ const reconnectCallback = async (): Promise<void> => {
     margin-top: 30vh;
     text-align: center;
 
+    #error-or-warn {
+        margin-top: 10vh;
+    }
+
     #error {
-        margin-top: 20vh;
+        margin-top: 5vh;
         color: red;
     }
 
     #warn {
-        margin-top: 20vh;
+        margin-top: 5vh;
         color: orange;
     }
 }

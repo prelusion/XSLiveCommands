@@ -13,7 +13,7 @@ const XSLCv1: XSLCVersion = {
     patch: 0,
     type: "rc",
     count: 1,
-    build: 'b',
+    build: 'a',
 };
 
 const XSLCv1Str = "v1.0.0-rc.1a";

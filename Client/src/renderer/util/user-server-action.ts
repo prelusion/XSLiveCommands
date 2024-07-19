@@ -68,18 +68,26 @@ export class UserServerAction {
     }
 
     public static async checkVersion(): Promise<Compatibility> {
-        let serverVersion: XSLCVersion = await this.emit(UserAction.GetVersion);
+        let {
+            major,
+            minor,
+            patch,
+            type,
+            count,
+            build
+        }: XSLCVersion = await this.emit(UserAction.GetVersion);
+        console.log(`Connected to server v${major}.${minor}.${patch}-${type}.${count}${build}`);
         if(
-            serverVersion.major != XSLC_LATEST.major
-            || serverVersion.minor != XSLC_LATEST.minor
-            || serverVersion.patch != XSLC_LATEST.patch
-            || serverVersion.type  != XSLC_LATEST.type
-            || serverVersion.count != XSLC_LATEST.count
+            major != XSLC_LATEST.major
+            || minor != XSLC_LATEST.minor
+            || patch != XSLC_LATEST.patch
+            || type  != XSLC_LATEST.type
+            || count != XSLC_LATEST.count
         ) {
             return Compatibility.Incompatible
         }
 
-        if(serverVersion.build > XSLC_LATEST.build) {
+        if(build > XSLC_LATEST.build) {
             // todo: This is probably not accurate, but this condition can be changed in the future
             return Compatibility.Outdated;
         }
