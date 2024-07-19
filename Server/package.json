@@ -1,11 +1,11 @@
 {
-  "name": "aoe2-live-commands",
-  "version": "1.0.0",
+  "name": "xs-live-commands-server",
+  "version": "1.0.0-rc.1a",
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "npx nodemon src/index.ts",
-    "start": "tsc && node dist/index.js",
+    "dev": "npx nodemon src/main.ts",
+    "start": "tsc && node dist/main.js",
     "watch": "npx tsc --watch",
     "run": "node dist/index.js"
   },

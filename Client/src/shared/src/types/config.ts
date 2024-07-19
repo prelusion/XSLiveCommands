@@ -1,13 +1,18 @@
-export interface ConfigFileCoreFormat {
+export interface ConfigCoreStruct {
     'version': number;
 }
 
-export interface ConfigFileFormatV01 extends ConfigFileCoreFormat {
-    'last-map-path': string;
+export interface ConfigStructV01 extends ConfigCoreStruct {
+    'previous-map': {
+        'path': string;
+        'name': string;
+    };
     'custom-server-hostport': string;
 }
 
+export type ConfigStruct = ConfigStructV01 /* to be union-ed with more versions */
+
 /**
- * The newest config file format to work with
+ * The latest config file format to work with
  */
-export type ConfigFileFormatNewest = ConfigFileFormatV01;
+export type ConfigStructLatest = ConfigStructV01;

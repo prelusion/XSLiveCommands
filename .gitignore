@@ -286,3 +286,5 @@ fabric.properties
 XS/.idea/workspace.xml
 
 GUI-Client/prod-dist/*
+
+.idea/php.xml
