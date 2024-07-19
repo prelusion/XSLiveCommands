@@ -1,6 +1,6 @@
 {
-  "name": "aoe2-live-commands",
-  "version": "1.0.0",
+  "name": "xs-live-commands-server",
+  "version": "1.0.0-rc.1a",
   "description": "",
   "main": "index.ts",
   "scripts": {

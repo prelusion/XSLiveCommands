@@ -1,14 +1,16 @@
 import {io, Socket} from "socket.io-client";
+import {ServerEvent, UserAction} from "../../shared/src/types/actions";
+import {Param, UnscheduledCommand} from "../../shared/src/types/commands/scheduled";
+import {MapCommands} from "../../shared/src/types/commands/structs";
+import {Result} from "../../shared/src/types/result";
+import {IRoom, Room} from "../../shared/src/types/room";
+import {AuthenticatedUser, PlatformUser} from "../../shared/src/types/user";
+import {Compatibility, XSLC_LATEST, XSLCVersion} from "../../shared/src/types/version";
+import {ensure} from "../../shared/src/util/general";
 
 
 import {CoreLoop} from "./core-loop";
-import {AuthenticatedUser, PlatformUser} from "../../shared/src/types/user";
-import {IRoom, Room} from "../../shared/src/types/room";
-import {ServerEvent, UserAction} from "../../shared/src/types/actions";
-import {Result} from "../../shared/src/types/result";
-import {ensure} from "../../shared/src/util/general";
-import {MapCommands} from "../../shared/src/types/commands/structs";
-import {Param, UnscheduledCommand} from "../../shared/src/types/commands/scheduled";
+
 
 export class UserServerAction {
     public static skt: Socket;
@@ -33,11 +35,11 @@ export class UserServerAction {
         // todo: MS Store
     }
 
-    public static async connect(serverCustom: string | null, connectionChangedCallback: () => void): Promise<void> {
+    public static async connect(serverCustom: string | null, connectionChangedCallback: () => Promise<void>): Promise<void> {
         if(serverCustom === "") {
             serverCustom = null;
         }
-        const serverEnv = await window.manager.getEnvVar('SERVER_URL') as (string | null);
+        const serverEnv = await window.manager.getEnvVar('SERVER_URL');
         const serverSE = 'https://xssync.aoe2.se/';
 
         this.connectionChangedCallback = connectionChangedCallback;
@@ -50,10 +52,8 @@ export class UserServerAction {
             console.log(`Connected to XSLC server on '${serverUrl}'`);
 
             this.connected = true;
-            connectionChangedCallback();
-
             this.username = await this.getUsername();
-            connectionChangedCallback();
+            connectionChangedCallback().then();
 
             let exists = await this.doesRoomExist();
             if(!exists) {
@@ -65,6 +65,34 @@ export class UserServerAction {
         })
         this.skt.on(UserAction.LoseConnection, this.disconnect.bind(this));
         this.skt.on(ServerEvent.RoomUpdate, this.updateRoom.bind(this));
+    }
+
+    public static async checkVersion(): Promise<Compatibility> {
+        let {
+            major,
+            minor,
+            patch,
+            type,
+            count,
+            build
+        }: XSLCVersion = await this.emit(UserAction.GetVersion);
+        console.log(`Connected to server v${major}.${minor}.${patch}-${type}.${count}${build}`);
+        if(
+            major != XSLC_LATEST.major
+            || minor != XSLC_LATEST.minor
+            || patch != XSLC_LATEST.patch
+            || type  != XSLC_LATEST.type
+            || count != XSLC_LATEST.count
+        ) {
+            return Compatibility.Incompatible
+        }
+
+        if(build > XSLC_LATEST.build) {
+            // todo: This is probably not accurate, but this condition can be changed in the future
+            return Compatibility.Outdated;
+        }
+
+        return Compatibility.Compatible;
     }
 
     public static onRoomUpdate(fn: (room: Room | null) => void) {

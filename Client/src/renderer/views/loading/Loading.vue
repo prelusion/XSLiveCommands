@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
-import {changeTitle} from "@renderer/util/general";
-import {CONFIG_VERSION} from "@renderer/versions";
-import {UserServerAction} from "@renderer/util/user-server-action";
-import {useMainStore} from "@store/main";
-import {useRouter} from "vue-router";
-import {Route} from "@renderer/router/routes";
-import CustomModal from "@renderer/components/modal/CustomModal.vue";
 import ConfigReset from "@renderer/components/modal/content/ConfigReset.vue";
-import {ensure} from "../../../shared/src/util/general";
+import CustomModal from "@renderer/components/modal/CustomModal.vue";
+import {Route} from "@renderer/router/routes";
+import {changeTitle} from "@renderer/util/general";
+import {UserServerAction} from "@renderer/util/user-server-action";
+import {CONFIG_VERSION} from "@renderer/versions";
+import {useMainStore} from "@store/main";
+import {onMounted, ref} from "vue";
+import {useRouter} from "vue-router";
+import {Compatibility} from "../../../shared/src/types/version";
+import {ensure, sleep} from "../../../shared/src/util/general";
+
 
 const store = useMainStore();
 const router = useRouter();
@@ -17,6 +19,7 @@ const configResetModal = ref<typeof CustomModal|null>(null);
 changeTitle('');
 
 /* The texts showing on screen during the startup sequence */
+const outdatedWarningTime = ref(0);
 const loadingError = ref('');
 const loadingTexts = ref({
     settings: 'Loading configuration file...',
@@ -69,21 +72,38 @@ const handleConfigError = (error: string): void => {
 /**
  * This will run on any type of connection, including initial load and after losing connection to the server
  */
-const reconnectCallback = (): void => {
-    if (store.$state.connectionOk) {
-        loadingTexts.value.serverConnected = "Connected to server successfully!";
+const reconnectCallback = async (): Promise<void> => {
+    const compatible = await UserServerAction.checkVersion();
+    if(compatible == Compatibility.Incompatible) {
+        outdatedWarningTime.value = 1;
+        loadingError.value = "XSLC app version incompatible with the XSLC server";
+        UserServerAction.connected = false;
+        UserServerAction.username = null;
+        return;
+    }
+    loadingTexts.value.serverConnected = "Connection success!";
+    if(compatible == Compatibility.Outdated) {
+        const waitTime = 10;
+        outdatedWarningTime.value = waitTime;
 
-        if (UserServerAction.username !== null) {
-            loadingTexts.value.username = "Username loaded successfully!";
-        }
-
-        /* If reconnecting while on the loading route, redirect to main route */
-        if (router.currentRoute.value.name === Route.LOADING) {
-            router.replace({ name: Route.MAIN })
-        }
+        let itv = setInterval(() => --outdatedWarningTime.value, 1000);
+        await sleep(waitTime);
+        clearInterval(itv);
+    }
+    store.$state.connectionOk = UserServerAction.connected;
+    if (!UserServerAction.connected) {
+        loadingError.value = "Disconnected from XSLC server, attempting to reconnect";
+        return;
+    }
+    loadingTexts.value.serverConnected = "Connected to server successfully!";
+    if (UserServerAction.username !== null) {
+        loadingTexts.value.username = "Username loaded successfully!";
     }
 
-    store.$state.connectionOk = UserServerAction.connected;
+    /* If reconnecting while on the loading route, redirect to main route */
+    if (router.currentRoute.value.name === Route.LOADING) {
+        router.replace({ name: Route.MAIN })
+    }
 }
 </script>
 
@@ -92,7 +112,15 @@ const reconnectCallback = (): void => {
         <div v-for="text of loadingTexts">
             {{ text }}
         </div>
-        <div id="error">{{ loadingError }}</div>
+        <div id="error-or-warn">
+            <div id="error">{{ loadingError }}</div>
+
+            <div id="warn" v-if="outdatedWarningTime > 0">
+                <div v-if="!loadingError">({{ outdatedWarningTime }}s)</div>
+                <div>An update for the XSLC app is available!</div>
+                <div>Download it from <a target="_blank" href="https://github.com/prelusion/XSLiveCommands/releases/latest">here</a>!</div>
+            </div>
+        </div>
     </div>
 
     <CustomModal ref="configResetModal" :outside-click-close="false">
@@ -107,9 +135,18 @@ const reconnectCallback = (): void => {
     margin-top: 30vh;
     text-align: center;
 
+    #error-or-warn {
+        margin-top: 10vh;
+    }
+
     #error {
-        margin-top: 20vh;
+        margin-top: 5vh;
         color: red;
+    }
+
+    #warn {
+        margin-top: 5vh;
+        color: orange;
     }
 }
 </style>

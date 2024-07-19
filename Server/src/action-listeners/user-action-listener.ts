@@ -1,5 +1,6 @@
 import {Socket} from "socket.io";
 import {err, ok, Result} from "../types/result";
+import {XSLC_LATEST, XSLCVersion} from "../types/version";
 import type {XSLCServer} from "./xslc-server";
 import {Room, RoomId} from "../types/room";
 import {UserAction, ResultCallback} from "../types/actions";
@@ -20,6 +21,7 @@ export class UserActionListener {
         this.userSkt = userSkt;
         this.user = user;
 
+        this.userSkt.on(UserAction.GetVersion, this.onGetVersion.bind(this))
         this.userSkt.on(UserAction.UpdateTick, this.onUpdateTick.bind(this));
         this.userSkt.on(UserAction.VerifyRoom, this.doesRoomExist.bind(this));
         this.userSkt.on(UserAction.Disconnect, this.disconnect.bind(this));
@@ -31,6 +33,10 @@ export class UserActionListener {
         this.userSkt.on(UserAction.IssueCommand, this.issueCommand.bind(this));
         this.userSkt.on(UserAction.TickPrediction, this.getTickPrediction.bind(this));
         this.userSkt.on(UserAction.SteamUsername, this.getSteamUsername.bind(this));
+    }
+
+    private onGetVersion(callback: (b: XSLCVersion) => void): void {
+        callback(XSLC_LATEST);
     }
 
     private onUpdateTick(tick: number): void {

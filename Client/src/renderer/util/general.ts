@@ -1,4 +1,5 @@
-import {CLIENT_VERSION} from "../versions";
+import {XSLC_VER_STR} from "../../shared/src/types/version";
+
 
 /**
  * Easy way of logging values returned from changed functions
@@ -24,7 +25,7 @@ export function zeroLead(num: string | number): string {
  * @param prefix The prefix of the title (before the separator)
  * @param sep The separator between prefix and title
  */
-export function changeTitle(title: string, prefix = `XS Live Commands (v${CLIENT_VERSION})`, sep = "|"): void {
+export function changeTitle(title: string, prefix = `XS Live Commands ${XSLC_VER_STR}`, sep = "|"): void {
     document.title = `${prefix} ${title ? sep : ''} ${title}`
 }
 
