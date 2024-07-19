@@ -17,7 +17,7 @@ XSLC rooms work exactly like DE's lobbies. XSLC will run triggers/XS functions l
     </figure>
 
     !!! tip "Tip"
-        XSLC remembers the map that you last selected and played! Just "Click" create if you wish to replay it.
+        XSLC remembers the map that you last selected and played! Just click "Create" if you wish to replay it.
 
 3. Optionally (recommended) enter a launch code (password) to prevent any player in the room from becoming a Tyrant.
 
