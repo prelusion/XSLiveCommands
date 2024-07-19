@@ -1,8 +1,10 @@
-# XSLiveCommands
+# XS Live Commands
 
-This application allows its users to externally run custom commands and effects in a live AoE2:DE game.
+This application allows running triggers/XS functions in live AoE2:DE custom map (RMS/CS) games, on request, externally. Think of it something like [Choice Chamber](https://store.steampowered.com/app/359960/Choice_Chamber/) or T90's overlords, but without the overlord needing to be in the game itself!
 
 > Note: This application is not a hack, a special map (Custom Scenario or RMS) needs to be made in order to use this application
+
+You can head over to INSERT MKDOCS LINK to find out more about the application and how to use it!
 
 ## Installation
 
