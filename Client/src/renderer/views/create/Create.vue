@@ -166,6 +166,10 @@ const buttonConfig: Array<ButtonConfig> = [
     }
 ];
 
+const onClearSelectedMap = () => {
+    enteredFilename.value = '';
+    selectedMap.value.filepath = '';
+}
 
 </script>
 
@@ -203,7 +207,7 @@ const buttonConfig: Array<ButtonConfig> = [
                         <datalist id="scenarios">
                             <option v-for="(name) in Object.keys(maps)" v-bind:key="name">{{ name }}</option>
                         </datalist>
-                        <button @click="enteredFilename = ''"
+                        <button @click="onClearSelectedMap"
                                 id="clear-map-button"
                                 title="Clear the map selection text box">Clear
                         </button>
