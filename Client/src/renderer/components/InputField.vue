@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {getCurrentInstance, onMounted, PropType, ref, watch} from 'vue';
 import {validateRules} from '@renderer/util/form/form-rules';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 const {setTimeout, clearTimeout} = window;
 
@@ -60,6 +61,7 @@ const emit = defineEmits(['update:modelValue']);
 
 const inputField = ref<HTMLInputElement | null>(null);
 const errorMessages = ref([] as string[]);
+const showPassword = ref(false);
 
 /* Unique identifier for each InputElement */
 const instance = getCurrentInstance();
@@ -105,6 +107,10 @@ const focus = () => {
     inputField.value?.focus();
 };
 
+const onClickShowPasswordEye = () => {
+    showPassword.value = !showPassword.value;
+};
+
 /* Allow functions to be called from outside other components */
 defineExpose({validate, clear, focus})
 </script>
@@ -112,7 +118,24 @@ defineExpose({validate, clear, focus})
 <template>
     <div class="custom-input-container">
         <label v-show="!!label" :for="inputId">{{ label }}</label>
-        <div class="custom-input-wrapper">
+        <div v-if="type === 'custom-password'" class="custom-input-wrapper custom-password-field">
+            <input
+                ref="inputField"
+                class="custom-input"
+                v-model="modelValue"
+                :id="inputId"
+                :list="list"
+                :type="showPassword ? 'text' : 'password'"
+                :placeholder="placeholder"
+                :class="{ 'custom-input-error': errorMessages.length }"
+                @input="onInputEvent"
+            />
+            <i
+                :class="`fa-regular fa-fw ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`"
+                @click="onClickShowPasswordEye"
+            ></i>
+        </div>
+        <div v-else class="custom-input-wrapper">
             <input
                 ref="inputField"
                 class="custom-input"
@@ -125,6 +148,7 @@ defineExpose({validate, clear, focus})
                 @input="onInputEvent"
             />
         </div>
+
         <div v-if="subtext" class="small-text">
             {{ subtext }}
         </div>
@@ -149,6 +173,20 @@ defineExpose({validate, clear, focus})
     height: 30px;
     display: flex;
     align-items: center;
+}
+
+.custom-password-field {
+    position: relative;
+}
+
+.custom-password-field input {
+    padding-right: 2em; /* Add padding to make room for the eye */
+}
+
+.custom-password-field i {
+    position: absolute;
+    right: 0.5em;
+    cursor: pointer;
 }
 
 .custom-input {

@@ -5,7 +5,7 @@
             ref="input-1"
             name="Tyranny Launch Code"
             placeholder="Launch Code"
-            :type="password"
+            :type="'custom-password'"
             :rules="['max:30']"
             :errorMsg="[errorMsg]"
             v-model="password"

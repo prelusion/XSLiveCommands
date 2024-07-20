@@ -19,7 +19,7 @@ const roomId = ref("");
 onMounted(async () => {
     assert(inputRoomCode.value);
 
-    changeTitle(`Join as Player...`);
+    changeTitle(`Join Room...`);
 
     inputRoomCode.value.focus();
 });
@@ -65,10 +65,10 @@ const buttonConfig = [
             <div class="join-input">
                 <InputField
                     ref="inputRoomCode"
-                    type="text"
+                    type="custom-password"
                     name="room-code"
                     placeholder="Room Code"
-                    label="Enter the code for the room you would like to join:"
+                    label="Room Code"
                     subtext="Enter the code for the room. This code is shown to the host and others who are already in the room."
                     :rules="['required', 'max:30']"
                     :errorMsg="[errorMsg]"

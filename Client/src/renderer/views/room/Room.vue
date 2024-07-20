@@ -46,7 +46,7 @@ onMounted(async () => {
     console.log(UserServerAction.room)
 
     UserServerAction.onRoomUpdate(updateRoom);
-    changeTitle(`Room ${room.value.id}`);
+    changeTitle(`Room`);
 });
 
 onUnmounted(async () => {
