@@ -44,7 +44,7 @@ onMounted(() => {
 
     tickPredictionInterval.value = window.setInterval(getTickPrediction, 500);
 
-    changeTitle(`COMMAND CENTRE! (Room: ${room.value.id})`);
+    changeTitle(`COMMAND CENTRE!`);
 });
 
 onUnmounted(async () => {

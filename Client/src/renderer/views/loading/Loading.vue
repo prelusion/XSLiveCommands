@@ -20,6 +20,7 @@ changeTitle('');
 
 /* The texts showing on screen during the startup sequence */
 const outdatedWarningTime = ref(0);
+const retrySteamIdReadTime = ref(0);
 const loadingError = ref('');
 const loadingTexts = ref({
     settings: 'Loading configuration file...',
@@ -46,10 +47,21 @@ onMounted(async () => {
     loadingTexts.value.userId = "Loading user ID...";
 
     /* ############# Get User ID (Steam only for now) ############# */
-    await UserServerAction.setPlatform();
-    if (!UserServerAction.platform) {
-        loadingError.value = 'Unable to detect platform. Make sure you\'re signed into Steam.'
-        return;
+    const steamReadFrq = 10;
+    for(;;) {
+        await UserServerAction.setPlatform();
+        if(UserServerAction.platform) {
+            break;
+        }
+        retrySteamIdReadTime.value = steamReadFrq;
+
+        let itv = setInterval(() => {
+            --retrySteamIdReadTime.value;
+            loadingError.value = `Unable to detect platform. Make sure you're signed into Steam. Retrying in ${retrySteamIdReadTime.value}s`;
+        }, 1000);
+        await sleep(steamReadFrq);
+        clearInterval(itv);
+        loadingError.value = '';
     }
 
     loadingTexts.value.userId = "User ID loaded successfully!";

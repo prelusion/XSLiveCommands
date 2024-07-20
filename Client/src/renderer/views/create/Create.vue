@@ -22,8 +22,7 @@ const creationInProgress = ref(false);
 const loadedAvailableMaps = ref(false);
 
 /* Input field variables */
-const password = ref('');
-const showPassword = ref(false);
+const launchCode = ref('');
 
 const maps = ref<Record<MapName, MapPath>>({});
 
@@ -36,8 +35,7 @@ const errors = ref([] as string[]);
 
 /* Input fields */
 const launchCodeInputField = ref<typeof InputField | null>(null);
-const showPasswordInputField = ref<typeof InputField | null>(null);
-const inputs: Ref<typeof InputField | null>[] = [launchCodeInputField, showPasswordInputField];
+const inputs: Ref<typeof InputField | null>[] = [launchCodeInputField];
 
 /* Datalist */
 const enteredFilename = ref('');
@@ -129,12 +127,12 @@ const createRoom = () => {
         name: mapName,
     });
 
-    UserServerAction.createRoom(mapName, ensure(selectedMap.value.commands), password.value)
+    UserServerAction.createRoom(mapName, ensure(selectedMap.value.commands), launchCode.value)
         .then(() => {
             assert(UserServerAction.room);
 
             store.$state.tyrantRequest.roomId = UserServerAction.room.id;
-            store.$state.tyrantRequest.code = password.value;
+            store.$state.tyrantRequest.code = launchCode.value;
 
             router.replace({name: Route.ROOM, query: {asHost: 1}});
         })
@@ -168,6 +166,10 @@ const buttonConfig: Array<ButtonConfig> = [
     }
 ];
 
+const onClearSelectedMap = () => {
+    enteredFilename.value = '';
+    selectedMap.value.filepath = '';
+}
 
 </script>
 
@@ -182,23 +184,14 @@ const buttonConfig: Array<ButtonConfig> = [
                 <div id="password">
                     <div id="show-password">
                         <InputField
-                            v-model="password"
+                            v-model="launchCode"
                             ref="launchCodeInputField"
                             class="input-field"
                             name="launch-code"
                             label="Launch Code"
                             placeholder="Launch Code for Tyrants"
-                            :type="showPassword ? 'text' : 'password'"
+                            :type="'custom-password'"
                             :rules="['max:30']"
-                        />
-
-                        <InputField
-                            v-model="showPassword"
-                            ref="showPasswordInputField"
-                            class="input-field show-password"
-                            name="show-password"
-                            label="Show password"
-                            type="checkbox"
                         />
                     </div>
 
@@ -214,7 +207,7 @@ const buttonConfig: Array<ButtonConfig> = [
                         <datalist id="scenarios">
                             <option v-for="(name) in Object.keys(maps)" v-bind:key="name">{{ name }}</option>
                         </datalist>
-                        <button @click="enteredFilename = ''"
+                        <button @click="onClearSelectedMap"
                                 id="clear-map-button"
                                 title="Clear the map selection text box">Clear
                         </button>

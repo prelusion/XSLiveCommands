@@ -20,6 +20,7 @@ const props = defineProps({
 
 /* Copy button */
 const copyButtonText = ref('Copy');
+const showRoomId = ref(false);
 let buttonTimeout = -1;
 
 const copyRoomId = async () => {
@@ -37,6 +38,10 @@ const disconnect = async () => {
     await router.replace({name: Route.MAIN});
 };
 
+const onClickShowRoomIdEye = () => {
+    showRoomId.value = !showRoomId.value;
+};
+
 </script>
 
 <template>
@@ -45,7 +50,14 @@ const disconnect = async () => {
         <div style="display: grid; grid-column-gap: 10px; grid-template-columns: repeat(2, fit-content(100%))">
             <div>Room Code:</div>
             <div>
-                <span style="margin-right: 20px">{{ room.id }} </span>
+                <span v-if="showRoomId" style="margin-right: 5px">{{ room.id }} </span>
+                <i
+                    :class="`fa-regular fa-fw ${showRoomId ? 'fa-eye-slash' : 'fa fa-eye'}`"
+                    style="margin-right: 20px"
+                    @click="onClickShowRoomIdEye"
+                >
+
+                </i>
                 <button @click="copyRoomId()">{{ copyButtonText }}</button>
             </div>
 
