@@ -13,10 +13,10 @@ const XSLCv1: XSLCVersion = {
     patch: 0,
     type: "rc",
     count: 1,
-    build: 'a'
+    build: 'b'
 };
 
-const XSLCv1_STR = "v1.0.0-rc.1a";
+const XSLCv1_STR = "v1.0.0-rc.1b";
 
 export const XSLC_LATEST = XSLCv1;
 export const XSLC_VER_STR = XSLCv1_STR;
