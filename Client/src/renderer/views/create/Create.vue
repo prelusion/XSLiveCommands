@@ -3,7 +3,7 @@ import {changeTitle} from "../../util/general";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {MapCommands, MapName, MapPath} from "../../../shared/src/types/commands/structs";
-import {assert, ensure, logIt} from "../../../shared/src/util/general";
+import {assert, ensure} from "../../../shared/src/util/general";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {useMainStore} from "@store/main";
 import {useRouter} from "vue-router";
