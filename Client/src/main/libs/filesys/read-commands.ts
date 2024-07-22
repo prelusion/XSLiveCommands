@@ -11,7 +11,7 @@ function areValidParameters(params?: Array<ParamStruct>): boolean {
         if(!param.name || !param.type) {
             return false;
         }
-        if(!["int", "float", "bool", "string"].includes(param.type)) {
+        if(!param.type.match(/(int|float|bool|string)/)) {
             return false;
         }
         if(!param.default) {
