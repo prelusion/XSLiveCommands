@@ -1,4 +1,14 @@
-## XS Live Commands
+
+<div align="center">
+<br>
+<img src="./mkdocs/docs/imgs/xslc_logo_wide.png" alt="XSLC logo">
+<br>
+<br>
+</div>
+
+---
+
+## Overview
 
 This application allows running triggers/XS functions in live AoE2:DE custom map (RMS/CS) games, on request, externally. Think of it something like [Choice Chamber](https://store.steampowered.com/app/359960/Choice_Chamber/) or T90's overlords, but without the overlord needing to be in the game itself!
 
