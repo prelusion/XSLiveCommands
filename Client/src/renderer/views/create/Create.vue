@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {changeTitle} from "../../util/general";
-import {onMounted, Ref, ref, watch} from "vue";
+import {computed, onMounted, Ref, ref, watch} from "vue";
 import {ButtonConfig} from "../../types/buttons";
 import {MapCommands, MapName, MapPath} from "../../../shared/src/types/commands/structs";
 import {assert, ensure} from "../../../shared/src/util/general";
@@ -56,18 +56,20 @@ watch(enteredFilename, async () => {
 /* Events */
 onMounted(async () => {
     changeTitle("Create Room...");
+    errors.value = [];
 
     const config = ensure(store.config);
 
     const prevFilepath: string = config["previous-map"]?.['path'] ?? '';
-    const prevMapname: string = config["previous-map"]?.['name'] ?? '';
+    const prevMapName: string = config["previous-map"]?.['name'] ?? '';
 
-    if (prevFilepath && prevMapname) {
+    if (prevFilepath && prevMapName) {
         const mapExists = await window.fs.exists(prevFilepath);
         const commandFileExists = await window.fs.exists(toCommandFilepath(prevFilepath));
 
         if (mapExists && commandFileExists) {
-            selectedMap.value.mapName = prevMapname;
+            enteredFilename.value = prevMapName;
+            selectedMap.value.mapName = prevMapName;
 
             await selectMap(prevFilepath);
         }
@@ -96,22 +98,22 @@ onMounted(async () => {
  */
 const selectMap = async (filepath: string): Promise<void> => {
     const result = await window.fs.readCommands(toCommandFilepath(filepath));
+    errors.value = [];
 
-    if (result.commands) {
-        errors.value = [];
-
-        selectedMap.value.filepath = filepath;
-        selectedMap.value.commands = result.commands;
-    } else {
+    if(result.isError) {
         selectedMap.value.mapName = '';
         selectedMap.value.filepath = '';
 
-        if (result.reason === 'no-json') {
+        if (result.error === 'no-json') {
             errors.value.push('Commands File Not Found');
-        } else if (result.reason === 'invalid-json') {
+        } else if (result.error === 'invalid-json') {
             errors.value.push('Invalid Commands File');
         }
+        return;
     }
+
+    selectedMap.value.filepath = filepath;
+    selectedMap.value.commands = result.value;
 }
 
 /**
@@ -169,7 +171,23 @@ const buttonConfig: Array<ButtonConfig> = [
 const onClearSelectedMap = () => {
     enteredFilename.value = '';
     selectedMap.value.filepath = '';
+    selectedMap.value.mapName = '';
 }
+
+const shownFilepath = computed(() => {
+    const [
+        _match,
+        dir,
+        path,
+    ] = selectedMap.value.filepath.match(/(mods|resources)(.+)$/) ?? [null, null, null];
+    if (dir === null) {
+        return "No Map Selected";
+    } else if (dir === "resources") {
+        return `%profile_dir%\\resources${path}`;
+    } else if (dir === "mods") {
+        return `%mods_dir%${path}`;
+    }
+});
 
 </script>
 
@@ -211,7 +229,7 @@ const onClearSelectedMap = () => {
                                 id="clear-map-button"
                                 title="Clear the map selection text box">Clear
                         </button>
-                        <span id="file-selection-text">{{ selectedMap.filepath || 'No map selected' }}</span>
+                        <span id="file-selection-text">{{ shownFilepath }}</span>
                     </div>
                     <span class="small-text">
                     For a map to be detected, a json file with the following format:

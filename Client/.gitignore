@@ -5,8 +5,10 @@ yarn-debug.log*
 yarn-error.log*
 
 dist/
-build/
+build/*
+!build/
 !build/icons
+!build/icons/*
 
 # Editor directories and files
 .idea
