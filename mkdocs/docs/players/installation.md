@@ -1,6 +1,10 @@
 ## Windows
 
 1. Download the exe for the latest version of the XSLC Setup from [here](https://github.com/prelusion/XSLiveCommands/releases/latest)!
+
+    !!! question "`win-x86_64` or `win-x86`"
+        Press ++win+x++ followed by ++y++ to open System Properties. Now search for "System type" under "Device Specification". If it says 64-bit processor, use `win-x86_64`, otherwise use `win-x86`
+
 2. Install XSLC by simply double-clicking the downloaded exe from the previous step.
 
     !!! warning "Windows Protected Your PC"
@@ -11,8 +15,7 @@
         ![landing.png](./../../imgs/landing.png){: style="height:300px;"}
     </figure>
 
+    !!! info "Compatibility"
+        XSLC only supports Steam users, the app is NOT compatible with the MS Store version of the game.
+
 4. Head over to [Usage](./usage.md) to find out how to use the app!
-
-!!! info "Compatibility"
-
-    XSLC only supports Steam users, the app is NOT compatible with the MS Store version of the game.
