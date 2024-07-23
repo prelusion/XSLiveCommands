@@ -36,3 +36,8 @@ export function assert(value: unknown): asserts value {
 export async function sleep(time: number): Promise<void> {
     await new Promise((res) => setTimeout(res, time * 1000));
 }
+
+export function logIt<T>(value: T): T {
+    console.log(value);
+    return value;
+}

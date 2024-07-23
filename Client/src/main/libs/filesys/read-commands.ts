@@ -1,5 +1,6 @@
 import fs from "fs";
 import {CommandFileStruct, MapCommands, ParamStruct} from "../../../shared/src/types/commands/structs";
+import {Result, err, ok} from "../../../shared/src/types/result";
 
 function areValidParameters(params?: Array<ParamStruct>): boolean {
     if(!params) {
@@ -8,6 +9,9 @@ function areValidParameters(params?: Array<ParamStruct>): boolean {
 
     for(let param of params) {
         if(!param.name || !param.type) {
+            return false;
+        }
+        if(!param.type.match(/(int|float|bool|string)/)) {
             return false;
         }
         if(!param.default) {
@@ -24,9 +28,9 @@ function areValidParameters(params?: Array<ParamStruct>): boolean {
     return true;
 }
 
-export async function readCommands(path: string): Promise<{ commands?: MapCommands; reason?: string }> {
+export async function readCommands(path: string): Promise<Result<MapCommands>> {
     if (!fs.existsSync(path)) {
-        return {reason: 'no-json'};
+        return err('no-json');
     }
 
     try {
@@ -34,13 +38,13 @@ export async function readCommands(path: string): Promise<{ commands?: MapComman
         const commands: MapCommands = {};
         for(let command of commandsArray) {
             if(!command.name || !command.function || !areValidParameters(command.params)) {
-                return {reason: 'invalid-json'};
+                return err('invalid-json');
             }
             commands[command.name] = command;
         }
 
-        return {commands: commands};
+        return ok(commands);
     } catch {
-        return {reason: 'invalid-json'};
+        return err('invalid-json');
     }
 }
