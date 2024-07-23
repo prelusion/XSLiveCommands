@@ -8,9 +8,10 @@
         }
     ],
     "productName": "XS Live Commands",
+    "artifactName": "${productName} v${version} Setup ${os}-${arch}.${ext}",
     "appId": "org.aoe2.xs-live-commands",
     "directories": {
-        "output": "build"
+        "output": "build/${os}/${arch}/"
     },
     "files": [
         "dist/electron/**/*"
