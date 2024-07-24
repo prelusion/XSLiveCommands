@@ -41,6 +41,9 @@ class MainInit {
                 devTools: process.env.NODE_ENV === "development",
                 scrollBounce: process.platform === "darwin",
                 preload: getPreloadFile("preload"),
+
+                /* Do not allow throttling even if the window is minimized, occluded, or hidden */
+                backgroundThrottling: false,
             },
         });
 
