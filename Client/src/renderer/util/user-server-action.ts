@@ -18,6 +18,7 @@ export class UserServerAction {
     public static platform: PlatformUser | null = null;
 
     public static room: Room | null = null;
+    public static currentLocalTick: number = -1;
     public static username: string | null = null;
 
     private static roomUpdateCallbacks: Set<(room: Room | null) => void> = new Set();
@@ -58,6 +59,7 @@ export class UserServerAction {
             let exists = await this.doesRoomExist();
             if(!exists) {
                 this.room = null;
+                this.currentLocalTick = -1;
                 this.invokeRoomUpdateCallbacks();
             } else {
                 await this.joinRoom(ensure(this.room).id);
@@ -169,6 +171,7 @@ export class UserServerAction {
         }
         await CoreLoop.stop();
         this.room = null;
+        this.currentLocalTick = -1;
     }
 
     public static async joinTyrant(password: string): Promise<void> {

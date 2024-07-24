@@ -9,10 +9,11 @@ export class CoreLoop {
     private static nextCmdExecTick: number = 0;
     private static nextCmdIdx: number = 0;
 
-    private static READ_SPEED: number = Math.round(1000/60);
+    public static READ_SPEED: number = Math.round(1000/60);
 
     private static async reset(): Promise<void> {
         await window.fs.deleteXsDataFiles(ensure(UserServerAction.platform), this.mapName);
+        UserServerAction.currentLocalTick = -1;
         this.nextCmdExecTick = 0;
         this.nextCmdIdx = 0;
     }
@@ -36,6 +37,8 @@ export class CoreLoop {
         if(!currentTick) {
             return;
         }
+        console.log(currentTick);
+        UserServerAction.currentLocalTick = currentTick;
         UserServerAction.updateTick(currentTick);
         if(currentTick < this.nextCmdExecTick || this.nextCmdIdx === this.scheduledCommands.length) {
             return;
