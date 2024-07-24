@@ -58,6 +58,22 @@ onMounted(async () => {
     changeTitle("Create Room...");
     errors.value = [];
 
+    /* this list is already sorted in order of decreasing priority (increasing priority number) by the game */
+    const mods: Array<Mod> = await window.fs.readModsJson(UserServerAction.platform!);
+    for (const mod of mods) {
+        if (!mod.Enabled) {
+            continue;
+        }
+
+        /* Previous maps (higher priority) get priority if same name (exactly how the game handles that too) */
+        maps.value = {
+            ...await window.fs.getCompatibleMaps(UserServerAction.platform!, mod.Path),
+            ...maps.value,
+        };
+    }
+
+    loadedAvailableMaps.value = true;
+
     const config = ensure(store.config);
 
     const prevFilepath: string = config["previous-map"]?.['path'] ?? '';
@@ -74,22 +90,6 @@ onMounted(async () => {
             await selectMap(prevFilepath);
         }
     }
-
-    /* this list is already sorted in order of decreasing priority (increasing priority number) by the game */
-    const mods: Array<Mod> = await window.fs.readModsJson(UserServerAction.platform!);
-    for (const mod of mods) {
-        if (!mod.Enabled) {
-            continue;
-        }
-
-        /* Previous maps (higher priority) get priority if same name (exactly how the game handles that too) */
-        maps.value = {
-            ...await window.fs.getCompatibleMaps(UserServerAction.platform!, mod.Path),
-            ...maps.value,
-        };
-    }
-
-    loadedAvailableMaps.value = true;
 });
 
 /* ######### Functions ######### */
@@ -122,6 +122,7 @@ const selectMap = async (filepath: string): Promise<void> => {
 const createRoom = () => {
     creationInProgress.value = true;
 
+    console.log("CREATE: " +selectedMap.value.mapName);
     const mapName = selectedMap.value.mapName;
 
     store.PATCH_CONFIG('previous-map', {
