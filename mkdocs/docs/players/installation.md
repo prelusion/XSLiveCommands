@@ -12,7 +12,7 @@
 
 3. Launch the app by double-clicking its newly created desktop icon after the installation finishes if it doesn't automatically. You should be greeted by a window like this:
     <figure markdown="1">
-        ![landing.png](./../../imgs/landing.png){: style="height:300px;"}
+        ![landing.png](./../imgs/landing.png){: style="height:300px;"}
     </figure>
 
     !!! info "Compatibility"
