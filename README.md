@@ -14,7 +14,7 @@ This application allows running triggers/XS functions in live AoE2:DE custom map
 
 > Note: This application is not a hack, a special map (Custom Scenario or RMS) needs to be made in order to use this application
 
-You can head over to the [XSLC website](https://prelusion.github.io/XSLiveCommands) to find out more about the application and how to use it!
+You can head over to the [XSLC website](https://docs.xslc.de/) to find out more about the application and how to use it!
 
 ## Development
 
