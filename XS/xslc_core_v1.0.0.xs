@@ -157,7 +157,7 @@ rule _ext_core__loadCommand
     xsArrayResizeInt(paramPos, paramCount);
 
     for(i = 0; < paramCount) {
-        string log = ">>> ";
+        string log = "";
         string name = xsReadString();
         int type = xsReadInt();
 
