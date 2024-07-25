@@ -37,7 +37,6 @@ export class CoreLoop {
         if(!currentTick) {
             return;
         }
-        console.log(currentTick);
         UserServerAction.currentLocalTick = currentTick;
         UserServerAction.updateTick(currentTick);
         if(currentTick < this.nextCmdExecTick || this.nextCmdIdx === this.scheduledCommands.length) {
