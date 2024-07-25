@@ -9,7 +9,7 @@ void _sendRes(float amount = 0, int type = -1, int player = -1) {
     if(type == -1)
         return;
     
-    string msg = ">>> Given " +amount+ " "+xsArrayGetString(typesString, type)+" to ";
+    string msg = "[Tyrant] Given " +amount+ " "+xsArrayGetString(typesString, type)+" to ";
 
     if(player != -1)
         msg = msg + "player " + player;
@@ -35,7 +35,7 @@ void sendMessage(int _ = -1) {
     if(msg == "")
         return;
 
-    msg = ">>> "+msg;
+    msg = "[Tyrant] "+msg;
     if(l%2 == 0)
         msg = "<GREY>"+msg;
 

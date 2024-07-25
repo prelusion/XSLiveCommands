@@ -6,7 +6,7 @@ import {XSLCServer} from "./action-listeners/xslc-server";
 
 config();
 
-export const EXEC_TICK_OFFSET = parseInt(process.env.EXEC_TICK_OFFSET || '3');
+export const NEW_COMMAND_TICK_DELAY = parseInt(process.env.NEW_COMMAND_TICK_DELAY || '3');
 
 function main() {
     const port = (process.env.PORT || 80) as number;

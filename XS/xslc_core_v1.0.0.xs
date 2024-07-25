@@ -68,7 +68,7 @@ rule _ext_core__updateTick
     priority 8
 {
     if(verbose)
-        xsChatData(">>> Tick: " + tick);
+        xsChatData("<YELLOW>[XSLC][DEBUG] Tick: " + tick);
 
     if (tick == cmdExecTick) {
         xsAddRuntimeEvent("Scenario Triggers", cmdFunction, -1);
@@ -141,10 +141,10 @@ rule _ext_core__loadCommand
    paramCount = xsReadInt();
 
     if(verbose) {
-        xsChatData(">>> Command Received");
-        xsChatData(">>> Tick: "+cmdExecTick);
-        xsChatData(">>> Function: "+cmdFunction);
-        xsChatData(">>> # Params: "+paramCount);
+        xsChatData("<YELLOW>[XSLC][DEBUG] Command Received");
+        xsChatData("<YELLOW>[XSLC][DEBUG] Exec Tick: "+cmdExecTick);
+        xsChatData("<YELLOW>[XSLC][DEBUG] Function: "+cmdFunction);
+        xsChatData("<YELLOW>[XSLC][DEBUG] # Params: "+paramCount);
     }
     
     xsArrayResizeInt(intParams, 0);
@@ -233,7 +233,7 @@ rule _ext_core__loadCommand
             }
         }
         if(verbose)
-            xsChatData(log);
+            xsChatData("<YELLOW>[XSLC][DEBUG] " + log);
     }
 
     xsCloseFile();
@@ -246,6 +246,8 @@ rule _ext_core__main
     highFrequency
     priority 1000
 {
+    xsChatData("<GREEN>[XSLC][INFO] XS API v1.0.0");
+
     intParams = xsArrayCreateInt(0, 0, "intParams");
     floatParams = xsArrayCreateFloat(0, 0, "floatParams");
     boolParams = xsArrayCreateBool(0, false, "boolParams");

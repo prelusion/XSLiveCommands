@@ -1,13 +1,14 @@
 <script setup lang="ts">
 
+import {CoreLoop} from "@renderer/util/core-loop";
 import {Room} from "../../shared/src/types/room";
-import {PropType, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import DisconnectButton from "@renderer/components/DisconnectButton.vue";
 import {UserServerAction} from "@renderer/util/user-server-action";
 import {Route} from "@renderer/router/routes";
 import {useRouter} from "vue-router";
 
-const {setTimeout} = window;
+const {setTimeout, setInterval} = window;
 
 const router = useRouter();
 
@@ -21,7 +22,21 @@ const props = defineProps({
 /* Copy button */
 const copyButtonText = ref('Copy');
 const showRoomId = ref(false);
+const localTick = ref<number>(-1);
+let itv = -1;
 let buttonTimeout = -1;
+
+onMounted(async () => {
+    itv = setInterval(() => {
+        if(localTick.value !== UserServerAction.currentLocalTick) {
+            localTick.value = UserServerAction.currentLocalTick
+        }
+    }, CoreLoop.READ_SPEED);
+});
+
+onUnmounted(async () => {
+    clearInterval(itv);
+});
 
 const copyRoomId = async () => {
     clearTimeout(buttonTimeout);
@@ -63,6 +78,9 @@ const onClickShowRoomIdEye = () => {
 
             <div>Map:</div>
             <div>{{ room.mapCtx.file }}</div>
+
+            <div>Game Status:</div>
+            <div>{{ localTick >= 0 ? "Started!" : "Waiting..." }}</div>
         </div>
     </div>
 </template>

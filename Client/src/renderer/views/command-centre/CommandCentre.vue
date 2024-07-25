@@ -30,26 +30,19 @@ const room = ref<Room>(Room.new());
 
 const selectedCommand = ref("");
 
-const expectedTick = ref(-1);
 const isClickable = ref(true);
 const text = ref<string[]>([]);
 const error = ref(true);
-
-const tickPredictionInterval = ref<number | undefined>(undefined);
 
 onMounted(() => {
     room.value = ensure(UserServerAction.room);
 
     UserServerAction.onRoomUpdate(updateRoom);
 
-    tickPredictionInterval.value = window.setInterval(getTickPrediction, 500);
-
     changeTitle(`COMMAND CENTRE!`);
 });
 
 onUnmounted(async () => {
-    clearInterval(tickPredictionInterval.value);
-
     UserServerAction.offRoomUpdate(updateRoom);
 });
 
@@ -168,13 +161,6 @@ const updateRoom = (newRoom: Room | null) => {
             message: 'The server does not recognize the room anymore, please join or create a new one.'
         }
     });
-};
-
-const getTickPrediction = async () => {
-    if (!store.$state.connectionOk) {
-        return;
-    }
-    expectedTick.value = await UserServerAction.getTickPrediction();
 };
 
 const setText = (...strings: string[]): void => {

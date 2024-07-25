@@ -1,6 +1,6 @@
 import {AuthenticatedUser, SocketId} from "./user";
 import {MapContext} from "./map-context";
-import {EXEC_TICK_OFFSET} from "../main";
+import {NEW_COMMAND_TICK_DELAY} from "../main";
 import {CommandName, CommandStruct, MapCommands} from "./commands/structs";
 import {Command, ScheduledCommand} from "./commands/scheduled";
 
@@ -122,7 +122,7 @@ export class Room {
     }
 
     public get nextExecTick(): number {
-        return Math.max(this.currentTick, this.mapCtx.lastExecTick) + EXEC_TICK_OFFSET
+        return Math.max(this.currentTick, this.mapCtx.lastExecTick) + NEW_COMMAND_TICK_DELAY
     }
 
     public get numTyrants(): number {

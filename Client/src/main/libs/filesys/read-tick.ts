@@ -3,7 +3,7 @@ import path from "path";
 import {PlatformUser} from "../../../shared/src/types/user";
 import {profileFolderPath} from "./common";
 
-export async function readTick(platform: PlatformUser, map: string): Promise<number | undefined> {
+export async function readTick(platform: PlatformUser, map: string): Promise<number | null> {
     const profileFolder = profileFolderPath(platform);
 
     try {
@@ -12,5 +12,5 @@ export async function readTick(platform: PlatformUser, map: string): Promise<num
     } catch (err) {
         // File doesn't exist. Ignored because of HUGE ERROR and file doesn't have to exist.
     }
-    return undefined;
+    return null;
 }
