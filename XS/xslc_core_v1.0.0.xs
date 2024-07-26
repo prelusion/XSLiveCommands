@@ -240,7 +240,7 @@ rule _ext_core__loadCommand
 }
 
 // initialise the arrays
-rule _ext_core__main
+rule _xslc_core__main
     active
     runImmediately
     highFrequency
