@@ -197,7 +197,7 @@ rule _ext_core__loadCommand
             }
             case 2 : {
                 int sizeBool = xsArrayGetSize(boolParams);
-                xsArrayResizeInt(boolParams, sizeBool+1);
+                xsArrayResizeBool(boolParams, sizeBool+1);
                 
                 bool valueBool = _ext_core__toBool(xsReadInt());
                 xsArraySetBool(boolParams, sizeBool, valueBool);
