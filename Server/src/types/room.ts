@@ -102,7 +102,7 @@ export class Room {
         this.mapCtx.lastExecTick = scheduled.execTick;
         this.mapCtx.events.push(scheduled)
         const args = command.params.map(param => `${param.name} = ${param.value}`).join(", ");
-        console.log(this.tag, `⮞ ${this.userLog(userId)} ↦ ${command.function}(${args})`);
+        console.log(this.tag, `⮞ ${this.userLog(userId)} [${scheduled.execTick}] ↦ ${command.function}(${args})`);
 
         return true;
     }
